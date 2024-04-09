@@ -1,0 +1,14 @@
+{
+  "json_data": {
+    "nftables": [
+      {
+        "add": {
+          "table": {
+            "family": "inet",
+            "name": "my_table"
+          }
+        }
+      }
+    ]
+  }
+}
