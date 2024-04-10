@@ -1,9 +1,7 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Nftables Ruleset</title>
-</head>
-<body>
+{% extends "base.html" %}
+{% block content %}
+<div class="container">
+    <h1>Configuración completa de nftables</h1>
     <pre>{{ ruleset }}</pre>
-</body>
-</html>
+</div>
+{% endblock %}

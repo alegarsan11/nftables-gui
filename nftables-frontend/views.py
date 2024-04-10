@@ -1,6 +1,7 @@
 import requests
-from flask import Blueprint, render_template
+from flask import Blueprint, render_template, flash, redirect, url_for
 from flask_login import login_user, logout_user, login_required, current_user
+from models import User
 from forms import LoginForm
 
 visualization_bp = Blueprint('visualization', __name__)
@@ -21,9 +22,18 @@ def main_view():
         form = LoginForm()
         return render_template('login.html', form=form)
 
-@visualization_bp.route('/login')
+@visualization_bp.route('/login', methods=['POST'])
 def login():
-    return render_template('login.html')
+    form = LoginForm()
+    if form.validate_on_submit():
+        user = User.query.filter_by(username=form.username.data).first()
+        if user is not None and user.check_password(form.password.data):
+            login_user(user)
+            flash('Logged in successfully.')
+            return redirect('/')
+        else:
+            flash('Invalid username or password.')
+    return render_template('login.html', form=form)
 
 def format_nftables_config(config_string):
     # Replace escape sequences with actual characters

@@ -16,11 +16,12 @@ login_manager.init_app(app)
 db.init_app(app)
 with app.app_context():
     db.create_all()
+    create_default_user()
+
 migrate = Migrate(app, db)
 Bootstrap(app)
 
 
-if __name__ == '__main__':
 
+if __name__ == '__main__':
     app.run(debug=True)
-    create_default_user()
