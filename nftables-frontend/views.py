@@ -2,7 +2,8 @@ import requests
 from flask import Blueprint, render_template, flash, redirect, url_for
 from flask_login import login_user, logout_user, login_required, current_user
 from models import User
-from forms import LoginForm
+from forms.forms import LoginForm, CreateUserForm
+from service import db
 
 visualization_bp = Blueprint('visualization', __name__)
 creation_bp = Blueprint('creation', __name__)
@@ -21,18 +22,31 @@ def main_view():
     else:
         form = LoginForm()
         return render_template('login.html', form=form)
+    
+@visualization_bp.route('/users', methods=['GET'])  
+def users():
+    users = User.query.all()
+    return render_template('users.html', users=users)
 
-@visualization_bp.route('/login', methods=['POST'])
+
+
+@creation_bp.route('/login', methods=['POST'])
 def login():
     form = LoginForm()
     if form.validate_on_submit():
+        print('Validating login form...')
         user = User.query.filter_by(username=form.username.data).first()
         if user is not None and user.check_password(form.password.data):
             login_user(user)
             flash('Logged in successfully.')
             return redirect('/')
         else:
+            form.validate_username(form.username)
             flash('Invalid username or password.')
+    else:
+        print('Invalid username or password.')
+        print(form.errors)
+        flash('Invalid username or password.')
     return render_template('login.html', form=form)
 
 def format_nftables_config(config_string):
@@ -49,6 +63,28 @@ def format_nftables_config(config_string):
     formatted_string = '\n'.join(lines)
     return formatted_string
 
-@creation_bp.route('/create_user')
+@visualization_bp.route('/create_user')
 def create_user():
-    return render_template('create_user.html')
+    
+    return render_template('create_user.html', form=CreateUserForm())
+
+@creation_bp.route('/create_user', methods=['POST'])
+def create_user_post():
+    form = CreateUserForm()
+    if form.validate_on_submit():
+        user = User(username=form.username.data, email=form.email.data, password=form.password.data, role=form.role.data, is_active=True)
+        db.session.add(user)
+        db.session.commit()
+        flash('User created successfully.')
+        return redirect('/users')
+    else:
+        flash('Error creating user.')
+        print(form.errors)
+        return render_template('create_user.html', form=form)
+
+@creation_bp.route("/logout")
+def logout():
+    '''Cerrar sesión'''
+    logout_user()
+    return redirect('/')
+    

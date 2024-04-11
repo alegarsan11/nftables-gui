@@ -1,0 +1,31 @@
+{% extends "base.html"%}
+{% block head %}
+{{ super() }}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/users.css') }}">
+{% endblock %}
+{% block content %}
+<div class="container">
+    <h2>Users:</h2>
+    <button onclick="location.href='/create_user'" class="button-create-user">Create user</button>
+    <br></br>
+<table aria-describedby="users-table-description" class="users-table">
+    <tr class="head-user-table">
+        <th>Username</th>
+        <th>Email</th>
+        <th>Role</th>
+        <th>Actions</th>
+    </tr>
+    {% for user in users %}
+    <tr class="body-user-table">
+        <td>{{ user.username }}</td>
+        <td>{{ user.email }}</td>
+        <td>{{ user.role }}</td>
+        <td>
+            <a href="/edit_user/{{ user.id }}">Edit</a>
+            <a href="/delete_user/{{ user.id }}">Delete</a>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+</div>
+{% endblock %}

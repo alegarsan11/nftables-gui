@@ -1,11 +1,6 @@
 .navbar {
     background-color: #333;
-    height: 100%;
-    width: 200px;
-    position: fixed;
-    overflow: auto;
     border-radius: 0%;
-
 }
 
 .navbar a {
@@ -19,6 +14,36 @@
     background-color: #ddd;
     color: black;
 }
+
+.parrafo {
+    margin-top: 10px;
+    font-size: 18px;
+    color: #ddd;
+    margin-right: 10px;
+
+}
+
+.button-logout {
+    background-color: #f44336;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 10px 20px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 4px 2px;
+    cursor: pointer;
+
+}
+
+.salida {
+    display: flex;
+    text-align: right;
+    justify-content: flex-end;
+}
+
 .content {
     margin-left: 20px !important;
     padding: 1px 16px !important;
