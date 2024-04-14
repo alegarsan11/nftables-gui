@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block content %} 
+    <div class="container">
+        <h1>Tables:</h1>
+        <button class="btn btn-primary" onclick="location.href='/add_table'">Add table</button>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Table</th>
+                    <th>Family</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for index in range(0,n) %}
+                    <tr>
+                        <td>{{ names[index] }}</td>
+                        <td>{{ family[index] }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+</div>
+    {% endblock %}

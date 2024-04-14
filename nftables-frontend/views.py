@@ -1,7 +1,8 @@
+import json
 import requests
 from flask import Blueprint, render_template, flash, redirect, url_for
 from flask_login import login_user, logout_user, login_required, current_user
-from models import User
+from models import Table, User
 from forms.forms import LoginForm, CreateUserForm
 from service import db
 
@@ -10,7 +11,7 @@ creation_bp = Blueprint('creation', __name__)
 
 @visualization_bp.route('/list_ruleset')
 def list_ruleset():
-    response = requests.get('http://127.0.0.1:8000/list_ruleset')
+    response = requests.get('http://127.0.0.1:8000/tables/list_ruleset')
     result = format_nftables_config(response.json()["ruleset"])
     
     return render_template('ruleset.html', ruleset=result)
@@ -27,6 +28,27 @@ def main_view():
 def users():
     users = User.query.all()
     return render_template('users.html', users=users)
+
+@visualization_bp.route('/login')
+def login_view():
+    form = LoginForm()
+    return render_template('login.html', form=form)
+
+@visualization_bp.route('/tables')
+def tables():
+    response = requests.get('http://127.0.0.1:8000/tables/list_tables')
+    result = response.json()["tables"]
+    family = []
+    names = []
+    for line in result.split("table "):
+        family.append(line.split(" ")[0])
+        variable = line.split(" ")[-1]
+        names.append(variable)
+    print(names[1])
+    for i in range(len(names)):
+        if(i != 0):
+            Table(name=names[i], family=family[i]).save()
+    return render_template('tables.html', names=names, family=family, n=len(names))
 
 
 
