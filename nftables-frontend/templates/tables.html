@@ -3,20 +3,38 @@
     <div class="container">
         <h1>Tables:</h1>
         <button class="btn btn-primary" onclick="location.href='/add_table'">Add table</button>
-        <table class="table table-striped">
+        <table class="table table-dark table-striped">
             <thead>
                 <tr>
                     <th>Table</th>
                     <th>Family</th>
+                    <th>Description</th>
                 </tr>
             </thead>
             <tbody>
-                {% for index in range(0,n) %}
+                {% if tables == [] %}
                     <tr>
-                        <td>{{ names[index] }}</td>
-                        <td>{{ family[index] }}</td>
+                        <td colspan="3">No tables</td>
+                    </tr>
+                {% else %}
+                {% for table in tables %}
+                    <tr>
+                        <td>{{ table.name }}</td>
+                        <td>{{ table.family }}</td>
+                        <td>
+                            {% if table.description %}
+                                {{ table.description }}
+                            {% else %}
+                                No description
+                            {% endif %}
+                        </td>
+                        <td>
+                            <button class="btn btn-primary" onclick="location.href='/edit_table/{{ table.id }}'">Edit</button>
+                            <button class="btn btn-danger" onclick="location.href='/delete_table/{{ table.id }}'">Delete</button>
+                        </td>
                     </tr>
                 {% endfor %}
+                {% endif %}
             </tbody>
 </div>
     {% endblock %}

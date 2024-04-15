@@ -15,6 +15,7 @@ app.config['SECRET_KEY'] = 'hfds732klejds90ahg'
 app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{dir_path}/instance/nftables.db'
 login_manager.init_app(app)
 db.init_app(app)
+
 with app.app_context():
     db.create_all()
     create_default_user()

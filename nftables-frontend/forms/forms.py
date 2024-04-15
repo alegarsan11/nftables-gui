@@ -1,8 +1,8 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SubmitField
+from wtforms import StringField, PasswordField, SubmitField, SelectField
 from wtforms.validators import DataRequired, Email, EqualTo
 from wtforms import ValidationError
-from models import User
+from models import Table, User
 
 class LoginForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired()])
@@ -39,3 +39,18 @@ class CreateUserForm(FlaskForm):
     def validate_password(self, password):
         if len(password.data) < 8:
             raise ValidationError('Password must be at least 8 characters long.')
+        
+class TableForm(FlaskForm):
+    name = StringField('Name', validators=[DataRequired()])
+    family = SelectField('Family', choices=[('ip', 'ipv4'), ('inet', 'ipv4 and ipv6'), ('arp', 'arp'), ('bridge', 'bridge'), ('netdev', 'netdev')], validators=[DataRequired()])
+    description = StringField('Description')
+    submit = SubmitField('Create Table')
+    
+    def validate_family(self, family):
+        if family.data not in ['ip', 'inet', 'arp', 'bridge', 'netdev']:
+            raise ValidationError('Family must be one of: ip, inet, arp, bridge, netdev.')
+
+    def validate_name(self, name):
+        table = Table.query.filter_by(name=name.data).first()
+        if table or " " in name.data or "-" in name.data or "/" in name.data or "." in name.data or "," in name.data or ";" in name.data or ":" in name.data or "@" in name.data or "#" in name.data or "$" in name.data or "%" in name.data or "^" in name.data or "&" in name.data or "*" in name.data or "(" in name.data or ")" in name.data or "+" in name.data or "=" in name.data or "[" in name.data or "]" in name.data or "{" in name.data or "}" in name.data or "|" in name.data or "<" in name.data or ">" in name.data or "?" in name.data or "!" in name.data or "'" in name.data or '"' in name.data or "\\" in name.data or "`" in name.data or "~" in name.data:
+            raise ValidationError('Table name invalid. (Must not contain special characters or spaces.)')

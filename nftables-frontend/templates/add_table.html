@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container">
+    <h2>Create Table</h2>
+    <form id="myForm" action="/add_table" method="POST">
+        {{ form.csrf_token }}
+        <div class="form-group">
+            {{ form.name.label }} {{ form.name(class="form-control") }}
+            {% if form.name.errors %}
+                <ul class="errors">
+                    {% for error in form.name.errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        </div>
+
+        <div class="form-group">
+            {{ form.family.label }} {{ form.family(class="form-control") }}
+            {% if form.family.errors %}
+                <ul class="errors">
+                    {% for error in form.family.errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        </div>
+        <div class="form-group">
+            {{ form.description.label }} {{ form.description(class="form-control") }}
+            {% if form.description.errors %}
+                <ul class="errors">
+                    {% for error in form.description.errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        </div>
+        <button type="submit" class="btn btn-primary">Create</button>
+    </form>
+</div>
+{% endblock %}
+

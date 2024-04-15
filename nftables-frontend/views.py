@@ -1,19 +1,16 @@
-import json
-import requests
 from flask import Blueprint, render_template, flash, redirect, url_for
 from flask_login import login_user, logout_user, login_required, current_user
 from models import Table, User
-from forms.forms import LoginForm, CreateUserForm
-from service import db
+from forms.forms import LoginForm, CreateUserForm, TableForm
+import service 
+import api
 
 visualization_bp = Blueprint('visualization', __name__)
 creation_bp = Blueprint('creation', __name__)
 
 @visualization_bp.route('/list_ruleset')
 def list_ruleset():
-    response = requests.get('http://127.0.0.1:8000/tables/list_ruleset')
-    result = format_nftables_config(response.json()["ruleset"])
-    
+    result = api.list_ruleset_request()    
     return render_template('ruleset.html', ruleset=result)
 
 @visualization_bp.route('/')
@@ -36,21 +33,53 @@ def login_view():
 
 @visualization_bp.route('/tables')
 def tables():
-    response = requests.get('http://127.0.0.1:8000/tables/list_tables')
-    result = response.json()["tables"]
+    result = api.list_tables_request()
     family = []
     names = []
     for line in result.split("table "):
         family.append(line.split(" ")[0])
         variable = line.split(" ")[-1]
         names.append(variable)
-    print(names[1])
     for i in range(len(names)):
-        if(i != 0):
-            Table(name=names[i], family=family[i]).save()
-    return render_template('tables.html', names=names, family=family, n=len(names))
+        if(i != 0) and service.check_existing_table(names[i], family[i]) == False:
+            service.insert_in_table(names[i], family[i])
+    tables = service.get_tables()
+    print(tables)
+    return render_template('tables.html', tables=tables)
 
+@creation_bp.route('/add_table')
+def add_table_get():
+    return render_template('add_table.html', form=TableForm())
 
+@creation_bp.route('/add_table', methods=['POST'])
+def add_table_post():
+    form = TableForm()
+    if form.validate_on_submit():
+        result = service.insert_in_table(form.name.data, form.family.data, form.description.data)
+        if result == "Success":
+            response = api.create_table_request(form.name.data, form.family.data)
+            if(response == "Success"):
+                flash('Table created successfully.')
+                return redirect('/tables')
+            else:
+                flash('Error creating table.')
+                print(response)
+                return render_template('add_table.html', form=form)
+        else:
+            flash('Error creating table.')
+            print(result)
+    else:
+        flash('Error creating table.')
+        print(form.errors)
+    return render_template('add_table.html', form=form)
+
+@creation_bp.route('/delete_table/<table_id>')
+def delete_table(table_id):
+    table = Table.query.get(table_id)
+    api.delete_table_request(table.name, table.family)
+    print(table.name)
+    service.delete_table(table_id)
+    return redirect('/tables')
 
 @creation_bp.route('/login', methods=['POST'])
 def login():
@@ -71,20 +100,6 @@ def login():
         flash('Invalid username or password.')
     return render_template('login.html', form=form)
 
-def format_nftables_config(config_string):
-    # Replace escape sequences with actual characters
-    formatted_string = config_string.replace('\\n', '\n').replace('\\t', '\t')
-
-    # Split the string into lines
-    lines = formatted_string.split('\n')
-
-    # Remove empty lines
-    lines = [line for line in lines if line.strip() != '']
-
-    # Join the lines back together with newline characters
-    formatted_string = '\n'.join(lines)
-    return formatted_string
-
 @visualization_bp.route('/create_user')
 def create_user():
     
@@ -94,9 +109,7 @@ def create_user():
 def create_user_post():
     form = CreateUserForm()
     if form.validate_on_submit():
-        user = User(username=form.username.data, email=form.email.data, password=form.password.data, role=form.role.data, is_active=True)
-        db.session.add(user)
-        db.session.commit()
+        service.create_user(form.username.data, form.email.data, form.password.data, form.role.data, True)
         flash('User created successfully.')
         return redirect('/users')
     else:
