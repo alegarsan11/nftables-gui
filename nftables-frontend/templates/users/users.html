@@ -21,8 +21,8 @@
         <td>{{ user.email }}</td>
         <td>{{ user.role }}</td>
         <td>
-            <a href="/edit_user/{{ user.id }}">Edit</a>
-            <a href="/delete_user/{{ user.id }}">Delete</a>
+            <button class="btn btn-primary" onclick="location.href='/edit_user/{{ user.id }}'">Edit</button>
+            <button class="btn btn-danger" onclick="location.href='/delete_user/{{ user.id }}'">Delete</button>
         </td>
     </tr>
     {% endfor %}

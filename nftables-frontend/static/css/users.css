@@ -22,4 +22,5 @@
 .tr, td , th{
     text-align: center;
     border: 1px solid #333;
+    height: 50px;
 }

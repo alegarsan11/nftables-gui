@@ -1,1 +1,1 @@
-{"json_data": {"nftables": [{"delete": {"table":{"name": "neces"}}}]}}
+{"json_data": {"nftables": [{"delete": {"table":{"name": "table_name", "family": "ip"}}}]}}

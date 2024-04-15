@@ -25,6 +25,7 @@ def delete_table_request(name, family):
         return "Error deleting table."
     
 
+
 def format_nftables_config(config_string):
     # Replace escape sequences with actual characters
     formatted_string = config_string.replace('\\n', '\n').replace('\\t', '\t')

@@ -40,6 +40,21 @@ class CreateUserForm(FlaskForm):
         if len(password.data) < 8:
             raise ValidationError('Password must be at least 8 characters long.')
         
+class UpdateUserForm(FlaskForm):
+    username = StringField('Username', validators=[DataRequired()])
+    email = StringField('Email', validators=[DataRequired(), Email()])
+    role = StringField('Role', validators=[DataRequired()])
+    is_active = SelectField('Active', choices=[('True', 'True'), ('False', 'False')], validators=[DataRequired()])
+    submit = SubmitField('Update User')
+    
+    def validate_role(self, role):
+        if role.data not in ['administrator', 'user', 'guest']:
+            raise ValidationError('Role must be one of: administrator, user, guest.')
+        
+    def validate_is_active(self, is_active):
+        if is_active.data not in ['True', 'False']:
+            raise ValidationError('Active must be one of: True, False.')
+        
 class TableForm(FlaskForm):
     name = StringField('Name', validators=[DataRequired()])
     family = SelectField('Family', choices=[('ip', 'ipv4'), ('inet', 'ipv4 and ipv6'), ('arp', 'arp'), ('bridge', 'bridge'), ('netdev', 'netdev')], validators=[DataRequired()])

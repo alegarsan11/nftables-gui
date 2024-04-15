@@ -3,7 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin
 
 
-db = SQLAlchemy()
+db = SQLAlchemy(session_options={"autoflush": False})
 
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -15,6 +15,14 @@ class User(UserMixin, db.Model):
 
     def __repr__(self):
         return '<User %r>' % self.username
+    
+    def print(self):
+        print(self.id)
+        print(self.username)
+        print(self.email)
+        print(self.role)
+        print(self.is_active)
+        print(self.password)
     
     def check_password(self, password):
         return self.password == password

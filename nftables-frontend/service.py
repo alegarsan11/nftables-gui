@@ -29,6 +29,25 @@ def load_user(user_id):
 def load_user(user_id):
     return User.query.get(int(user_id))
 
+def edit_user(user_id, username, email, role, is_active):
+    user = User.query.get(user_id)
+    user.username = username
+    user.email = email
+    user.role = role
+    user.is_active = is_active
+    db.session.commit()
+    
+def get_users():
+    return User.query.all()
+
+def get_user(user_id):
+    user = User.query.get(user_id)
+    return user
+
+def delete_user(user_id):
+    user = User.query.get(user_id)
+    db.session.delete(user)
+    db.session.commit()
 
 
 def insert_in_table(name, family, description=None):

@@ -6,3 +6,4 @@ flask-login
 flask-wtf
 hug
 email_validator
+matplotlib
