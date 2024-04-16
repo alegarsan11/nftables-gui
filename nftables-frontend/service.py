@@ -80,11 +80,11 @@ def insert_chains(table_id, chains):
     table.chains = chains
     db.session.commit()
     
-def insert_chain(chain_name, family, policy, table_id, hook_type=None, priority=None):
+def insert_chain(chain_name, family, policy, table_id, type,  hook_type=None, priority=None):
     if(hook_type != None and priority != None):
-        chain = BaseChain(name=chain_name, family=family, policy=policy, table_id=table_id, hook_type=hook_type, priority=priority)
+        chain = BaseChain(name=chain_name, family=family, type=type, policy=policy, table_id=table_id, hook_type=hook_type, priority=priority)
     else:
-        chain = Chain(name=chain_name, family=family , table_id=table_id, policy=policy)
+        chain = Chain(name=chain_name, family=family, type=type, table_id=table_id, policy=policy)
     db.session.add(chain)
     db.session.commit()
     
