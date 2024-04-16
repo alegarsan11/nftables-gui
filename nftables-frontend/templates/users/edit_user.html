@@ -12,10 +12,6 @@
             <input type="text" class="form-control" id="username" name="username" value="{{ user.username }}" required>
         </div>
         <div class="form-group">
-            <label for="email">Email:</label>
-            <input type="email" class="form-control" id="email" name="email" value="{{ user.email }}" required>
-        </div>
-        <div class="form-group">
             <label for="role">Role:</label>
             <select class="form-control" id="role" name="role" required>
                 <option value="admin" {% if user.role == 'admin' %} selected {% endif %}>Admin</option>

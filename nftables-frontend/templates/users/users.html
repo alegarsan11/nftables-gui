@@ -18,7 +18,6 @@
     {% for user in users %}
     <tr class="body-user-table">
         <td>{{ user.username }}</td>
-        <td>{{ user.email }}</td>
         <td>{{ user.role }}</td>
         <td>
             <button class="btn btn-primary" onclick="location.href='/edit_user/{{ user.id }}'">Edit</button>

@@ -9,7 +9,6 @@ class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
     password = db.Column(db.String(120), nullable=False)
-    email = db.Column(db.String(120), unique=True, nullable=False)
     role = db.Column(db.String(120), nullable=False)
     is_active = db.Column(db.Boolean, nullable=False)
 
@@ -32,7 +31,7 @@ class Table(db.Model):
     name = db.Column(db.String(80), unique=True, nullable=False)
     family = db.Column(db.String(80), nullable=False)
     description = db.Column(db.String(120), nullable=True)
-    chains = db.relationship('Chain', backref='table', lazy=True)
+    chains = db.relationship('Chain', backref='table', lazy=True, cascade="all, delete-orphan")
     
     def save(self):
         db.session.add(self)
@@ -45,9 +44,9 @@ class Chain(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(80), unique=True, nullable=False)
     table_id = db.Column(db.Integer, db.ForeignKey('table.id'), nullable=False)
-    type = db.Column(db.String(120), nullable=False)
+    type = db.Column(db.String(120), nullable=True)
     family = db.Column(db.String(120), nullable=False)
-    policy = db.Column(db.String(120), nullable=False)
+    policy = db.Column(db.String(120), nullable=True)
     rules = db.relationship('Rule', backref='chain', lazy=True)
 
     def __repr__(self):

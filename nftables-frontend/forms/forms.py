@@ -21,7 +21,6 @@ class LoginForm(FlaskForm):
         
 class CreateUserForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired()])
-    email = StringField('Email', validators=[DataRequired(), Email()])
     password = PasswordField('Password', validators=[DataRequired(), EqualTo('confirm_password', message='Passwords must match.')])
     confirm_password = PasswordField('Confirm Password', validators=[DataRequired()])
     role = StringField('Role', validators=[DataRequired()])
@@ -42,7 +41,6 @@ class CreateUserForm(FlaskForm):
         
 class UpdateUserForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired()])
-    email = StringField('Email', validators=[DataRequired(), Email()])
     role = StringField('Role', validators=[DataRequired()])
     is_active = SelectField('Active', choices=[('True', 'True'), ('False', 'False')], validators=[DataRequired()])
     submit = SubmitField('Update User')

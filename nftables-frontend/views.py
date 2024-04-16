@@ -31,7 +31,7 @@ def main_view():
         plt.ylabel('Número')
         plt.title('Número de elementos nftables')
         plt.grid(axis='y')
-        if os.path.exists('static/nftables_info.png'):
+        if os.path.exists('static/img/nftables_info.png'):
             os.remove('static/nftables_info.png')
         plt.savefig('static/nftables_info.png')
         plt.close()       
@@ -55,19 +55,30 @@ def edit_user(user_id):
 def get_table(table_id):
     table = service.get_table(table_id)
     chains = api.list_table_request(table.name, table.family)
- 
+    
     for chain in chains:
         print(chain)
         if(service.check_existing_chain(chain["name"], table_id) == False):
             hook_type = None
             priority = None
+            print(chain)
             if("hook_type" in chain):
                 hook_type = chain['hook_type']
             if("priority" in chain):
                 priority = chain['priority']
+            if("type" not in chain):
+                chain["type"] = None
+            if("policy" not in chain):
+                chain["policy"] = None
             service.insert_chain(chain_name=chain["name"], family=chain["family"], type=chain['type'], policy=chain['policy'], table_id=table_id, hook_type=hook_type, priority=priority)
     chains = service.get_chains_from_table(table_id)
     return render_template('tables/table.html', table=table, chains=chains)
+
+@visualization_bp.route('/flush_table/<table_id>')
+def flush_table(table_id):
+    table = Table.query.get(table_id)
+    response = api.flush_table_request(table.name, table.family)
+
 
 
 @creation_bp.route('/edit_user/<user_id>', methods=['POST'])

@@ -22,16 +22,7 @@
                         </div>
                     {% endif %}
                 </div>
-                <div class="form-group {% if form.email.errors %} has-error {% endif %}">
-                    {{ form.email.label }} {{ form.email(class="form-control") }}
-                    {% if form.email.errors %}
-                        <div class="alert alert-danger">
-                            {% for error in form.email.errors %}
-                                <p>{{ error }}</p>
-                            {% endfor %}
-                        </div>
-                    {% endif %}
-                </div>
+               
                 <div class="form-group {% if form.password.errors %} has-error {% endif %}">
                     {{ form.password.label }} {{ form.password(class="form-control") }}
                     {% if form.password.errors %}

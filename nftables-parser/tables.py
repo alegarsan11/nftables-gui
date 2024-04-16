@@ -67,3 +67,16 @@ def list_table(json_data: hug.types.json):
             return {'status': 'success', 'result': result}
     except Exception as e:
         return {'status': 'error', 'message': str(e)}
+    
+@hug.get('/flush_table')
+def flush_table(json_data: hug.types.json):
+    nft = Nftables()
+
+    try:
+        result = nft.json_cmd(json_data)
+        if 'error' in result:
+            return {'status': 'error', 'message': result['error']}
+        else:
+            return {'status': 'success', 'result': result}
+    except Exception as e:
+        return {'status': 'error', 'message': str(e)}
