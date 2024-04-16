@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block head%}
+{{ super() }}
+{% endblock %}
+{% block content %}
+<div class="container">
+    <h1>Table: {{ table.name }}</h1>
+    <button class="btn btn-primary" onclick="location.href='/add_chain/{{ table.id }}'">Add chain</button>
+    <br></br>
+    <table class="table personal-table">
+        <thead>
+            <tr>
+                <th>Chain</th>
+                <th>Family</th>
+                <th>Description</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% if chains == [] %}
+                <tr>
+                    <td colspan="3">No chains</td>
+                </tr>
+            {% else %}
+            {% for chain in chains %}
+                <tr>
+                    <td><a href="/chain/{{ chain.id }}"> {{ chain.name }}</a></td>
+                    <td>{{ chain.family }}</td>
+                    <td>
+                        {% if chain.description %}
+                            {{ chain.description }}
+                        {% else %}
+                            No description
+                        {% endif %}
+                    </td>
+                    <td>
+                        <button class="btn btn-danger" onclick="location.href='/delete_chain/{{ chain.id }}'">Delete</button>
+                    </td>
+                </tr>
+            {% endfor %}
+            {% endif %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

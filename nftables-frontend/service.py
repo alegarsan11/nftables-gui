@@ -1,4 +1,4 @@
-from models import Table, db, User
+from models import Chain, Table, base_chain, db, User
 from flask_login import LoginManager
 
 login_manager = LoginManager()
@@ -37,6 +37,11 @@ def edit_user(user_id, username, email, role, is_active):
     user.is_active = is_active
     db.session.commit()
     
+def get_table(table_id):
+    table = Table.query.get(table_id)
+    return table
+
+
 def get_users():
     return User.query.all()
 
@@ -69,3 +74,26 @@ def delete_table(table_id):
 
 def get_tables():
     return Table.query.all()
+
+def insert_chains(table_id, chains):
+    table = Table.query.get(table_id)
+    table.chains = chains
+    db.session.commit()
+    
+def insert_chain(chain_name, family,  type, policy, table_id, hook_type=None, priority=None):
+    if(hook_type != None and priority != None):
+        chain = base_chain(name=chain_name, family=family, type=type, policy=policy, table_id=table_id, hook_type=hook_type, priority=priority)
+    else:
+        chain = Chain(name=chain_name, family=family , table_id=table_id, type=type, policy=policy)
+    db.session.add(chain)
+    db.session.commit()
+    
+def check_existing_chain(chain_name, table_id):
+    chain = Chain.query.filter_by(name=chain_name, table_id=table_id).first()
+    if chain:
+        return True
+    return False
+
+def get_chains_from_table(table_id):
+    table = Table.query.get(table_id)
+    return table.chains

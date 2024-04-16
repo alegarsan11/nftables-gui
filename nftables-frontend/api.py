@@ -20,11 +20,14 @@ def delete_table_request(name, family):
     json_data = {"json_data": {"nftables": [{"delete": {"table":{"name": name, "family": family}}}]}}
     response = requests.post('http://localhost:8000/tables/delete_table', json=json_data)
     if(response.json()["status"] == "success"):
-        return "Success"
+        return "Success", response.json()
     else:
         return "Error deleting table."
     
-
+def list_table_request(name, family):
+    json_data = {"json_data": {"nftables": [{"list": {"table":{"name": name, "family": family}}}]}}
+    response = requests.get('http://localhost:8000/tables/list_table', json=json_data)
+    return parse_chains(response.json()["result"][1]["nftables"])
 
 def format_nftables_config(config_string):
     # Replace escape sequences with actual characters
@@ -39,3 +42,10 @@ def format_nftables_config(config_string):
     # Join the lines back together with newline characters
     formatted_string = '\n'.join(lines)
     return formatted_string
+
+def parse_chains(response):
+    chains = []
+    for item in response:
+        if isinstance(item, dict) and 'chain' in item:
+            chains.append(item['chain'])
+    return chains

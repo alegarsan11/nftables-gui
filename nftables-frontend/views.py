@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, flash, redirect, url_for
 from flask_login import login_user, logout_user, login_required, current_user
-from models import Table, User
+from models import Chain, Rule, Table, User
 from forms.forms import LoginForm, CreateUserForm, TableForm, UpdateUserForm
 import service, api, os, matplotlib
 matplotlib.use('Agg')
@@ -21,7 +21,10 @@ def main_view():
         ip_address = os.popen('hostname -I').read().split(" ")[0] 
         categories = ['Reglas', 'Cadenas', 'Tablas']
         # Get the number of rules, chains and tables
-        values = [3, 2, 7]
+        n_tables = Table.query.count()
+        n_chains = Chain.query.count()
+        n_rules = Rule.query.count()
+        values = [n_rules, n_chains, n_tables]
         plt.figure(figsize=(8, 6))
         plt.bar(categories, values, color=['blue', 'green', 'orange'])
         plt.xlabel('Elemento nftables')
@@ -46,9 +49,26 @@ def users():
 def edit_user(user_id):
     user = service.get_user(user_id)
     form = UpdateUserForm(object=user)
-
-    
     return render_template('users/edit_user.html',user=user, form=form)
+
+@visualization_bp.route('/table/<table_id>')
+def get_table(table_id):
+    table = service.get_table(table_id)
+    chains = api.list_table_request(table.name, table.family)
+ 
+    for chain in chains:
+        print(chain)
+        if(service.check_existing_chain(chain["name"], table_id) == False):
+            hook_type = None
+            priority = None
+            if("hook_type" in chain):
+                hook_type = chain['hook_type']
+            if("priority" in chain):
+                priority = chain['priority']
+            service.insert_chain(chain_name=chain["name"], family=chain["family"], type=chain['type'], policy=chain['policy'], table_id=table_id, hook_type=hook_type, priority=priority)
+    chains = service.get_chains_from_table(table_id)
+    return render_template('tables/table.html', table=table, chains=chains)
+
 
 @creation_bp.route('/edit_user/<user_id>', methods=['POST'])
 def edit_user_post(user_id):
@@ -120,8 +140,7 @@ def add_table_post():
 @creation_bp.route('/delete_table/<table_id>')
 def delete_table(table_id):
     table = Table.query.get(table_id)
-    api.delete_table_request(table.name, table.family)
-    print(table.name)
+    response = api.delete_table_request(table.name, table.family)
     service.delete_table(table_id)
     return redirect('/tables')
 

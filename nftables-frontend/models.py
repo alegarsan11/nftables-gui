@@ -45,10 +45,32 @@ class Chain(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(80), unique=True, nullable=False)
     table_id = db.Column(db.Integer, db.ForeignKey('table.id'), nullable=False)
+    type = db.Column(db.String(120), nullable=False)
+    family = db.Column(db.String(120), nullable=False)
+    policy = db.Column(db.String(120), nullable=False)
     rules = db.relationship('Rule', backref='chain', lazy=True)
 
     def __repr__(self):
         return '<Chain %r>' % self.name
+    
+class user_chain(Chain, db.Model):
+    
+    __tablename__ = 'user_chain'
+    
+    id = db.Column(db.Integer, db.ForeignKey('chain.id'), primary_key=True)
+    
+    def __repr__(self):
+        return '<User_chain %r>' % self.id
+
+class base_chain(Chain, db.Model):
+    
+    __tablename__ = 'base_chain'
+    
+    id = db.Column(db.Integer, db.ForeignKey('chain.id'), primary_key=True)
+    hook_type = db.Column(db.String(120), nullable=False)
+    priority = db.Column(db.Integer, nullable=False)
+    def __repr__(self):
+        return '<Base_chain %r>' % self.id
 
 class Rule(db.Model):
     id = db.Column(db.Integer, primary_key=True)

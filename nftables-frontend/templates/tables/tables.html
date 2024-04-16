@@ -25,7 +25,7 @@
                 {% else %}
                 {% for table in tables %}
                     <tr>
-                        <td>{{ table.name }}</td>
+                        <td><a href="/table/{{ table.id }}"> {{ table.name }}</a></td>
                         <td>{{ table.family }}</td>
                         <td>
                             {% if table.description %}
