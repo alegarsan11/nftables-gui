@@ -5,9 +5,9 @@
 {% block content %}
 <div class="container">
     <h1>Table: {{ table.name }}</h1>
-    <button class="btn btn-primary" onclick="location.href='/add_chain/{{ table.id }}'">Add chain</button>
-    <button class="btn btn-danger" onclick="location.href='/delete_table/{{ table.id }}'">Delete table</button>
-    <button class="btn btn-warning" onclick="location.href='/flush_table/{{ table.id }}'">Flush table</button>
+    <button class="btn btn-primary" onclick="location.href='/add_chain/{{ table.name }}'">Add chain</button>
+    <button class="btn btn-danger" onclick="location.href='/delete_table/{{ table.name }}'">Delete table</button>
+    <button class="btn btn-warning" onclick="location.href='/flush_table/{{ table.name }}'">Flush table</button>
     <br></br>
     <table class="table personal-table">
         <thead>
@@ -26,7 +26,7 @@
             {% else %}
             {% for chain in chains %}
                 <tr>
-                    <td><a href="/chain/{{ chain.id }}"> {{ chain.name }}</a></td>
+                    <td><a href="/chain/{{ chain.name }}"> {{ chain.name }}</a></td>
                     <td>{{ chain.family }}</td>
                     <td>
                         {% if chain.description %}
@@ -36,7 +36,7 @@
                         {% endif %}
                     </td>
                     <td>
-                        <button class="btn btn-danger" onclick="location.href='/delete_chain/{{ chain.id }}'">Delete</button>
+                        <button class="btn btn-danger" onclick="location.href='/delete_chain/{{ chain.name }}'">Delete</button>
                     </td>
                 </tr>
             {% endfor %}

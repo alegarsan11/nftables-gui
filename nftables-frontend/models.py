@@ -27,8 +27,7 @@ class User(UserMixin, db.Model):
         return self.password == password
 
 class Table(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(80), unique=True, nullable=False)
+    name = db.Column(db.String(80), unique=True, nullable=False, primary_key=True)
     family = db.Column(db.String(80), nullable=False)
     description = db.Column(db.String(120), nullable=True)
     chains = db.relationship('Chain', backref='table', lazy=True, cascade="all, delete-orphan")
@@ -41,39 +40,35 @@ class Table(db.Model):
         return '<Table %r>' % self.name
     
 class Chain(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(80), unique=True, nullable=False)
-    table_id = db.Column(db.Integer, db.ForeignKey('table.id'), nullable=False)
+    __tablename__ = 'chain'
+    name = db.Column(db.String(80), unique=True, nullable=False, primary_key=True)
+    table_id = db.Column(db.Integer, db.ForeignKey('table.name'), nullable=False)
     type = db.Column(db.String(120), nullable=True)
     family = db.Column(db.String(120), nullable=False)
     policy = db.Column(db.String(120), nullable=True)
-    rules = db.relationship('Rule', backref='chain', lazy=True)
+    rules = db.relationship('Rule', backref='chain', lazy=True, cascade="all, delete-orphan")
+
 
     def __repr__(self):
         return '<Chain %r>' % self.name
-    
-class user_chain(Chain, db.Model):
-    
-    __tablename__ = 'user_chain'
-    
-    id = db.Column(db.Integer, db.ForeignKey('chain.id'), primary_key=True)
-    
-    def __repr__(self):
-        return '<User_chain %r>' % self.id
 
-class base_chain(Chain, db.Model):
-    
-    __tablename__ = 'base_chain'
-    
-    id = db.Column(db.Integer, db.ForeignKey('chain.id'), primary_key=True)
-    hook_type = db.Column(db.String(120), nullable=False)
-    priority = db.Column(db.Integer, nullable=False)
-    def __repr__(self):
-        return '<Base_chain %r>' % self.id
+class UserChain(Chain):
 
+
+    def __repr__(self):
+        return '<UserChain %r>' % self.id
+
+class BaseChain(Chain):
+
+    hook_type = db.Column(db.String(120), nullable=True)
+    priority = db.Column(db.Integer, nullable=True)
+
+
+    def __repr__(self):
+        return '<BaseChain %r>' % self.id
 class Rule(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    chain_id = db.Column(db.Integer, db.ForeignKey('chain.id'), nullable=False)
+    chain_id = db.Column(db.Integer, db.ForeignKey('chain.name'), nullable=False)
     rule = db.Column(db.String(120), nullable=False)
 
     def __repr__(self):

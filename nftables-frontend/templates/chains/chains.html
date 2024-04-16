@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block head %}
+{{ super() }}
+{% endblock %}
+{% block content %}
+<div class="container">
+  <h1>Chains</h1>
+  <table class="table personal-table ">
+    <thead>
+      <tr>
+        <th>Table</th>
+        <th>Family</th>
+        <th>Chain</th>
+        <th>Policy</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for chain in chains %}
+      <tr>
+        <td>
+          <a href="/table/{{ chain.table.name}}"> {{ chain.table.name }}</a></td>
+        <td>{{ chain.table.family }}</td>
+        <td> <a href="/table/{{ chain.name}}"> {{ chain.name }}</a></td>
+
+          {% if chain.policy == None %}
+          <td>Non existing policy for this chain</td>
+          {% else %}
+          <td>{{ chain.policy }}</td>
+          {% endif %}
+        <td>
+          <a href="/edit_chain/{{ chain.table }}/{{ chain.chain }}" class="btn btn-primary">Edit</a>
+          <a href="/delete_chain/{{ chain.table }}/{{ chain.chain }}" class="btn btn-danger">Delete</a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <a href="/add_chain" class="btn btn-primary">Add chain</a>    
+</div>
+{% endblock %}

@@ -25,7 +25,7 @@
                 {% else %}
                 {% for table in tables %}
                     <tr>
-                        <td><a href="/table/{{ table.id }}"> {{ table.name }}</a></td>
+                        <td><a href="/table/{{ table.name }}"> {{ table.name }}</a></td>
                         <td>{{ table.family }}</td>
                         <td>
                             {% if table.description %}
@@ -35,7 +35,7 @@
                             {% endif %}
                         </td>
                         <td>
-                            <button class="btn btn-danger" onclick="location.href='/delete_table/{{ table.id }}'">Delete</button>
+                            <button class="btn btn-danger" onclick="location.href='/delete_table/{{ table.name }}'">Delete</button>
                         </td>
                     </tr>
                 {% endfor %}

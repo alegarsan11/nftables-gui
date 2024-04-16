@@ -25,17 +25,18 @@ def main_view():
         n_chains = Chain.query.count()
         n_rules = Rule.query.count()
         values = [n_rules, n_chains, n_tables]
+        image_path = 'static/img/nftables_info.png'
         plt.figure(figsize=(8, 6))
         plt.bar(categories, values, color=['blue', 'green', 'orange'])
         plt.xlabel('Elemento nftables')
         plt.ylabel('Número')
         plt.title('Número de elementos nftables')
         plt.grid(axis='y')
-        if os.path.exists('static/img/nftables_info.png'):
-            os.remove('static/nftables_info.png')
-        plt.savefig('static/nftables_info.png')
+        if os.path.exists(image_path):
+            os.remove(image_path)
+        plt.savefig(image_path)
         plt.close()       
-        return render_template('main.html', nftables_info_image=url_for('static', filename='nftables_info.png') , current_user=current_user, hostname=host, ip_address=ip_address)
+        return render_template('main.html', nftables_info_image=url_for('static', filename='/img/nftables_info.png') , current_user=current_user, hostname=host, ip_address=ip_address)
     else:
         form = LoginForm()
         return render_template('login.html', form=form)
@@ -66,11 +67,10 @@ def get_table(table_id):
                 hook_type = chain['hook_type']
             if("priority" in chain):
                 priority = chain['priority']
-            if("type" not in chain):
-                chain["type"] = None
+
             if("policy" not in chain):
                 chain["policy"] = None
-            service.insert_chain(chain_name=chain["name"], family=chain["family"], type=chain['type'], policy=chain['policy'], table_id=table_id, hook_type=hook_type, priority=priority)
+            service.insert_chain(chain_name=chain["name"], family=chain["family"], policy=chain['policy'], table_id=table_id, hook_type=hook_type, priority=priority)
     chains = service.get_chains_from_table(table_id)
     return render_template('tables/table.html', table=table, chains=chains)
 
@@ -197,3 +197,20 @@ def logout():
     logout_user()
     return redirect('/')
     
+@visualization_bp.route("/chains")
+def get_chains():
+    result = api.list_chains_request()
+    for item in result["chains"]["nftables"]:
+        if("chain" in item):
+            if(service.check_existing_chain(item["chain"]["name"], item["chain"]["table"]) == False):
+                prio = None
+                hook = None
+                if("prio" in item["chain"]):
+                    prio = item["chain"]["prio"]
+                if("hook" in item["chain"]):
+                    hook = item["chain"]["hook"]
+                if("policy" not in item["chain"]):
+                    item["chain"]["policy"] = None
+                service.insert_chain(item["chain"]["name"], item["chain"]["family"], item["chain"]["policy"], item["chain"]["table"], priority=prio, hook_type=hook)
+    chains = service.get_chains()
+    return render_template('chains/chains.html', chains=chains)

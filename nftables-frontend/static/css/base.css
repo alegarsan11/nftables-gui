@@ -49,3 +49,23 @@
     padding: 1px 16px !important;
 }
 
+.personal-table{
+    background-color: #343a40;
+    color: #fff;
+    border: 1px solid #343a40 !important;
+}
+
+.personal-table th{
+    background-color: #343a40;
+    color: #fff;
+    border: 1px solid #343a40 !important;
+    text-align: center;
+}
+
+.personal-table td{
+    background-color: #fff;
+    color: #343a40;
+    border: 1px solid #343a40 !important;
+    text-align: center;
+}
+

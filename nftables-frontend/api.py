@@ -59,3 +59,8 @@ def parse_chains(response):
         if isinstance(item, dict) and 'chain' in item:
             chains.append(item['chain'])
     return chains
+
+def list_chains_request():
+    json_data = {"json_data": {"nftables": [{"list": {"chains": {}}}]}}
+    response = requests.get('http://localhost:8000/chains/list_chains', json=json_data)
+    return (response.json())

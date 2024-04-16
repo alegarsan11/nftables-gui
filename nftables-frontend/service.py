@@ -1,4 +1,4 @@
-from models import Chain, Table, base_chain, db, User
+from models import Chain, Table, BaseChain, db, User
 from flask_login import LoginManager
 
 login_manager = LoginManager()
@@ -80,11 +80,11 @@ def insert_chains(table_id, chains):
     table.chains = chains
     db.session.commit()
     
-def insert_chain(chain_name, family,  type, policy, table_id, hook_type=None, priority=None):
+def insert_chain(chain_name, family, policy, table_id, hook_type=None, priority=None):
     if(hook_type != None and priority != None):
-        chain = base_chain(name=chain_name, family=family, type=type, policy=policy, table_id=table_id, hook_type=hook_type, priority=priority)
+        chain = BaseChain(name=chain_name, family=family, policy=policy, table_id=table_id, hook_type=hook_type, priority=priority)
     else:
-        chain = Chain(name=chain_name, family=family , table_id=table_id, type=type, policy=policy)
+        chain = Chain(name=chain_name, family=family , table_id=table_id, policy=policy)
     db.session.add(chain)
     db.session.commit()
     
@@ -97,3 +97,6 @@ def check_existing_chain(chain_name, table_id):
 def get_chains_from_table(table_id):
     table = Table.query.get(table_id)
     return table.chains
+
+def get_chains():
+    return Chain.query.all()
