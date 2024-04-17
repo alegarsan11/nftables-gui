@@ -2,7 +2,7 @@
 __pycache__/
 *.py[cod]
 *$py.class
-*/nftables_info.png
+*nftables_info.png
 
 # C extensions
 *.so
