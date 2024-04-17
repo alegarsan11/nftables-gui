@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block head %}
+{{ super() }}
+{% endblock %}
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var tableSelect = document.querySelector('option[name="family"]');
+        console.log(tableSelect["text"]);
+        var familyInput = document.querySelector('input[name="family"]');
+        console.log(familyInput);
+        tableSelect.addEventListener('DOMContentLoaded', function() {
+            familyInput["value"] = tableSelect["text"];
+            console.log(familyInput["value"]);
+        });
+    });
+</script>
+{% endblock %}
+{% block content %}
+<div class="container">
+  <h1>Create chain:</h1>
+    <form id="myForm" action="/create_chain" method="POST">
+        {{ form.csrf_token }}
+        <div class="form-group">
+            {{ form.table.label }} 
+            <select name="table" class="form-control">
+                {% for table in tables %}
+                    <option name="family" text={{ table.family }} value="{{ table.name }}">{{ table.name }} - {{table.family}}</option>
+                {% endfor %}
+            </select>
+            {% if form.table.errors %}
+                <ul class="errors">
+                    {% for error in form.table.errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        </div>
+        <div class="form-group">
+            {{ form.name.label }} {{ form.name(class="form-control") }}
+            {% if form.name.errors %}
+                <ul class="errors">
+                    {% for error in form.name.errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+            </div>
+        <div class="form-group">
+            {{ form.description.label }} {{ form.description(class="form-control") }}
+            {% if form.description.errors %}
+                <ul class="errors">
+                    {% for error in form.description.errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+            </div>
+        <button type="submit" class="btn btn-primary">Create</button>
+</div>
+{% endblock %}

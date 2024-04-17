@@ -64,3 +64,19 @@ def list_chains_request():
     json_data = {"json_data": {"nftables": [{"list": {"chains": {}}}]}}
     response = requests.get('http://localhost:8000/chains/list_chains', json=json_data)
     return (response.json())
+
+def create_chain_request(name, family, table, type, priority, hook_type, policy):
+    json_data = {"json_data": {"nftables": [{"add": {"chain":{"name": name, "family": family, "table": table, "type": type, "priority": priority, "hook": hook_type, "policy": policy}}}]}}
+    response = requests.post('http://localhost:8000/chains/create_chain', json=json_data)
+    if(response.json()["status"] == "success"):
+        return "Success"
+    else:
+        return "Error creating chain."
+    
+def create_base_chain_request(name, family, table, type, priority, policy, hook_type):
+    json_data = {"json_data": {"nftables": [{"add": {"base_chain":{"name": name, "family": family, "table": table, "type": type, "priority": priority, "policy": policy, "hook_type": hook_type}}}]}}
+    response = requests.post('http://localhost:8000/chains/create_base_chain', json=json_data)
+    if(response.json()["status"] == "success"):
+        return "Success"
+    else:
+        return "Error creating base chain."

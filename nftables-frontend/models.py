@@ -44,9 +44,10 @@ class Chain(db.Model):
     name = db.Column(db.String(80), unique=True, nullable=False, primary_key=True)
     table_id = db.Column(db.Integer, db.ForeignKey('table.name'), nullable=False)
     type = db.Column(db.String(120), nullable=True)
-    family = db.Column(db.String(120), nullable=False)
+    family = db.Column(db.String(120), nullable=True)
     policy = db.Column(db.String(120), nullable=True)
     rules = db.relationship('Rule', backref='chain', lazy=True, cascade="all, delete-orphan")
+    description = db.Column(db.String(120), nullable=True)
 
 
     def __repr__(self):

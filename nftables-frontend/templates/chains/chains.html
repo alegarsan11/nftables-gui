@@ -4,7 +4,12 @@
 {% endblock %}
 {% block content %}
 <div class="container">
-  <h1>Chains</h1>
+  <h1>Chains:</h1>
+  
+  <a href="/create_chain" class="btn btn-primary">Add chain</a>    
+  <a href="/create_base_chain" class="btn btn-primary" style="background-color: green">Add base chain</a>
+  <br></br>
+
   <table class="table personal-table ">
     <thead>
       <tr>
@@ -36,6 +41,5 @@
       {% endfor %}
     </tbody>
   </table>
-  <a href="/add_chain" class="btn btn-primary">Add chain</a>    
 </div>
 {% endblock %}

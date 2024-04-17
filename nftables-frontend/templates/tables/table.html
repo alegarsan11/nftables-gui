@@ -5,7 +5,6 @@
 {% block content %}
 <div class="container">
     <h1>Table: {{ table.name }}</h1>
-    <button class="btn btn-primary" onclick="location.href='/add_chain/{{ table.name }}'">Add chain</button>
     <button class="btn btn-danger" onclick="location.href='/delete_table/{{ table.name }}'">Delete table</button>
     <button class="btn btn-warning" onclick="location.href='/flush_table/{{ table.name }}'">Flush table</button>
     <br></br>

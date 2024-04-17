@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, flash, redirect, url_for
 from flask_login import login_user, logout_user, login_required, current_user
 from models import Chain, Rule, Table, User
-from forms.forms import LoginForm, CreateUserForm, TableForm, UpdateUserForm
+from forms.forms import ChainForm, LoginForm, CreateUserForm, TableForm, UpdateUserForm
 import service, api, os, matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
@@ -62,15 +62,16 @@ def get_table(table_id):
         if(service.check_existing_chain(chain["name"], table_id) == False):
             hook_type = None
             priority = None
-            print(chain)
+            type = None
             if("hook_type" in chain):
                 hook_type = chain['hook_type']
             if("priority" in chain):
                 priority = chain['priority']
-
+            if("type" in chain):
+                type = chain['type']
             if("policy" not in chain):
                 chain["policy"] = None
-            service.insert_chain(chain_name=chain["name"], family=chain["family"], policy=chain['policy'], table_id=table_id, hook_type=hook_type, priority=priority)
+            service.insert_chain(chain_name=chain["name"], family=chain["family"], type=type, policy=chain['policy'], table_id=table_id, hook_type=hook_type, priority=priority)
     chains = service.get_chains_from_table(table_id)
     return render_template('tables/table.html', table=table, chains=chains)
 
@@ -100,6 +101,54 @@ def delete_user(user_id):
     if(user != None):
         service.delete_user(user_id)
     return redirect('/users')
+
+@visualization_bp.route('/create_base_chain')
+def create_base_chain():
+    form = ChainForm()
+    tables = Table.query.all()
+    return render_template('chains/create_base_chain.html', form=form, tables=tables)
+
+@visualization_bp.route('/create_chain')
+def create_chain():
+    form = ChainForm()
+    tables = Table.query.all()
+    return render_template('chains/create_chain.html', form=form, tables=tables)
+
+
+
+@visualization_bp.route('/chain/<chain_id>')
+def get_chain(chain_id):
+    chain = service.get_chain(chain_id)
+    rules = api.list_chain_request(chain.name, chain.family, chain.table)
+    for rule in rules:
+        if(service.check_existing_rule(rule["handle"], chain_id) == False):
+            service.insert_rule(rule["handle"], rule["chain_id"], rule["position"], rule["rule"])
+    rules = service.get_rules_from_chain(chain_id)
+    return render_template('chains/chain.html', chain=chain, rules=rules)
+
+@creation_bp.route('/create_base_chain/', methods=['POST'])
+def create_base_chain_post():
+    form = ChainForm()
+    table = service.get_table(form.table.data)
+    form.family.data = table.family
+    response = api.create_base_chain_request(form.name.data, form.family.data, form.table.data, priority=form.priority.data, hook_type=form.hook_type.data, policy=form.policy.data, type=form.type.data)
+    if(response == "Success"):
+        flash('Base chain created successfully.')
+    else:
+        flash('Error creating base chain.')
+    return redirect('/chains')
+
+@creation_bp.route('/create_chain/', methods=['POST'])
+def create_chain_post():
+    form = ChainForm()
+    table = service.get_table(form.table.data)
+    form.family.data = table.family
+    response = api.create_chain_request(form.name.data, form.family.data, form.table.data, priority=form.priority.data, hook_type=form.hook_type.data, policy=form.policy.data, type=form.type.data)
+    if(response == "Success"):
+        flash('Chain created successfully.')
+    else:
+        flash('Error creating chain.')
+    return redirect('/chains')
 
 @visualization_bp.route('/login')
 def login_view():

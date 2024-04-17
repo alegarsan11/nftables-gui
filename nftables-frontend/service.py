@@ -100,3 +100,7 @@ def get_chains_from_table(table_id):
 
 def get_chains():
     return Chain.query.all()
+
+def get_chain(chain_id):
+    chain = Chain.query.get(chain_id)
+    return chain
