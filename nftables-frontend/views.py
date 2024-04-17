@@ -119,7 +119,8 @@ def create_chain():
 @visualization_bp.route('/chain/<chain_id>')
 def get_chain(chain_id):
     chain = service.get_chain(chain_id)
-    rules = api.list_chain_request(chain.name, chain.family, chain.table)
+    rules = api.list_chain_request(chain.name, chain.family, chain.table.name)
+    print(rules)
     for rule in rules:
         if(service.check_existing_rule(rule["handle"], chain_id) == False):
             service.insert_rule(rule["handle"], rule["chain_id"], rule["position"], rule["rule"])

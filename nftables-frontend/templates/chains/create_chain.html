@@ -2,20 +2,6 @@
 {% block head %}
 {{ super() }}
 {% endblock %}
-{% block scripts %}
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        var tableSelect = document.querySelector('option[name="family"]');
-        console.log(tableSelect["text"]);
-        var familyInput = document.querySelector('input[name="family"]');
-        console.log(familyInput);
-        tableSelect.addEventListener('DOMContentLoaded', function() {
-            familyInput["value"] = tableSelect["text"];
-            console.log(familyInput["value"]);
-        });
-    });
-</script>
-{% endblock %}
 {% block content %}
 <div class="container">
   <h1>Create chain:</h1>
@@ -25,7 +11,7 @@
             {{ form.table.label }} 
             <select name="table" class="form-control">
                 {% for table in tables %}
-                    <option name="family" text={{ table.family }} value="{{ table.name }}">{{ table.name }} - {{table.family}}</option>
+                    <option name="family" text={{ table.family }} value="{{ table.name }}>{{ table.name }} - {{table.family}}</option>
                 {% endfor %}
             </select>
             {% if form.table.errors %}
