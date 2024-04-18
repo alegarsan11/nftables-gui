@@ -70,7 +70,11 @@ class BaseChain(Chain):
 class Rule(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     chain_id = db.Column(db.Integer, db.ForeignKey('chain.name'), nullable=False)
-    rule = db.Column(db.String(120), nullable=False)
+    family = db.Column(db.String(120), nullable=False)
+    expr = db.Column(db.String(120), nullable=False)
+    handle = db.Column(db.String(120), nullable=False)
+    description = db.Column(db.String(120), nullable=True)
+    
 
     def __repr__(self):
-        return '<Rule %r>' % self.rule
+        return '<Rule %r>' % self.handle

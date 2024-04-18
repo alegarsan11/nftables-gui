@@ -120,12 +120,20 @@ def create_chain():
 def get_chain(chain_id):
     chain = service.get_chain(chain_id)
     rules = api.list_chain_request(chain.name, chain.family, chain.table.name)
+    rules = rules["rules"]["nftables"]
     print(rules)
-    for rule in rules:
-        if(service.check_existing_rule(rule["handle"], chain_id) == False):
-            service.insert_rule(rule["handle"], rule["chain_id"], rule["position"], rule["rule"])
+    for i, rule in enumerate(rules):
+        if i == 0 or i == 1:
+            continue
+        else:
+            print(chain_id)
+            print(rule["rule"]["handle"])
+            if service.check_existing_rule(rule=str(rule["rule"]["expr"]), chain_id=chain_id) == False :        
+                service.insert_rule(handle=str(rule["rule"]["handle"]), chain_id=rule["rule"]["chain"], family=rule["rule"]["family"], expr=str(rule["rule"]["expr"]))
+
     rules = service.get_rules_from_chain(chain_id)
-    return render_template('chains/chain.html', chain=chain, rules=rules)
+    
+    return render_template('chains/chain.html', chain=chain)
 
 @creation_bp.route('/create_base_chain/', methods=['POST'])
 def create_base_chain_post():

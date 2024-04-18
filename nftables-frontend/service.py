@@ -1,4 +1,4 @@
-from models import Chain, Table, BaseChain, db, User
+from models import Chain, Rule, Table, BaseChain, db, User
 from flask_login import LoginManager
 
 login_manager = LoginManager()
@@ -103,4 +103,22 @@ def get_chains():
 
 def get_chain(chain_id):
     chain = Chain.query.get(chain_id)
+    base_chain = BaseChain.query.get(chain_id)
+    if base_chain:
+        return base_chain
     return chain
+
+def check_existing_rule(chain_id, rule):
+    rule = Rule.query.filter_by(chain_id=chain_id, expr=rule).first()
+    if rule:
+        return True
+    return False
+
+def insert_rule(chain_id, family, expr, handle, description=None):
+    rule = Rule(chain_id=chain_id, family=family, expr=expr, handle=handle, description=description)
+    db.session.add(rule)
+    db.session.commit()
+    
+def get_rules_from_chain(chain_id):
+    chain = Chain.query.get(chain_id)
+    return chain.rules
