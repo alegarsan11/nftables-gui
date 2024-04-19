@@ -102,8 +102,9 @@ def get_chains():
     return Chain.query.all()
 
 def get_chain(chain_id):
-    chain = Chain.query.get(chain_id)
-    base_chain = BaseChain.query.get(chain_id)
+    chain = Chain.query.filter_by(name=chain_id).first()
+    base_chain = BaseChain.query.filter_by(name=chain_id).first()
+    print(base_chain)
     if base_chain:
         return base_chain
     return chain
@@ -122,3 +123,22 @@ def insert_rule(chain_id, family, expr, handle, description=None):
 def get_rules_from_chain(chain_id):
     chain = Chain.query.get(chain_id)
     return chain.rules
+
+def edit_chain(chain_description, chain_name, family, policy, type, hook_type=None, priority=None):
+    chain = Chain.query.get(chain_name)
+    chain.name = chain_name
+    chain.family = family
+    chain.policy = policy
+    chain.type = type
+    chain.description = chain_description
+    if(hook_type != None and priority != None):
+        base_chain = BaseChain.query.get(chain_name)
+        base_chain.name = chain_name
+        base_chain.family = family
+        base_chain.policy = policy
+        base_chain.type = type
+        base_chain.hook_type = hook_type
+        base_chain.priority = priority
+        base_chain.description = chain_description
+        
+    db.session.commit()

@@ -57,7 +57,7 @@ class UserChain(Chain):
 
 
     def __repr__(self):
-        return '<UserChain %r>' % self.id
+        return '<UserChain %r>' % self.name
 
 class BaseChain(Chain):
 
@@ -66,7 +66,7 @@ class BaseChain(Chain):
 
 
     def __repr__(self):
-        return '<BaseChain %r>' % self.id
+        return '<BaseChain %r>' % self.name
 class Rule(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     chain_id = db.Column(db.Integer, db.ForeignKey('chain.name'), nullable=False)

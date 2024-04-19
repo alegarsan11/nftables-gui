@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, flash, redirect, url_for
 from flask_login import login_user, logout_user, login_required, current_user
-from models import Chain, Rule, Table, User
+from models import BaseChain, Chain, Rule, Table, User
 from forms.forms import ChainForm, LoginForm, CreateUserForm, TableForm, UpdateUserForm
 import service, api, os, matplotlib
 matplotlib.use('Agg')
@@ -131,9 +131,57 @@ def get_chain(chain_id):
             if service.check_existing_rule(rule=str(rule["rule"]["expr"]), chain_id=chain_id) == False :        
                 service.insert_rule(handle=str(rule["rule"]["handle"]), chain_id=rule["rule"]["chain"], family=rule["rule"]["family"], expr=str(rule["rule"]["expr"]))
 
-    rules = service.get_rules_from_chain(chain_id)
-    
     return render_template('chains/chain.html', chain=chain)
+
+@visualization_bp.route('/chains/<chain_id>/edit')
+def edit_chain(chain_id):
+    chain = service.get_chain(chain_id)
+
+    tables = Table.query.all()
+    chain.priority = int(chain.priority)
+    print(chain)
+    form = ChainForm()
+    form.name.data = chain.name
+    form.family.data = chain.table.family
+    form.policy.data = chain.policy
+    form.table.data = chain.table.name
+    form.type.data = chain.type
+    form.priority.data = chain.priority
+    form.hook_type.data = chain.hook_type
+    form.description.data = chain.description
+    
+    
+    if(chain.hook_type != None):
+        return render_template('chains/edit_base_chain.html',chain=chain, form=form, tables=tables)
+    return render_template('chains/edit_chain.html',chain=chain, form=form, tables=tables)
+
+@creation_bp.route('/chains/<chain_id>/edit', methods=['POST'])
+def edit_chain_post(chain_id):
+    form = ChainForm()
+    table = service.get_table(form.table.data)
+    response = None
+    form.family.data = table.family
+    if form.hook_type.data == None:
+        response = api.edit_chain_request(name=form.name.data, family=form.family.data, policy=form.policy.data, table=form.table.data, type=form.type.data, priority=form.priority.data, hook_type=form.hook_type.data)
+    if form.hook_type.data != None:
+        response = api.edit_base_chain_request(name=form.name.data, family=form.family.data, policy=form.policy.data, table=form.table.data, type=form.type.data, priority=form.priority.data, hook_type=form.hook_type.data)  
+    if(response == "Success"):
+        service.edit_chain(chain_description=form.description.data, chain_name=form.name.data, family=form.family.data, policy=form.policy.data, type=form.type.data, priority=str(form.priority.data), hook_type=form.hook_type.data)
+        flash('Chain edited successfully.')
+        return redirect('/chains')
+    else:
+        flash('Error editing chain.')
+        print(form.errors)
+        chain = service.get_chain(chain_id)
+        form.name.data = chain.name
+        form.family.data = chain.table.family
+        form.policy.data = chain.policy
+        form.table.data = chain.table.name
+        form.type.data = chain.type
+        form.priority.data = chain.priority
+        form.hook_type.data = chain.hook_type
+        form.description.data = chain.description
+        return render_template('chains/edit_chain.html', chain=chain, form=form)
 
 @creation_bp.route('/create_base_chain/', methods=['POST'])
 def create_base_chain_post():

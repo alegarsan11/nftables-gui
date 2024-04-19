@@ -34,8 +34,8 @@
           <td>{{ chain.policy }}</td>
           {% endif %}
         <td>
-          <a href="/edit_chain/{{ chain.table }}/{{ chain.chain }}" class="btn btn-primary">Edit</a>
-          <a href="/delete_chain/{{ chain.table }}/{{ chain.chain }}" class="btn btn-danger">Delete</a>
+          <a href="/chains/{{ chain.name }}/edit" class="btn btn-primary">Edit</a>
+          <a href="/chains/{{ chain.name }}/delete" class="btn btn-danger">Delete</a>
         </td>
       </tr>
       {% endfor %}

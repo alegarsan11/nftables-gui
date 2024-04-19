@@ -11,7 +11,7 @@
             {{ form.table.label }} 
             <select name="table" class="form-control">
                 {% for table in tables %}
-                    <option name="family" text={{ table.family }} value="{{ table.name }}>{{ table.name }} - {{table.family}}</option>
+                    <option name="family" text={{ table.family }} value={{ table.name }}>{{ table.name }} - {{table.family}} </option>
                 {% endfor %}
             </select>
             {% if form.table.errors %}

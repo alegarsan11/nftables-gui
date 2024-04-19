@@ -107,3 +107,4 @@ class ChainForm(FlaskForm):
     def validate_priority(self, priority):
         if priority.data > 300 or priority.data < -400 or priority.data != int(priority.data):
             raise ValidationError('Priority must be between -400 and 300.')
+        

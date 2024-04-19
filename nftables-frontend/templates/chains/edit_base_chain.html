@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+{% block head %}
+{{ super() }}
+{% endblock %}
+{% block content %}
+<div class="container">
+  <h1>Edit base chain:  {{chain.name}}</h1>
+    <form id="myForm" action="/chains/{{chain.name}}/edit" method="POST">
+        {{ form.csrf_token }}
+        <div class="form-group row">
+            {{ form.table.label(class="col-sm-2 col-form-label") }} 
+            <div class="col-sm-10">
+                <select name="table" class="form-control">
+                    {% for table in tables %}
+                        <option name="family" text={{ table.family }} value={{ table.name }}>{{ table.name }} - {{table.family}} </option>
+                    {% endfor %}
+                </select>
+                {% if form.table.errors %}
+                    <ul class="errors">
+                        {% for error in form.table.errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+            </div>
+        </div>
+        <div class="form-group row">
+            {{ form.name.label(class="col-sm-2 col-form-label") }} 
+            {{ form.name(class="form-control") }}
+            {% if form.name.errors %}
+                <ul class="errors">
+                    {% for error in form.name.errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+            </div>
+        <div class="form-group row">
+            {{ form.description.label(class="col-sm-2 col-form-label") }} 
+            {{ form.description(class="form-control") }}
+            {% if form.description.errors %}
+                <ul class="errors">
+                    {% for error in form.description.errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+            </div>
+        <div class="form-group row">
+            {{ form.hook_type.label(class="col-sm-2 col-form-label") }} 
+            {{ form.hook_type(class="form-control") }}
+            {% if form.hook_type.errors %}
+                <ul class="errors">
+                    {% for error in form.hook_type.errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+            </div>
+        <div class="form-group row">
+            {{ form.type.label(class="col-sm-2 col-form-label") }}
+            {{ form.type(class="form-control") }}
+            {% if form.type.errors %}
+                <ul class="errors">
+                    {% for error in form.type.errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+            </div>
+        <div class="form-group row">
+            {{ form.priority.label(class="col-sm-2 col-form-label") }} 
+            {{ form.priority(class="form-control") }}
+            {% if form.priority.errors %}
+                <ul class="errors">
+                    {% for error in form.priority.errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+            </div>
+        <div class="form-group row">
+            {{ form.policy.label(class="col-sm-2 col-form-label") }}
+            {{ form.policy(class="form-control") }}
+            {% if form.policy.errors %}
+                <ul class="errors">
+                    {% for error in form.policy.errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+            </div>
+        
+        <button type="submit" class="btn btn-primary">Edit</button>
+</div>
+{% endblock %}

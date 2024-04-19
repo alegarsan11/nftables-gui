@@ -1,17 +1,21 @@
 {% extends "base.html" %}
+{% block head %}
+{{ super() }}
+{% endblock %}
 {% block content %}
-<div class="container">
+<div class="container-main">
     <div class="row">
-        <div class="col-md-12">
+        <div class="col-md-4">
             <h1>nftables-gui</h1>
             <p>Bienvenido a la primera interfaz web para nftables!!</p>
-            <h1>Panel de información general nftables</h1>
-    <ul>
-        <img src="{{ nftables_info_image }}" alt="Gráfico de elementos nftables">
-        <li>Nombre del host: {{ hostname }}</li>
-        <li>Dirección IP: {{ ip_address }}</li>
-    </ul>
+            <p> Nombre de host: {{ hostname }}</p>
+            <p> Dirección IP: {{ ip_address }}</p>           
         </div>
+        <div class="col-md-5">
+            <h1 style="">Panel de información general nftables</h1>
+            <img src="{{ nftables_info_image }}" alt="Gráfico de elementos nftables">
+        </div>
+
     </div>
 </div>
 {% endblock %}
