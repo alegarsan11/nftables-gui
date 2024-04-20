@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, flash, redirect, url_for
 from flask_login import login_user, logout_user, login_required, current_user
 from models import BaseChain, Chain, Rule, Table, User
-from forms.forms import ChainForm, LoginForm, CreateUserForm, TableForm, UpdateUserForm
+from forms.forms import BaseChainForm, ChainForm, LoginForm, CreateUserForm, TableForm, UpdateUserForm
 import service, api, os, matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
@@ -58,8 +58,7 @@ def get_table(table_id):
     chains = api.list_table_request(table.name, table.family)
     
     for chain in chains:
-        print(chain)
-        if(service.check_existing_chain(chain["name"], table_id) == False):
+        if(service.check_existing_chain(chain["name"], table_id, table.family) == True):
             hook_type = None
             priority = None
             type = None
@@ -185,10 +184,13 @@ def edit_chain_post(chain_id):
 
 @creation_bp.route('/create_base_chain/', methods=['POST'])
 def create_base_chain_post():
-    form = ChainForm()
+    form = BaseChainForm()
     table = service.get_table(form.table.data)
     form.family.data = table.family
-    response = api.create_base_chain_request(form.name.data, form.family.data, form.table.data, priority=form.priority.data, hook_type=form.hook_type.data, policy=form.policy.data, type=form.type.data)
+    if form.valdate_on_submit():
+        response = api.create_base_chain_request(form.name.data, form.family.data, form.table.data, priority=form.priority.data, hook_type=form.hook_type.data, policy=form.policy.data, type=form.type.data)
+    else:
+        return render_template('chains/create_base_chain.html', form=form, tables=Table.query.all())
     if(response == "Success"):
         flash('Base chain created successfully.')
     else:
@@ -200,8 +202,11 @@ def create_chain_post():
     form = ChainForm()
     table = service.get_table(form.table.data)
     form.family.data = table.family
-    response = api.create_chain_request(form.name.data, form.family.data, form.table.data, priority=form.priority.data, hook_type=form.hook_type.data, policy=form.policy.data, type=form.type.data)
-    if(response == "Success"):
+    if form.validate_on_submit():
+        response = api.create_chain_request(form.name.data, form.family.data, form.table.data, policy=form.policy.data, type=form.type.data)
+    else:
+        return render_template('chains/create_chain.html', form=form, tables=Table.query.all())
+    if response == "Success":
         flash('Chain created successfully.')
     else:
         flash('Error creating chain.')
@@ -220,9 +225,13 @@ def tables():
     for line in result.split("table "):
         family.append(line.split(" ")[0])
         variable = line.split(" ")[-1]
+        variable = str(variable)
         names.append(variable)
     for i in range(len(names)):
+        names[i] = names[i].replace("\n", "")
         if(i != 0) and service.check_existing_table(names[i], family[i]) == False:
+            print(names[i], family[i])
+            print(service.check_existing_table(names[i], family[i]))
             service.insert_in_table(names[i], family[i])
     tables = service.get_tables()
     print(tables)
@@ -308,7 +317,7 @@ def get_chains():
     result = api.list_chains_request()
     for item in result["chains"]["nftables"]:
         if("chain" in item):
-            if(service.check_existing_chain(item["chain"]["name"], item["chain"]["table"]) == False):
+            if(service.check_existing_chain(item["chain"]["name"], item["chain"]["table"], item["chain"]["family"]) == True):
                 prio = None
                 hook = None
                 type = None

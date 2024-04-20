@@ -38,7 +38,7 @@ def edit_user(user_id, username, email, role, is_active):
     db.session.commit()
     
 def get_table(table_id):
-    table = Table.query.get(table_id)
+    table = Table.query.filter_by(name=table_id).first()
     return table
 
 
@@ -88,11 +88,11 @@ def insert_chain(chain_name, family, policy, table_id, type,  hook_type=None, pr
     db.session.add(chain)
     db.session.commit()
     
-def check_existing_chain(chain_name, table_id):
-    chain = Chain.query.filter_by(name=chain_name, table_id=table_id).first()
+def check_existing_chain(chain_name, table_id, family):
+    chain = Chain.query.filter_by(name=chain_name, table_id=table_id, family=family).first()
     if chain:
-        return True
-    return False
+        return False
+    return True
 
 def get_chains_from_table(table_id):
     table = Table.query.get(table_id)
