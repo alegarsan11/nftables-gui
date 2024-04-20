@@ -55,3 +55,21 @@ def edit_base_chain(json_data: hug.types.json):
         return {"status": "success"}
     else:
         return {"status": "error"}
+    
+@hug.post('/delete_chain')
+def delete_chain(json_data: hug.types.json):
+    nft = Nftables()
+    result = nft.json_cmd(json_data)
+    if(result[0] == 0):
+        return {"status": "success"}
+    else:
+        return {"status": "error"}
+    
+@hug.post('/flush_chain')
+def flush_chain(json_data: hug.types.json):
+    nft = Nftables()
+    result = nft.json_cmd(json_data)
+    if(result[0] == 0):
+        return {"status": "success"}
+    else:
+        return {"status": "error"}

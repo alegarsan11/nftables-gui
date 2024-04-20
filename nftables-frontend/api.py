@@ -65,8 +65,8 @@ def list_chains_request():
     response = requests.get('http://localhost:8000/chains/list_chains', json=json_data)
     return (response.json())
 
-def create_chain_request(name, family, table, type, policy):
-    json_data = {"json_data": {"nftables": [{"add": {"chain":{"name": name, "family": family, "table": table, "type": type, "policy": policy}}}]}}
+def create_chain_request(name, family, table, policy):
+    json_data = {"json_data": {"nftables": [{"add": {"chain":{"name": name, "family": family, "table": table, "policy": policy}}}]}}
     response = requests.post('http://localhost:8000/chains/create_chain', json=json_data)
     if(response.json()["status"] == "success"):
         return "Success"
@@ -102,3 +102,19 @@ def edit_base_chain_request(name, family, table, type, priority, policy, hook_ty
         return "Success"
     else:
         return "Error editing base chain."
+    
+def delete_chain_request(name, family, table):
+    json_data = {"json_data": {"nftables": [{"delete": {"chain":{"name": name, "family": family, "table": table}}}]}}
+    response = requests.post('http://localhost:8000/chains/delete_chain', json=json_data)
+    if(response.json()["status"] == "success"):
+        return "Success"
+    else:
+        return "Error deleting chain."
+    
+def flush_chain_request(name, family, table):
+    json_data = {"json_data": {"nftables": [{"flush": {"chain":{"name": name, "family": family, "table": table}}}]}}
+    response = requests.post('http://localhost:8000/chains/flush_chain', json=json_data)
+    if(response.json()["status"] == "success"):
+        return "Success"
+    else:
+        return "Error flushing chain."

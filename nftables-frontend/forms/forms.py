@@ -71,7 +71,6 @@ class TableForm(FlaskForm):
 class ChainForm(FlaskForm):
     name = StringField('Name', validators=[DataRequired()])
     table = StringField('Table', validators=[DataRequired()])
-    type = SelectField('Type', choices=[('filter', 'filter'), ('nat', 'nat'), ('route', 'route'), ('mangle', 'mangle'), ('raw', 'raw')], validators=[DataRequired()])
     family = StringField('Family', validators=[DataRequired()])
     policy = SelectField('Policy', choices=[('accept', 'accept'), ('drop', 'drop'), ('reject', 'reject'), ('dnat', 'dnat'), ('snat', 'snat'), ('masquerade', 'masquerade'), ('redirect', 'redirect'), ('log', 'log'), ('continue', 'continue'), ('return', 'return'), ('jump', 'jump'), ('queue', 'queue'), ('unreachable', 'unreachable'), ('error', 'error'), ('broadcast', 'broadcast'), ('dnat', 'dnat'), ('snat', 'snat'), ('redirect', 'redirect'), ('mirror', 'mirror'), ('tproxy', 'tproxy'), ('netmap', 'netmap'), ('nflog', 'nflog'), ('nfqueue', 'nfqueue'), ('nfacct', 'nfacct'), ('nfct', 'nfct'), ('nftrace', 'nftrace'), ('nftlb', 'nftlb')], validators=[DataRequired()])
     description = StringField('Description')
@@ -110,6 +109,7 @@ class ChainForm(FlaskForm):
 class BaseChainForm(ChainForm):
     hook_type = SelectField('Hook Type', choices=[('prerouting', 'prerouting'), ('input', 'input'), ('forward', 'forward'), ('output', 'output'), ('postrouting', 'postrouting')], validators=[DataRequired()])
     priority = IntegerField('Priority', validators=[DataRequired()])
+    type = SelectField('Type', choices=[('filter', 'filter'), ('nat', 'nat'), ('route', 'route'), ('mangle', 'mangle'), ('raw', 'raw')], validators=[DataRequired()])
     
     def validate_hook_type(self, hook_type):
         if hook_type.data not in ['prerouting', 'input', 'forward', 'output', 'postrouting']:

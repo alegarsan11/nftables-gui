@@ -137,16 +137,21 @@ def edit_chain(chain_id):
     chain = service.get_chain(chain_id)
 
     tables = Table.query.all()
-    chain.priority = int(chain.priority)
-    print(chain)
-    form = ChainForm()
+    if chain.priority != None:
+        chain.priority = int(chain.priority)
+        form = BaseChainForm()
+    else:
+        form = ChainForm()
     form.name.data = chain.name
     form.family.data = chain.table.family
     form.policy.data = chain.policy
     form.table.data = chain.table.name
-    form.type.data = chain.type
-    form.priority.data = chain.priority
-    form.hook_type.data = chain.hook_type
+    if chain.type != None:
+        form.type.data = chain.type
+    if chain.priority != None:
+        form.priority.data = chain.priority
+    if chain.hook_type != None:
+        form.hook_type.data = chain.hook_type
     form.description.data = chain.description
     
     
@@ -203,7 +208,7 @@ def create_chain_post():
     table = service.get_table(form.table.data)
     form.family.data = table.family
     if form.validate_on_submit():
-        response = api.create_chain_request(form.name.data, form.family.data, form.table.data, policy=form.policy.data, type=form.type.data)
+        response = api.create_chain_request(form.name.data, form.family.data, form.table.data, policy=form.policy.data)
     else:
         return render_template('chains/create_chain.html', form=form, tables=Table.query.all())
     if response == "Success":
@@ -332,3 +337,17 @@ def get_chains():
                 service.insert_chain(item["chain"]["name"], item["chain"]["family"], item["chain"]["policy"], item["chain"]["table"],type=type,  priority=prio, hook_type=hook)
     chains = service.get_chains()
     return render_template('chains/chains.html', chains=chains)
+
+@creation_bp.route('/chains/<chain_id>/delete')
+def delete_chain(chain_id):
+    chain = service.get_chain(chain_id)
+    response = api.delete_chain_request(chain.name, chain.family, chain.table.name)
+    service.delete_chain(chain_id)
+    return redirect('/chains')
+
+@creation_bp.route('/chains/<chain_id>/flush')
+def flush_chain(chain_id):
+    chain = service.get_chain(chain_id)
+    response = api.flush_chain_request(chain.name, chain.family, chain.table.name)
+    service.delete_rules_form_chain(chain_id)
+    return redirect('/chains')

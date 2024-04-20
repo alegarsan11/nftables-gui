@@ -84,7 +84,7 @@ def insert_chain(chain_name, family, policy, table_id, type,  hook_type=None, pr
     if(hook_type != None and priority != None):
         chain = BaseChain(name=chain_name, family=family, type=type, policy=policy, table_id=table_id, hook_type=hook_type, priority=priority)
     else:
-        chain = Chain(name=chain_name, family=family, type=type, table_id=table_id, policy=policy)
+        chain = Chain(name=chain_name, family=family, table_id=table_id, policy=policy)
     db.session.add(chain)
     db.session.commit()
     
@@ -141,4 +141,16 @@ def edit_chain(chain_description, chain_name, family, policy, type, hook_type=No
         base_chain.priority = priority
         base_chain.description = chain_description
         
+    db.session.commit()
+    
+def delete_chain(chain_id):
+    chain = Chain.query.get(chain_id)
+    db.session.delete(chain)
+    db.session.commit()
+    
+def delete_rules_form_chain(chain_id):
+    chain = Chain.query.get(chain_id)
+    rules = chain.rules
+    for rule in rules:
+        db.session.delete(rule)
     db.session.commit()
