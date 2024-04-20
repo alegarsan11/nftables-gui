@@ -50,6 +50,9 @@ class Chain(db.Model):
     rules = db.relationship('Rule', backref='chain', lazy=True, cascade="all, delete-orphan")
     description = db.Column(db.String(120), nullable=True)
 
+    def get_table(self):
+        return Table.query.filter_by(name=self.table_id, family=self.family).first()
+
 
     def __repr__(self):
         return '<Chain %r>' % self.name
@@ -79,3 +82,7 @@ class Rule(db.Model):
 
     def __repr__(self):
         return '<Rule %r>' % self.handle
+    
+    def table(self):
+        chain = Chain.query.filter_by(name=self.chain_id, family=self.family).first()
+        return chain.get_table()

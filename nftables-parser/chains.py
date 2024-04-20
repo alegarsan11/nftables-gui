@@ -60,6 +60,7 @@ def edit_base_chain(json_data: hug.types.json):
 def delete_chain(json_data: hug.types.json):
     nft = Nftables()
     result = nft.json_cmd(json_data)
+    print(result)
     if(result[0] == 0):
         return {"status": "success"}
     else:

@@ -24,6 +24,7 @@
                 </tr>
             {% else %}
             {% for chain in chains %}
+            {% if chain.family == table.family %}
                 <tr>
                     <td><a href="/chain/{{ chain.name }}"> {{ chain.name }}</a></td>
                     <td>{{ chain.family }}</td>
@@ -38,6 +39,7 @@
                         <button class="btn btn-danger" onclick="location.href='/delete_chain/{{ chain.name }}'">Delete</button>
                     </td>
                 </tr>
+            {% endif %}
             {% endfor %}
             {% endif %}
         </tbody>

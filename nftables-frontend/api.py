@@ -104,6 +104,7 @@ def edit_base_chain_request(name, family, table, type, priority, policy, hook_ty
         return "Error editing base chain."
     
 def delete_chain_request(name, family, table):
+    print( name, family, table)
     json_data = {"json_data": {"nftables": [{"delete": {"chain":{"name": name, "family": family, "table": table}}}]}}
     response = requests.post('http://localhost:8000/chains/delete_chain', json=json_data)
     if(response.json()["status"] == "success"):
@@ -112,7 +113,7 @@ def delete_chain_request(name, family, table):
         return "Error deleting chain."
     
 def flush_chain_request(name, family, table):
-    json_data = {"json_data": {"nftables": [{"flush": {"chain":{"name": name, "family": family, "table": table}}}]}}
+    json_data = {"json_data": {"nftables": [{"flush": {"chain":{"table": table, "name": name, "family": family }}}]}}
     response = requests.post('http://localhost:8000/chains/flush_chain', json=json_data)
     if(response.json()["status"] == "success"):
         return "Success"

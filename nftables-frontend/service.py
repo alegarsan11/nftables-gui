@@ -103,16 +103,18 @@ def get_chains_from_table(table_id, family):
 def get_chains():
     return Chain.query.all()
 
-def get_chain(chain_id, family):
-    chain = Chain.query.filter_by(name=chain_id, family=family).first()
-    base_chain = BaseChain.query.filter_by(name=chain_id, family=family).first()
+
+def get_chain(chain_id, family, table):
+    chain = Chain.query.filter_by(name=chain_id, family=family, table_id=table).first()
+    base_chain = BaseChain.query.filter_by(name=chain_id, family=family, table_id=table).first()
     print(base_chain)
     if base_chain:
         return base_chain
     return chain
 
-def check_existing_rule(chain_id, rule):
-    rule = Rule.query.filter_by(chain_id=chain_id, expr=rule).first()
+
+def check_existing_rule(chain_id, rule, family):
+    rule = Rule.query.filter_by(chain_id=chain_id, expr=rule, family=family).first()
     if rule:
         return True
     return False
@@ -145,13 +147,14 @@ def edit_chain(chain_description, chain_name, family, policy, type, hook_type=No
         
     db.session.commit()
     
-def delete_chain(chain_id):
-    chain = Chain.query.get(chain_id)
+def delete_chain(chain_id, family):
+    chain = get_chain(chain_id, family)
+    print(chain)
     db.session.delete(chain)
     db.session.commit()
     
-def delete_rules_form_chain(chain_id):
-    chain = Chain.query.get(chain_id)
+def delete_rules_form_chain(chain_id, family):
+    chain = get_chain(chain_id, family=family)
     rules = chain.rules
     for rule in rules:
         db.session.delete(rule)
