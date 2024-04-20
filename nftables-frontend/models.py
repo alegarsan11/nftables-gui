@@ -27,7 +27,8 @@ class User(UserMixin, db.Model):
         return self.password == password
 
 class Table(db.Model):
-    name = db.Column(db.String(80), unique=True, nullable=False, primary_key=True)
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(80), nullable=False)
     family = db.Column(db.String(80), nullable=False)
     description = db.Column(db.String(120), nullable=True)
     chains = db.relationship('Chain', backref='table', lazy=True, cascade="all, delete-orphan")
@@ -41,7 +42,8 @@ class Table(db.Model):
     
 class Chain(db.Model):
     __tablename__ = 'chain'
-    name = db.Column(db.String(80), unique=True, nullable=False, primary_key=True)
+    id= db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(80), nullable=False)
     table_id = db.Column(db.Integer, db.ForeignKey('table.name'), nullable=False)
     family = db.Column(db.String(120), nullable=True)
     policy = db.Column(db.String(120), nullable=True)

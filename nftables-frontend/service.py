@@ -41,6 +41,10 @@ def get_table(table_id):
     table = Table.query.filter_by(name=table_id).first()
     return table
 
+def get_table(table_id, family):
+    table = Table.query.filter_by(name=table_id, family=family).first()
+    return table
+
 
 def get_users():
     return User.query.all()
@@ -57,10 +61,8 @@ def delete_user(user_id):
 
 def insert_in_table(name, family, description=None):
     try:
-        if(description != None):
-            Table(name=name, family=family, description=description).save()
-        else:
-            Table(name=name, family=family, description=description).save()
+        print(name)
+        Table(name=name, family=family, description=description).save()
     except Exception as e:
         db.session.rollback()
         return str(e)
@@ -94,16 +96,16 @@ def check_existing_chain(chain_name, table_id, family):
         return False
     return True
 
-def get_chains_from_table(table_id):
-    table = Table.query.get(table_id)
+def get_chains_from_table(table_id, family):
+    table = Table.query.filter_by(name=table_id, family=family).first()
     return table.chains
 
 def get_chains():
     return Chain.query.all()
 
-def get_chain(chain_id):
-    chain = Chain.query.filter_by(name=chain_id).first()
-    base_chain = BaseChain.query.filter_by(name=chain_id).first()
+def get_chain(chain_id, family):
+    chain = Chain.query.filter_by(name=chain_id, family=family).first()
+    base_chain = BaseChain.query.filter_by(name=chain_id, family=family).first()
     print(base_chain)
     if base_chain:
         return base_chain

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-rm /nftables-frontend/instance/nftables.db
+sudo rm nftables-frontend/instance/nftables.db
 
 pip install -r requirements.txt
 

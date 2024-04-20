@@ -5,9 +5,9 @@
 {% block content %}
 <div class="container">
   <h1>Chain: {{ chain.name }}</h1>
-  <button class="btn btn-primary" onclick="window.location.href='/chains/{{ chain.name }}/edit'">Edit</button>
-  <button class="btn btn-danger" onclick="window.location.href='/chains/{{ chain.name }}/delete'">Delete</button>
-  <button class="btn btn-warning" onclick="window.location.href='/chains/{{ chain.name }}/flush'">Flush</button>
+  <button class="btn btn-primary" onclick="window.location.href='/chains/{{ chain.name }}/{{ chain.family }}/edit'">Edit</button>
+  <button class="btn btn-danger" onclick="window.location.href='/chains/{{ chain.name }}/{{ chain.family }}/delete'">Delete</button>
+  <button class="btn btn-warning" onclick="window.location.href='/chains/{{ chain.name }}/{{ chain.family }}/flush'">Flush</button>
   <div class="row">
     <div class="col-md-6">
       <h2>Details:</h2>

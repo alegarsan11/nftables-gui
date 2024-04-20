@@ -52,12 +52,12 @@ def edit_user(user_id):
     form = UpdateUserForm(object=user)
     return render_template('users/edit_user.html',user=user, form=form)
 
-@visualization_bp.route('/table/<table_id>')
-def get_table(table_id):
-    table = service.get_table(table_id)
+@visualization_bp.route('/table/<table_id>/<family>')
+def get_table(table_id, family):
+    table = service.get_table(table_id,family=family)
     chains = api.list_table_request(table.name, table.family)
-    
-    for chain in chains:
+    print(table)
+    for chain in chains:    
         if(service.check_existing_chain(chain["name"], table_id, table.family) == True):
             hook_type = None
             priority = None
@@ -71,7 +71,7 @@ def get_table(table_id):
             if("policy" not in chain):
                 chain["policy"] = None
             service.insert_chain(chain_name=chain["name"], family=chain["family"], type=type, policy=chain['policy'], table_id=table_id, hook_type=hook_type, priority=priority)
-    chains = service.get_chains_from_table(table_id)
+    chains = service.get_chains_from_table(table_id,family=table.family)
     return render_template('tables/table.html', table=table, chains=chains)
 
 @visualization_bp.route('/flush_table/<table_id>')
@@ -115,9 +115,9 @@ def create_chain():
 
 
 
-@visualization_bp.route('/chain/<chain_id>')
-def get_chain(chain_id):
-    chain = service.get_chain(chain_id)
+@visualization_bp.route('/chain/<chain_id>/<family>')
+def get_chain(chain_id, family):
+    chain = service.get_chain(chain_id, family)
     rules = api.list_chain_request(chain.name, chain.family, chain.table.name)
     rules = rules["rules"]["nftables"]
     print(rules)
@@ -132,9 +132,9 @@ def get_chain(chain_id):
 
     return render_template('chains/chain.html', chain=chain)
 
-@visualization_bp.route('/chains/<chain_id>/edit')
-def edit_chain(chain_id):
-    chain = service.get_chain(chain_id)
+@visualization_bp.route('/chains/<chain_id>/<family>/edit')
+def edit_chain(chain_id, family):
+    chain = service.get_chain(chain_id, family=family)
 
     tables = Table.query.all()
     if chain.priority != None:
@@ -235,7 +235,6 @@ def tables():
     for i in range(len(names)):
         names[i] = names[i].replace("\n", "")
         if(i != 0) and service.check_existing_table(names[i], family[i]) == False:
-            print(names[i], family[i])
             print(service.check_existing_table(names[i], family[i]))
             service.insert_in_table(names[i], family[i])
     tables = service.get_tables()
@@ -338,16 +337,16 @@ def get_chains():
     chains = service.get_chains()
     return render_template('chains/chains.html', chains=chains)
 
-@creation_bp.route('/chains/<chain_id>/delete')
-def delete_chain(chain_id):
-    chain = service.get_chain(chain_id)
+@creation_bp.route('/chains/<chain_id>/<family>/delete')
+def delete_chain(chain_id, family):
+    chain = service.get_chain(chain_id,family)
     response = api.delete_chain_request(chain.name, chain.family, chain.table.name)
     service.delete_chain(chain_id)
     return redirect('/chains')
 
-@creation_bp.route('/chains/<chain_id>/flush')
-def flush_chain(chain_id):
-    chain = service.get_chain(chain_id)
+@creation_bp.route('/chains/<chain_id>/<family>/flush')
+def flush_chain(chain_id, family):
+    chain = service.get_chain(chain_id,family)
     response = api.flush_chain_request(chain.name, chain.family, chain.table.name)
     service.delete_rules_form_chain(chain_id)
     return redirect('/chains')
