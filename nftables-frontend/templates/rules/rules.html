@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% block head %}
+{{ super() }}
+{% endblock %}
+{% block content %}
+<div class="container">
+  <h1>Rules</h1>
+  <button class="btn btn-primary" onclick="window.location.href='/rules/add'">Add</button>
+  <br></br>
+  <table class="table personal-table">
+    <thead>
+      <tr>
+        <th>Handle</th>
+        <th>Expresion</th>
+        <th>Description</th>
+        <th>Table</th>
+        <th>Family</th>
+        <th>Chain</th>
+        <th>Actions</th>
+        <th>Statements</th>
+      </tr>
+    </thead>
+    <tbody>
+       
+    {% for rule in rules %}
+      <tr>
+        <td>{{ rule.handle }}</td>
+        <td>{{ rule.expr }}</td>
+        <td>
+          {% if rule.description == None %}
+            No description
+          {% else %}
+          {{ rule.description }}
+          {% endif %}</td>
+        <td>{{ rule.table().name }}</td>
+        <td>{{ rule.family }}</td>
+        <td>{{ rule.chain.name }}</td>
+        <td>
+          <button class="btn btn-primary" onclick="window.location.href='/rules/{{ rule.handle }}/edit'">Edit</button>
+          <button class="btn btn-danger" onclick="window.location.href='/rules/{{ rule.handle }}/delete'">Delete</button>
+        </td>
+                    <td> {% for statement in statements %}
+                {% if statement.rule_id == rule.id %}
+                {% if statement.accept != None %}
+                  {{ statement.accept }}
+                {% endif %}
+                {% if statement.reject != None %}
+                  {{ statement.reject }}
+                {% endif %}
+                {% if statement.drop != None %}
+                  {{ statement.drop }}
+                {% endif %}
+                {% if statement.counter != None %}
+                  {{ statement.counter }}
+                {% endif %}
+                {% if statement.log != None %}
+                  {{ statement.log }}
+                {% endif %}
+                {% if statement.jump != None %}
+                  {{ statement.jump }}
+                {% endif %}
+                {% if statement.return_ != None %}
+                  {{ statement.return_ }}
+                {% endif %}
+                {% if statement.limit != None %}
+                  {{ statement.limit }}
+                {% endif %}
+                {% if statement.go_to != None %}
+                  {{ statement.go_to }}
+                {% endif %}
+                {% if statement.protocol != None %}
+                  {{ statement.protocol }}
+                {% endif %}
+                {% if statement.src_ip != None %}
+                  {{ statement.src_ip }}
+                {% endif %}
+                {% if statement.dst_ip != None %}
+                  {{ statement.dst_ip }}
+                {% endif %}
+                {% if statement.src_port != None %}
+                  {{ statement.src_port }}
+                {% endif %}
+                {% if statement.dst_port != None %}
+                  {{ statement.dst_port }}
+                {% endif %}
+                {% if statement.queue != None %}
+                  {{ statement.queue }}
+                {% endif %}
+                {% if statement.nflog != None %}
+                 {{ statement.nflog }}
+                 {% endif %}
+                {% endif %}  
+              {% endfor %}    </td>
+      </tr>
+
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

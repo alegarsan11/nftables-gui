@@ -118,3 +118,103 @@ class BaseChainForm(ChainForm):
     def validate_priority(self, priority):
         if priority.data > 300 or priority.data < -400 or priority.data != int(priority.data):
             raise ValidationError('Priority must be between -400 and 300.')
+
+class StatementForm(FlaskForm):
+    type = SelectField('Type', choices=[('terminal', 'terminal'), ('not_terminal', 'not_terminal')], validators=[DataRequired()])
+    src_ip = StringField('Source IP')
+    dst_ip = StringField('Destination IP')
+    src_port = StringField('Source Port')
+    dst_port = StringField('Destination Port')
+    protocol = StringField('Protocol')
+    description = StringField('Description')
+    submit = SubmitField('Add Statement')
+    
+    def validate_src_ip(self, src_ip):
+        if src_ip.data and not src_ip.data.replace(".", "").replace("/", "").replace(":", "").isdigit():
+            raise ValidationError('Source IP must be a valid IP address.')
+        
+    def validate_dst_ip(self, dst_ip):
+        if dst_ip.data and not dst_ip.data.replace(".", "").replace("/", "").replace(":", "").isdigit():
+            raise ValidationError('Destination IP must be a valid IP address.')
+        
+    def validate_src_port(self, src_port):
+        if src_port.data and not src_port.data.isdigit():
+            raise ValidationError('Source Port must be a valid port number.')
+        
+    def validate_dst_port(self, dst_port):
+        if dst_port.data and not dst_port.data.isdigit():
+            raise ValidationError('Destination Port must be a valid port number.')
+        
+    def validate_protocol(self, protocol):
+        if protocol.data and protocol.data not in ['tcp', 'udp', 'icmp', 'all']:
+            raise ValidationError('Protocol must be one of: tcp, udp, icmp, all.')
+
+class TerminalStatementForm(StatementForm):
+    reject = SelectField('Reject', choices=[('True', 'True'), ('False', 'False')])
+    drop = SelectField('Drop', choices=[('True', 'True'), ('False', 'False')])
+    accept = SelectField('Accept', choices=[('True', 'True'), ('False', 'False')])
+    queue = StringField('Queue')
+    return_ = SelectField('Return', choices=[('True', 'True'), ('False', 'False')])
+    jump = StringField('Jump')
+    go_to = StringField('Go To')
+    
+    def validate_queue(self, queue):
+        if queue.data and not queue.data.isdigit():
+            raise ValidationError('Queue must be a valid number.')
+        
+    def validate_jump(self, jump):
+        if jump.data and not jump.data.replace(":", "").replace("-", "").replace("_", "").replace(".", "").replace("/", "").replace(" ", "").isalnum():
+            raise ValidationError('Jump must be a valid chain name.')
+        
+    def validate_go_to(self, go_to):
+        if go_to.data and not go_to.data.replace(":", "").replace("-", "").replace("_", "").replace(".", "").replace("/", "").replace(" ", "").isalnum():
+            raise ValidationError('Go To must be a valid chain name.')
+        
+class NotTerminalStatementForm(StatementForm):
+    limit = IntegerField('Limit')
+    log = StringField('Log')
+    counter = StringField('Counter')
+    nflog = StringField('NFLog')
+    
+    def validate_limit(self, limit):
+        if limit.data and not limit.data.isdigit():
+            raise ValidationError('Limit must be a valid number.')   
+        
+    def validate_log(self, log):
+        if log.data and not log.data.replace(":", "").replace("-", "").replace("_", "").replace(".", "").replace("/", "").replace(" ", "").isalnum():
+            raise ValidationError('Log must be a valid log.')
+        
+    def validate_counter(self, counter):
+        if counter.data and not counter.data.replace(":", "").replace("-", "").replace("_", "").replace(".", "").replace("/", "").replace(" ", "").isalnum():
+            raise ValidationError('Counter must be a valid counter.')
+        
+    def validate_nflog(self, nflog):
+        if nflog.data and not nflog.data.replace(":", "").replace("-", "").replace("_", "").replace(".", "").replace("/", "").replace(" ", "").isalnum():
+            raise ValidationError('NFLog must be a valid NFLog.')
+
+class RuleForm(FlaskForm):
+    chain = StringField('Chain', validators=[DataRequired()])
+    family = StringField('Family', validators=[DataRequired()])
+    expr = StringField('Expression', validators=[DataRequired()])
+    handle = StringField('Handle', validators=[DataRequired()])
+    description = StringField('Description')
+    submit = SubmitField('Add Rule')
+    
+    def validate_chain(self, chain):
+        chain = Chain.query.filter_by(name=chain.data).first()
+        if not chain:
+            raise ValidationError('Chain does not exist.')
+        
+    def validate_family(self, family):
+        if family.data not in ['ip', 'inet', 'arp', 'bridge', 'netdev']:
+            raise ValidationError('Family must be one of: ip, inet, arp, bridge, netdev.')
+        
+    def validate_expr(self, expr):
+        if expr.data and not expr.data.replace(":", "").replace("-", "").replace("_", "").replace(".", "").replace("/", "").replace(" ", "").isalnum():
+            raise ValidationError('Expression must be a valid expression.')
+        
+    def validate_handle(self, handle):
+        if handle.data and not handle.data.replace(":", "").replace("-", "").replace("_", "").replace(".", "").replace("/", "").replace(" ", "").isalnum():
+            raise ValidationError('Handle must be a valid handle.')
+        
+    

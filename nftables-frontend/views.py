@@ -121,13 +121,15 @@ def get_chain(chain_id, family, table):
     rules = api.list_chain_request(chain.name, chain.family, chain.table.name)
     rules = rules["rules"]["nftables"]
     print(rules)
+    statements = []
     for i, rule in enumerate(rules):
         
         if i == 0 or i == 1:
             continue
         else:                    
             service.iteration_on_chains(rule, chain_id, family)
-    return render_template('chains/chain.html', chain=chain)
+            statements = service.get_statements_from_chain(chain_id=chain.name, family=family)
+    return render_template('chains/chain.html', chain=chain, statements=statements)
 
 @visualization_bp.route('/chains/<chain_id>/<family>/<table>/edit')
 def edit_chain(chain_id, family,table):
@@ -342,7 +344,7 @@ def get_chains():
 def delete_chain(chain_id, family, table):
     chain = service.get_chain(chain_id,family, table)
     response = api.delete_chain_request(chain.name, chain.family, chain.get_table().name)
-    service.delete_chain(chain_id, family)
+    service.delete_chain(chain_id, family, table)
     print(response)
     return redirect('/chains')
 
@@ -350,5 +352,11 @@ def delete_chain(chain_id, family, table):
 def flush_chain(chain_id, family,table):
     chain = service.get_chain(chain_id,family,table)
     response = api.flush_chain_request(chain.name, chain.family, chain.table.name)
-    service.delete_rules_form_chain(chain_id, family)
+    service.delete_rules_form_chain(chain_id, family, table)
     return redirect('/chains')
+
+@visualization_bp.route('/rules')
+def get_rules():
+    rules = service.get_rules()
+    statements = service.get_statements()
+    return render_template('rules/rules.html', rules=rules, statements=statements)

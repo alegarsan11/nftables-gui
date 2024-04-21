@@ -129,6 +129,9 @@ def get_rules_from_chain(chain_id):
     chain = Chain.query.get(chain_id)
     return chain.rules
 
+def get_rules():
+    return Rule.query.all()
+
 def edit_chain(chain_description, chain_name, family, policy, type, hook_type=None, priority=None):
     chain = Chain.query.get(chain_name)
     chain.name = chain_name
@@ -148,14 +151,14 @@ def edit_chain(chain_description, chain_name, family, policy, type, hook_type=No
         
     db.session.commit()
     
-def delete_chain(chain_id, family):
-    chain = get_chain(chain_id, family)
+def delete_chain(chain_id, family, table):
+    chain = get_chain(chain_id, family, table)
     print(chain)
     db.session.delete(chain)
     db.session.commit()
     
-def delete_rules_form_chain(chain_id, family):
-    chain = get_chain(chain_id, family=family)
+def delete_rules_form_chain(chain_id, family, table):
+    chain = get_chain(chain_id, family=family, table=table)
     rules = chain.rules
     for rule in rules:
         db.session.delete(rule)
@@ -256,3 +259,28 @@ def iteration_on_chains(rule, chain_id, family):
             for statement in NotTerminalStatement.query.filter_by(rule_id=rule_id.id).all():
                 print(statement.counter)
                 
+                
+def get_statements_from_chain(chain_id, family):
+    chain = Chain.query.filter_by(name=chain_id, family=family).first()
+    rules = chain.rules
+    statements = []
+    for rule in rules:
+        for statement in rule.statement:
+            statements.append(statement)
+            
+    return statements
+
+def get_statements():
+    statements = []
+    rules = Rule.query.all()
+    statements_all_nt = NotTerminalStatement.query.all()
+    statements_all_t = TerminalStatement.query.all()
+    for rule in rules:
+        for statement in statements_all_nt:
+            if statement.rule_id == rule.id:
+                statements.append(statement)
+        for statement in statements_all_t:
+            if statement.rule_id == rule.id:
+                statements.append(statement)
+
+    return statements
