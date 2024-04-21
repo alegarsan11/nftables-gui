@@ -1,5 +1,6 @@
 from models import Chain, NotTerminalStatement, Rule, Statement, Table, BaseChain, TerminalStatement, db, User
 from flask_login import LoginManager
+import api
 
 login_manager = LoginManager()
 
@@ -61,7 +62,6 @@ def delete_user(user_id):
 
 def insert_in_table(name, family, description=None):
     try:
-        print(name)
         Table(name=name, family=family, description=description).save()
     except Exception as e:
         db.session.rollback()
@@ -107,7 +107,6 @@ def get_chains():
 def get_chain(chain_id, family, table):
     chain = Chain.query.filter_by(name=chain_id, family=family, table_id=table).first()
     base_chain = BaseChain.query.filter_by(name=chain_id, family=family, table_id=table).first()
-    print(base_chain)
     if base_chain:
         return base_chain
     return chain
@@ -153,7 +152,6 @@ def edit_chain(chain_description, chain_name, family, policy, type, hook_type=No
     
 def delete_chain(chain_id, family, table):
     chain = get_chain(chain_id, family, table)
-    print(chain)
     db.session.delete(chain)
     db.session.commit()
     
@@ -165,7 +163,6 @@ def delete_rules_form_chain(chain_id, family, table):
     db.session.commit()
     
 def insert_statement(rule_id, saddr, daddr, sport, dport, protocol, description=None, reject=None, log=None, nflog=None, drop=None, accept=None, queue=None, conntrack=None, limit=None, counter=None, return_=None, jump=None, go_to=None):
-    print(rule_id, saddr, daddr, sport, dport, protocol, description, reject, log, nflog, drop, accept, queue, conntrack, limit, counter, return_, jump, go_to)
     if limit != None or log != None or nflog != None or counter != None:
         statement = NotTerminalStatement(rule_id=rule_id, src_ip=saddr, dst_ip=daddr, src_port=sport, dst_port=dport, protocol=protocol, description=description, limit=limit, log=log, nflog=nflog, counter=counter)
     elif reject != None or drop != None or accept != None or queue != None or return_ != None or jump != None or go_to != None:
@@ -210,7 +207,6 @@ def iteration_on_chains(rule, chain_id, family):
             conntrack = None
             protocol = None
             protocol = None
-            print(expr.get("match", None))
             if expr.get("match", None) != None and expr.get("match").get("left", None) != None and expr.get("match").get("left").get("payload", None) != None:
                 match = expr.get("match")
                 payload = match.get("left").get("payload")
@@ -249,15 +245,9 @@ def iteration_on_chains(rule, chain_id, family):
                 queue = str(expr.get("queue"))
             if expr.get("conntrack", None) != None:
                 conntrack = str(expr.get("conntrack"))
-            print(counter)
             if saddr != None or daddr != None or sport  != None or dport != None or protocol != None or counter != None or limit != None or log != None or nflog != None or reject != None or drop != None or accept != None or queue != None or return_ != None or jump != None or go_to != None:
                 insert_statement(rule_id=rule_id, sport=sport, dport=dport, saddr=saddr, daddr=daddr, protocol=protocol, accept=accept, drop=drop, reject=reject, log=log, nflog=nflog, limit=limit, counter=counter, return_=return_, jump=jump, go_to=go_to, queue=queue, conntrack=conntrack)
-    else:
-        for rule_id in Rule.query.filter_by(chain_id=chain_id, family=family).all():
-            for statement in Statement.query.filter_by(rule_id=rule_id.id).all():
-                print(statement)
-            for statement in NotTerminalStatement.query.filter_by(rule_id=rule_id.id).all():
-                print(statement.counter)
+
                 
                 
 def get_statements_from_chain(chain_id, family):
@@ -284,3 +274,45 @@ def get_statements():
                 statements.append(statement)
 
     return statements
+
+def load_data():
+    result_tables = api.list_tables_request()
+    result_chains = api.list_chains_request()
+    family = []
+    names = []
+    for line in result_tables.split("table "):
+        family.append(line.split(" ")[0])
+        variable = line.split(" ")[-1]
+        variable = str(variable)
+        names.append(variable)
+    for i in range(len(names)):
+        names[i] = names[i].replace("\n", "")
+        if(i != 0) and check_existing_table(names[i], family[i]) == False:
+            insert_in_table(names[i], family[i])
+    for item in result_chains["chains"]["nftables"]:
+        if("chain" in item):
+            if(check_existing_chain(item["chain"]["name"], item["chain"]["table"], item["chain"]["family"]) == True):
+                prio = None
+                hook = None
+                type = None
+                if("prio" in item["chain"]):
+                    prio = item["chain"]["prio"]
+                if("hook" in item["chain"]):
+                    hook = item["chain"]["hook"]
+                if("policy" not in item["chain"]):
+                    item["chain"]["policy"] = None
+                if("type" in item["chain"]):
+                    type = item["chain"]["type"]
+                insert_chain(item["chain"]["name"], item["chain"]["family"], item["chain"]["policy"], item["chain"]["table"],type=type,  priority=prio, hook_type=hook)
+    chains = get_chains()
+    for chain in chains:
+        result_rules = api.list_chain_request(chain.name, chain.family, chain.table.name)
+        result_rules = result_rules["rules"]["nftables"]
+        for i, rule in enumerate(result_rules):
+            if i ==0 or i ==1:
+                continue
+            else:
+                iteration_on_chains(rule, chain.name, chain.family)
+
+    return  [Rule.query.count(), Chain.query.count(), Table.query.count()]
+    

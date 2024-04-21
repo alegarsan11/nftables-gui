@@ -13,7 +13,6 @@ def list_chains(json_data: hug.types.json):
 def create_chain(json_data: hug.types.json):
     nft = Nftables()
     result = nft.json_cmd(json_data)
-    print(result)
     if(result[0] == 0):
         return {"status": "success"}
     else:
@@ -48,7 +47,6 @@ def edit_chain(json_data: hug.types.json):
 @hug.post('/edit_base_chain')
 def edit_base_chain(json_data: hug.types.json):
     nft = Nftables()
-    print(json_data)
     result = nft.cmd("chain " + json_data["nftables"][0]["edit"]["base_chain"]["family"] + " " + json_data["nftables"][0]["edit"]["base_chain"]['table'] + " " + json_data["nftables"][0]["edit"]["base_chain"]['name'] + " { type " + json_data["nftables"][0]["edit"]["base_chain"]["type"] + " hook " + json_data["nftables"][0]["edit"]["base_chain"]['hook_type'] + " priority " + str(json_data["nftables"][0]["edit"]["base_chain"]['priority']) + " ; policy " + json_data["nftables"][0]["edit"]["base_chain"]["policy"] + " ; }")    
     
     if(result[0] == 0):
@@ -60,7 +58,6 @@ def edit_base_chain(json_data: hug.types.json):
 def delete_chain(json_data: hug.types.json):
     nft = Nftables()
     result = nft.json_cmd(json_data)
-    print(result)
     if(result[0] == 0):
         return {"status": "success"}
     else:

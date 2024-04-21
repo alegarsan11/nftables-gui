@@ -21,10 +21,7 @@ def main_view():
         ip_address = os.popen('hostname -I').read().split(" ")[0] 
         categories = ['Reglas', 'Cadenas', 'Tablas']
         # Get the number of rules, chains and tables
-        n_tables = Table.query.count()
-        n_chains = Chain.query.count()
-        n_rules = Rule.query.count()
-        values = [n_rules, n_chains, n_tables]
+        values = service.load_data()
         image_path = 'static/img/nftables_info.png'
         plt.figure(figsize=(8, 6))
         plt.bar(categories, values, color=['blue', 'green', 'orange'])
@@ -56,7 +53,6 @@ def edit_user(user_id):
 def get_table(table_id, family):
     table = service.get_table(table_id,family=family)
     chains = api.list_table_request(table.name, table.family)
-    print(table)
     for chain in chains:    
         if(service.check_existing_chain(chain["name"], table_id, table.family) == True):
             hook_type = None
@@ -90,7 +86,6 @@ def edit_user_post(user_id):
         return redirect('/users')
     else:
         flash('Error editing user.')
-        print(form.errors)
         user = service.get_user(user_id)
         return render_template('users/edit_user.html', user=user ,form=form)
 
@@ -120,7 +115,6 @@ def get_chain(chain_id, family, table):
     chain = service.get_chain(chain_id, family, table)
     rules = api.list_chain_request(chain.name, chain.family, chain.table.name)
     rules = rules["rules"]["nftables"]
-    print(rules)
     statements = []
     for i, rule in enumerate(rules):
         
@@ -174,7 +168,6 @@ def edit_chain_post(chain_id, family, table):
         return redirect('/chains')
     else:
         flash('Error editing chain.')
-        print(form.errors)
         chain = service.get_chain(chain_id, family, table)
         form.name.data = chain.name
         form.family.data = chain.table.family
@@ -204,11 +197,8 @@ def create_base_chain_post():
 @creation_bp.route('/create_chain/', methods=['POST'])
 def create_chain_post():
     form = ChainForm()
-    print(form.table.data)
-    print(form.family.data)
     form.table.data = form.table.data.split(" -")[0]
     table = service.get_table(form.table.data, form.family.data)
-    print(table)
     form.family.data = table.family
     if form.validate_on_submit():
         response = api.create_chain_request(form.name.data, form.family.data, form.table.data, policy=form.policy.data)
@@ -238,10 +228,8 @@ def tables():
     for i in range(len(names)):
         names[i] = names[i].replace("\n", "")
         if(i != 0) and service.check_existing_table(names[i], family[i]) == False:
-            print(service.check_existing_table(names[i], family[i]))
             service.insert_in_table(names[i], family[i])
     tables = service.get_tables()
-    print(tables)
     return render_template('tables/tables.html', tables=tables)
 
 @creation_bp.route('/add_table')
@@ -260,14 +248,11 @@ def add_table_post():
                 return redirect('/tables')
             else:
                 flash('Error creating table.')
-                print(response)
                 return render_template('tables/add_table.html', form=form)
         else:
             flash('Error creating table.')
-            print(result)
     else:
         flash('Error creating table.')
-        print(form.errors)
     return render_template('tables/add_table.html', form=form)
 
 @creation_bp.route('/delete_table/<table_id>')
@@ -281,7 +266,6 @@ def delete_table(table_id):
 def login():
     form = LoginForm()
     if form.validate_on_submit():
-        print('Validating login form...')
         user = User.query.filter_by(username=form.username.data).first()
         if user is not None and user.check_password(form.password.data):
             login_user(user)
@@ -291,8 +275,6 @@ def login():
             form.validate_username(form.username)
             flash('Invalid username or password.')
     else:
-        print('Invalid username or password.')
-        print(form.errors)
         flash('Invalid username or password.')
     return render_template('login.html', form=form)
 
@@ -310,7 +292,6 @@ def create_user_post():
         return redirect('/users')
     else:
         flash('Error creating user.')
-        print(form.errors)
         return render_template('users/create_user.html', form=form)
 
 @creation_bp.route("/logout")
@@ -345,7 +326,6 @@ def delete_chain(chain_id, family, table):
     chain = service.get_chain(chain_id,family, table)
     response = api.delete_chain_request(chain.name, chain.family, chain.get_table().name)
     service.delete_chain(chain_id, family, table)
-    print(response)
     return redirect('/chains')
 
 @creation_bp.route('/chains/<chain_id>/<family>/<table>/flush')

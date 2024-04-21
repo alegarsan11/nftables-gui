@@ -86,22 +86,18 @@ class ChainForm(FlaskForm):
     def validate_table(self, table):
         table = Table.query.filter_by(name=table.data).first()
         if not table:
-            print("has llegado aqui tablaa")
             raise ValidationError('Table does not exist.')
  
     def validate_family(self, family):
         if family.data not in ['ip', 'inet', 'arp', 'bridge', 'netdev']:
-            print("has llegado aqui familia")
             raise ValidationError('Family must be one of: ip, inet, arp, bridge, netdev.')
 
     def validate_policy(self, policy):
         if policy.data not in ['accept', 'drop', 'reject', 'dnat', 'snat', 'masquerade', 'redirect', 'log', 'continue', 'return', 'jump', 'queue', 'unreachable', 'error', 'broadcast', 'dnat', 'snat', 'redirect', 'mirror', 'tproxy', 'netmap', 'nflog', 'nfqueue', 'nfacct', 'nfct', 'nftrace', 'nftlb']:
-            print("has llegado aqui politica")
             raise ValidationError('Policy must be one of: accept, drop, reject, dnat, snat, masquerade, redirect, log, continue, return, jump, queue, unreachable, error, broadcast, dnat, snat, redirect, mirror, tproxy, netmap, nflog, nfqueue, nfacct, nfct, nftrace, nftlb.')
 
     def validate_type(self, type):
         if type.data not in ['filter', 'nat', 'route', 'mangle', 'raw']:
-            print("has llegado aqui tipo")
             raise ValidationError('Type must be one of: filter, nat, route, mangle, raw.')
 
         
