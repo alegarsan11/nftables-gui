@@ -36,7 +36,6 @@
         <td>{{ rule.family }}</td>
         <td>{{ rule.chain.name }}</td>
         <td>
-          <button class="btn btn-primary" onclick="window.location.href='/rules/{{ rule.handle }}/edit'">Edit</button>
           <button class="btn btn-danger" onclick="window.location.href='/rules/{{ rule.handle }}/delete'">Delete</button>
         </td>
                     <td> {% for statement in statements %}

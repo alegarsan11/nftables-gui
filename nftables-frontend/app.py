@@ -23,7 +23,9 @@ with app.app_context():
 migrate = Migrate(app, db)
 Bootstrap(app)
 
-
+@app.route('/favicon.ico')
+def favicon():
+    return app.send_static_file('favicon.ico')
 
 if __name__ == '__main__':
     app.run(debug=True)
