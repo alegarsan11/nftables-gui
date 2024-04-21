@@ -1,4 +1,4 @@
-from models import Chain, Rule, Table, BaseChain, db, User
+from models import Chain, NotTerminalStatement, Rule, Statement, Table, BaseChain, TerminalStatement, db, User
 from flask_login import LoginManager
 
 login_manager = LoginManager()
@@ -123,6 +123,7 @@ def insert_rule(chain_id, family, expr, handle, description=None):
     rule = Rule(chain_id=chain_id, family=family, expr=expr, handle=handle, description=description)
     db.session.add(rule)
     db.session.commit()
+    return rule.id
     
 def get_rules_from_chain(chain_id):
     chain = Chain.query.get(chain_id)
@@ -159,3 +160,99 @@ def delete_rules_form_chain(chain_id, family):
     for rule in rules:
         db.session.delete(rule)
     db.session.commit()
+    
+def insert_statement(rule_id, saddr, daddr, sport, dport, protocol, description=None, reject=None, log=None, nflog=None, drop=None, accept=None, queue=None, conntrack=None, limit=None, counter=None, return_=None, jump=None, go_to=None):
+    print(rule_id, saddr, daddr, sport, dport, protocol, description, reject, log, nflog, drop, accept, queue, conntrack, limit, counter, return_, jump, go_to)
+    if limit != None or log != None or nflog != None or counter != None:
+        statement = NotTerminalStatement(rule_id=rule_id, src_ip=saddr, dst_ip=daddr, src_port=sport, dst_port=dport, protocol=protocol, description=description, limit=limit, log=log, nflog=nflog, counter=counter)
+    elif reject != None or drop != None or accept != None or queue != None or return_ != None or jump != None or go_to != None:
+        statement = TerminalStatement(rule_id=rule_id, src_ip=saddr, dst_ip=daddr, src_port=sport, dst_port=dport, protocol=protocol, description=description, reject=reject, drop=drop, accept=accept, queue=queue, return_=return_, jump=jump, go_to=go_to)
+    else:
+        statement = Statement(rule_id=rule_id, src_ip=saddr, dst_ip=daddr, src_port=sport, dst_port=dport, protocol=protocol, description=description)
+    db.session.add(statement)
+    db.session.commit()
+
+def check_existing_statement( saddr, daddr, sport, dport, protocol, accept, drop, reject, log, nflog, limit, counter, return_, jump, go_to, queue, conntrack):
+    if limit != None or log != None or nflog != None or counter != None:
+        statement = NotTerminalStatement( src_ip=saddr, dst_ip=daddr, src_port=sport, dst_port=dport, protocol=protocol, limit=limit, log=log, nflog=nflog, counter=counter)
+    if reject != None or drop != None or accept != None or queue != None or return_ != None or jump != None or go_to != None:
+        statement = TerminalStatement( src_ip=saddr, dst_ip=daddr, src_port=sport, dst_port=dport, protocol=protocol, reject=reject, drop=drop, accept=accept, queue=queue, return_=return_, jump=jump, go_to=go_to)
+    else:
+        statement = Statement( src_ip=saddr, dst_ip=daddr, src_port=sport, dst_port=dport, protocol=protocol)
+    return statement.rule_id
+
+def get_statements_from_rule(rule_id):
+    rule = Rule.query.get(rule_id)
+    return rule.statements
+
+def iteration_on_chains(rule, chain_id, family):
+    if check_existing_rule(rule=str(rule["rule"]["expr"]), chain_id=chain_id, family=family) == False :   
+        rule_id = insert_rule(handle=str(rule["rule"]["handle"]), chain_id=rule["rule"]["chain"], family=rule["rule"]["family"], expr=str(rule["rule"]["expr"]))
+        for j, expr in enumerate(rule["rule"]["expr"]):
+            saddr = None
+            daddr = None
+            sport = None
+            dport = None
+            accept = None
+            drop = None
+            reject = None
+            log = None
+            nflog = None
+            limit = None
+            return_ = None
+            jump = None
+            go_to = None
+            queue = None
+            counter = None
+            conntrack = None
+            protocol = None
+            protocol = None
+            print(expr.get("match", None))
+            if expr.get("match", None) != None and expr.get("match").get("left", None) != None and expr.get("match").get("left").get("payload", None) != None:
+                match = expr.get("match")
+                payload = match.get("left").get("payload")
+                right = match.get("right")
+                if payload.get("field") == "saddr":
+                    saddr = str(right)
+                if payload.get("field") == "daddr":
+                    daddr = str(right)
+                if payload.get("field") == "sport":
+                    sport = str(right)
+                if payload.get("field") == "dport":
+                    dport = str(right)
+                if payload.get("protocol", None) != None :
+                    protocol = str(payload.get("protocol"))
+            if expr.get("counter", None) != None:
+                counter = str(expr.get("counter"))
+            if expr.get("accept", None) != None:
+                accept = str(expr.get("accept"))
+            if expr.get("drop", None) != None:
+                drop = str(expr.get("drop"))
+            if expr.get("reject", None) != None:
+                reject = str(expr.get("reject"))
+            if expr.get("log", None) != None:
+                log = str(expr.get("log"))
+            if expr.get("nflog", None) != None:
+                nflog = str(expr.get("nflog"))
+            if expr.get("limit", None) != None:
+                limit = str(expr.get("limit"))
+            if expr.get("return", None) != None:
+                return_ = str(expr.get("return"))
+            if expr.get("jump", None) != None:
+                jump = str(expr.get("jump"))
+            if expr.get("go_to", None) != None:
+                go_to = str(expr.get("go_to"))
+            if expr.get("queue", None) != None:
+                queue = str(expr.get("queue"))
+            if expr.get("conntrack", None) != None:
+                conntrack = str(expr.get("conntrack"))
+            print(counter)
+            if saddr != None or daddr != None or sport  != None or dport != None or protocol != None or counter != None or limit != None or log != None or nflog != None or reject != None or drop != None or accept != None or queue != None or return_ != None or jump != None or go_to != None:
+                insert_statement(rule_id=rule_id, sport=sport, dport=dport, saddr=saddr, daddr=daddr, protocol=protocol, accept=accept, drop=drop, reject=reject, log=log, nflog=nflog, limit=limit, counter=counter, return_=return_, jump=jump, go_to=go_to, queue=queue, conntrack=conntrack)
+    else:
+        for rule_id in Rule.query.filter_by(chain_id=chain_id, family=family).all():
+            for statement in Statement.query.filter_by(rule_id=rule_id.id).all():
+                print(statement)
+            for statement in NotTerminalStatement.query.filter_by(rule_id=rule_id.id).all():
+                print(statement.counter)
+                

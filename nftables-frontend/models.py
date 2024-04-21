@@ -78,7 +78,7 @@ class Rule(db.Model):
     expr = db.Column(db.String(120), nullable=False)
     handle = db.Column(db.String(120), nullable=False)
     description = db.Column(db.String(120), nullable=True)
-    
+    statement = db.relationship('Statement', backref='rule', lazy=True, cascade="all, delete-orphan")
 
     def __repr__(self):
         return '<Rule %r>' % self.handle
@@ -86,3 +86,76 @@ class Rule(db.Model):
     def table(self):
         chain = Chain.query.filter_by(name=self.chain_id, family=self.family).first()
         return chain.get_table()
+    
+class Statement(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    rule_id = db.Column(db.Integer, db.ForeignKey('rule.id'), nullable=False)
+    description = db.Column(db.String(120), nullable=True)
+    src_ip = db.Column(db.String(120), nullable=True)
+    dst_ip = db.Column(db.String(120), nullable=True)
+    src_port = db.Column(db.String(120), nullable=True)
+    dst_port = db.Column(db.String(120), nullable=True)
+    protocol = db.Column(db.String(120), nullable=True)
+    
+    def __repr__(self):
+        return '<Statement %r>' % self.id
+
+class TerminalStatement(Statement):
+    reject = db.Column(db.String(120), nullable=True)
+    drop = db.Column(db.String(120), nullable=True)
+    accept = db.Column(db.String(120), nullable=True)
+    queue = db.Column(db.String(120), nullable=True)
+    return_ = db.Column(db.String(120), nullable=True)
+    jump = db.Column(db.String(120), nullable=True)
+    go_to = db.Column(db.String(120), nullable=True)
+
+    def __repr__(self):
+        return '<TerminalStatement %r>' % self.id
+
+class NotTerminalStatement(Statement):
+    limit = db.Column(db.String(120), nullable=True)
+    log = db.Column(db.String(120), nullable=True)
+    counter = db.Column(db.String(120), nullable=True)
+    nflog = db.Column(db.String(120), nullable=True)
+
+    def __repr__(self):
+        return '<NotTerminalStatement %r>' % self.id
+
+    
+class Set(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(120), nullable=False)
+    family = db.Column(db.String(120), nullable=False)
+    description = db.Column(db.String(120), nullable=True)
+    entries = db.relationship('Entry', backref='set', lazy=True, cascade="all, delete-orphan")
+    
+    def __repr__(self):
+        return '<Set %r>' % self.name
+    
+class Entry(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    set_id = db.Column(db.Integer, db.ForeignKey('set.id'), nullable=False)
+    description = db.Column(db.String(120), nullable=True)
+    
+    def __repr__(self):
+        return '<Entry %r>' % self.key
+
+class Map(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(120), nullable=False)
+    family = db.Column(db.String(120), nullable=False)
+    description = db.Column(db.String(120), nullable=True)
+    entries = db.relationship('MapEntry', backref='map', lazy=True, cascade="all, delete-orphan")
+    
+    def __repr__(self):
+        return '<Map %r>' % self.name
+
+class MapEntry(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    map_id = db.Column(db.Integer, db.ForeignKey('map.id'), nullable=False)
+    key = db.Column(db.String(120), nullable=False)
+    value = db.Column(db.String(120), nullable=False)
+    description = db.Column(db.String(120), nullable=True)
+    
+    def __repr__(self):
+        return '<MapEntry %r>' % self.key

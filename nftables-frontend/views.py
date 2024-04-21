@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, flash, redirect, url_for
 from flask_login import login_user, logout_user, login_required, current_user
-from models import BaseChain, Chain, Rule, Table, User
+from models import BaseChain, Chain, Rule, Statement, Table, User
 from forms.forms import BaseChainForm, ChainForm, LoginForm, CreateUserForm, TableForm, UpdateUserForm
 import service, api, os, matplotlib
 matplotlib.use('Agg')
@@ -103,7 +103,7 @@ def delete_user(user_id):
 
 @visualization_bp.route('/create_base_chain')
 def create_base_chain():
-    form = ChainForm()
+    form = BaseChainForm()
     tables = Table.query.all()
     return render_template('chains/create_base_chain.html', form=form, tables=tables)
 
@@ -122,15 +122,11 @@ def get_chain(chain_id, family, table):
     rules = rules["rules"]["nftables"]
     print(rules)
     for i, rule in enumerate(rules):
+        
         if i == 0 or i == 1:
             continue
-        else:
-            print(chain_id)
-            print(rule["rule"]["handle"])
-            if service.check_existing_rule(rule=str(rule["rule"]["expr"]), chain_id=chain_id, family=family) == False :   
-                print(rule["rule"]["family"])     
-                service.insert_rule(handle=str(rule["rule"]["handle"]), chain_id=rule["rule"]["chain"], family=rule["rule"]["family"], expr=str(rule["rule"]["expr"]))
-
+        else:                    
+            service.iteration_on_chains(rule, chain_id, family)
     return render_template('chains/chain.html', chain=chain)
 
 @visualization_bp.route('/chains/<chain_id>/<family>/<table>/edit')
