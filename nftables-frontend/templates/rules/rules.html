@@ -10,20 +10,22 @@
   <table class="table personal-table">
     <thead>
       <tr>
+        <th>Id</th>
         <th>Handle</th>
         <th>Expresion</th>
         <th>Description</th>
         <th>Table</th>
         <th>Family</th>
         <th>Chain</th>
-        <th>Actions</th>
         <th>Statements</th>
+        <th>Actions</th>
       </tr>
     </thead>
     <tbody>
        
     {% for rule in rules %}
       <tr>
+        <td><a href="/rule/{{ rule.id }}"> {{rule.id}} </a></td>
         <td>{{ rule.handle }}</td>
         <td>{{ rule.expr }}</td>
         <td>
@@ -32,12 +34,10 @@
           {% else %}
           {{ rule.description }}
           {% endif %}</td>
-        <td>{{ rule.table().name }}</td>
+        <td><a href="/table/{{ rule.table().name}}/{{ rule.family }}">   {{ rule.table().name }}</a></td>
         <td>{{ rule.family }}</td>
-        <td>{{ rule.chain.name }}</td>
-        <td>
-          <button class="btn btn-danger" onclick="window.location.href='/rules/{{ rule.handle }}/delete'">Delete</button>
-        </td>
+        <td><a href="/chain/{{ rule.chain.name }}/{{ rule.chain.family }}/{{ rule.table().name }}"> {{ rule.chain.name }}</a></td>
+
                     <td> {% for statement in statements %}
                 {% if statement.rule_id == rule.id %}
                 {% if statement.accept != None %}
@@ -102,6 +102,11 @@
                 {% endif %}
                 {% endif %}  
               {% endfor %}    </td>
+              <td>
+                <button class="btn btn-danger" onclick="window.location.href='/rules/{{ rule.handle }}/delete'">Delete</button> 
+                <br></br>
+                <button class="btn btn-primary" onclick="window.location.href='/rule/{{ rule.id }}'">Details</button>
+              </td>
       </tr>
 
     {% endfor %}

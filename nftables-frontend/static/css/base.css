@@ -75,3 +75,16 @@
     align-items: center;
     flex-direction: column;
 }
+
+.navbar-nav {
+    list-style: none;
+}
+
+.navbar-nav .active {
+    background-color: #858585;
+    color: #343a40 !important;
+    border-radius: 50px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
