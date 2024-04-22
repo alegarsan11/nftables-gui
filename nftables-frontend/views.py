@@ -70,11 +70,11 @@ def get_table(table_id, family):
     chains = service.get_chains_from_table(table_id,family=table.family)
     return render_template('tables/table.html', table=table, chains=chains)
 
-@visualization_bp.route('/flush_table/<table_id>')
-def flush_table(table_id):
-    table = Table.query.get(table_id)
+@visualization_bp.route('/flush_table/<table_id>/<family>')
+def flush_table(table_id, family):
+    table = service.get_table(table_id, family)
     response = api.flush_table_request(table.name, table.family)
-
+    return redirect('/tables')
 
 
 @creation_bp.route('/edit_user/<user_id>', methods=['POST'])
@@ -255,9 +255,9 @@ def add_table_post():
         flash('Error creating table.')
     return render_template('tables/add_table.html', form=form)
 
-@creation_bp.route('/delete_table/<table_id>')
-def delete_table(table_id):
-    table = Table.query.get(table_id)
+@creation_bp.route('/delete_table/<table_id>/<family>')
+def delete_table(table_id, family):
+    table = service.get_table(table_id, family)
     response = api.delete_table_request(table.name, table.family)
     service.delete_table(table_id)
     return redirect('/tables')

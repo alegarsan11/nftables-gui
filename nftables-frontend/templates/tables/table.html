@@ -5,8 +5,8 @@
 {% block content %}
 <div class="container">
     <h1>Table: {{ table.name }}</h1>
-    <button class="btn btn-danger" onclick="location.href='/delete_table/{{ table.name }}'">Delete table</button>
-    <button class="btn btn-warning" onclick="location.href='/flush_table/{{ table.name }}'">Flush table</button>
+    <button class="btn btn-danger" onclick="location.href='/delete_table/{{ table.name }}/{{ table.family }}'">Delete table</button>
+    <button class="btn btn-warning" onclick="location.href='/flush_table/{{ table.name }}/{{ table.family }}'">Flush table</button>
     <br></br>
     <table class="table personal-table">
         <thead>
@@ -26,7 +26,7 @@
             {% for chain in chains %}
             {% if chain.family == table.family %}
                 <tr>
-                    <td><a href="/chain/{{ chain.name }}"> {{ chain.name }}</a></td>
+                    <td><a href="/chain/{{ chain.name }}/{{chain.family}}/{{ table.name }}"> {{ chain.name }}</a></td>
                     <td>{{ chain.family }}</td>
                     <td>
                         {% if chain.description %}

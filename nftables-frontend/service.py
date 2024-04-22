@@ -162,20 +162,20 @@ def delete_rules_form_chain(chain_id, family, table):
         db.session.delete(rule)
     db.session.commit()
     
-def insert_statement(rule_id, saddr, daddr, sport, dport, protocol, description=None, reject=None, log=None, nflog=None, drop=None, accept=None, queue=None, conntrack=None, limit=None, counter=None, return_=None, jump=None, go_to=None):
-    if limit != None or log != None or nflog != None or counter != None:
-        statement = NotTerminalStatement(rule_id=rule_id, src_ip=saddr, dst_ip=daddr, src_port=sport, dst_port=dport, protocol=protocol, description=description, limit=limit, log=log, nflog=nflog, counter=counter)
-    elif reject != None or drop != None or accept != None or queue != None or return_ != None or jump != None or go_to != None:
+def insert_statement(rule_id, saddr, daddr, sport, dport, protocol, description=None, reject=None, log=None, nflog=None, drop=None, accept=None, queue=None, limit=None, counter=None, return_=None, jump=None, go_to=None, masquerade=None, snat=None, dnat=None, redirect=None):
+    if limit != None or log != None or nflog != None or counter != None or masquerade != None or snat != None or dnat != None or redirect != None:
+        statement = NotTerminalStatement(rule_id=rule_id, src_ip=saddr, dst_ip=daddr, src_port=sport, dst_port=dport, protocol=protocol, description=description, limit=limit, log=log, nflog=nflog, counter=counter, masquerade=masquerade, snat=snat, dnat=dnat, redirect=redirect)
+    elif reject != None or drop != None or accept != None or queue != None or return_ != None or jump != None or go_to != None :
         statement = TerminalStatement(rule_id=rule_id, src_ip=saddr, dst_ip=daddr, src_port=sport, dst_port=dport, protocol=protocol, description=description, reject=reject, drop=drop, accept=accept, queue=queue, return_=return_, jump=jump, go_to=go_to)
     else:
         statement = Statement(rule_id=rule_id, src_ip=saddr, dst_ip=daddr, src_port=sport, dst_port=dport, protocol=protocol, description=description)
     db.session.add(statement)
     db.session.commit()
 
-def check_existing_statement( saddr, daddr, sport, dport, protocol, accept, drop, reject, log, nflog, limit, counter, return_, jump, go_to, queue, conntrack):
+def check_existing_statement( saddr, daddr, sport, dport, protocol, accept, drop, reject, log, nflog, limit, counter, return_, jump, go_to, queue, masquerade):
     if limit != None or log != None or nflog != None or counter != None:
         statement = NotTerminalStatement( src_ip=saddr, dst_ip=daddr, src_port=sport, dst_port=dport, protocol=protocol, limit=limit, log=log, nflog=nflog, counter=counter)
-    if reject != None or drop != None or accept != None or queue != None or return_ != None or jump != None or go_to != None:
+    if reject != None or drop != None or accept != None or queue != None or return_ != None or jump != None or go_to != None != masquerade != None:
         statement = TerminalStatement( src_ip=saddr, dst_ip=daddr, src_port=sport, dst_port=dport, protocol=protocol, reject=reject, drop=drop, accept=accept, queue=queue, return_=return_, jump=jump, go_to=go_to)
     else:
         statement = Statement( src_ip=saddr, dst_ip=daddr, src_port=sport, dst_port=dport, protocol=protocol)
@@ -189,6 +189,7 @@ def iteration_on_chains(rule, chain_id, family):
     if check_existing_rule(rule=str(rule["rule"]["expr"]), chain_id=chain_id, family=family) == False :   
         rule_id = insert_rule(handle=str(rule["rule"]["handle"]), chain_id=rule["rule"]["chain"], family=rule["rule"]["family"], expr=str(rule["rule"]["expr"]))
         for j, expr in enumerate(rule["rule"]["expr"]):
+            print(expr)
             saddr = None
             daddr = None
             sport = None
@@ -201,12 +202,15 @@ def iteration_on_chains(rule, chain_id, family):
             limit = None
             return_ = None
             jump = None
+            masquerade = None
             go_to = None
             queue = None
             counter = None
-            conntrack = None
             protocol = None
             protocol = None
+            snat = None
+            dnat = None
+            redirect = None
             if expr.get("match", None) != None and expr.get("match").get("left", None) != None and expr.get("match").get("left").get("payload", None) != None:
                 match = expr.get("match")
                 payload = match.get("left").get("payload")
@@ -235,18 +239,24 @@ def iteration_on_chains(rule, chain_id, family):
                 nflog = str(expr.get("nflog"))
             if expr.get("limit", None) != None:
                 limit = str(expr.get("limit"))
-            if expr.get("return", None) != None:
-                return_ = str(expr.get("return"))
+            if expr.get("snat", None) != None:
+                snat = str(expr.get("snat"))
+            if expr.get("dnat", None) != None:
+                dnat = str(expr.get("dnat"))
+            if expr.get("redirect", None) != None:
+                redirect = str(expr.get("redirect"))
+            if "masquerade" in expr:
+                masquerade = True
+            if "return" in expr:
+                return_ = True
             if expr.get("jump", None) != None:
                 jump = str(expr.get("jump"))
             if expr.get("go_to", None) != None:
                 go_to = str(expr.get("go_to"))
             if expr.get("queue", None) != None:
                 queue = str(expr.get("queue"))
-            if expr.get("conntrack", None) != None:
-                conntrack = str(expr.get("conntrack"))
-            if saddr != None or daddr != None or sport  != None or dport != None or protocol != None or counter != None or limit != None or log != None or nflog != None or reject != None or drop != None or accept != None or queue != None or return_ != None or jump != None or go_to != None:
-                insert_statement(rule_id=rule_id, sport=sport, dport=dport, saddr=saddr, daddr=daddr, protocol=protocol, accept=accept, drop=drop, reject=reject, log=log, nflog=nflog, limit=limit, counter=counter, return_=return_, jump=jump, go_to=go_to, queue=queue, conntrack=conntrack)
+            if saddr != None or daddr != None or sport  != None or dport != None or protocol != None or counter != None or limit != None or log != None or nflog != None or reject != None or drop != None or accept != None or queue != None or return_ != None or jump != None or go_to != None or masquerade != None or snat != None or dnat != None or redirect != None:
+                insert_statement(rule_id=rule_id, sport=sport, dport=dport, saddr=saddr, daddr=daddr, protocol=protocol, accept=accept, drop=drop, reject=reject, log=log, nflog=nflog, limit=limit, counter=counter, return_=return_, jump=jump, go_to=go_to, queue=queue, masquerade=masquerade, snat=snat, dnat=dnat, redirect=redirect)
 
                 
                 
@@ -308,6 +318,7 @@ def load_data():
     for chain in chains:
         result_rules = api.list_chain_request(chain.name, chain.family, chain.table.name)
         result_rules = result_rules["rules"]["nftables"]
+        print(result_rules)
         for i, rule in enumerate(result_rules):
             if i ==0 or i ==1:
                 continue

@@ -104,7 +104,7 @@ class TerminalStatement(Statement):
     drop = db.Column(db.String(120), nullable=True)
     accept = db.Column(db.String(120), nullable=True)
     queue = db.Column(db.String(120), nullable=True)
-    return_ = db.Column(db.String(120), nullable=True)
+    return_ = db.Column(db.Boolean(), nullable=True)
     jump = db.Column(db.String(120), nullable=True)
     go_to = db.Column(db.String(120), nullable=True)
 
@@ -116,6 +116,11 @@ class NotTerminalStatement(Statement):
     log = db.Column(db.String(120), nullable=True)
     counter = db.Column(db.String(120), nullable=True)
     nflog = db.Column(db.String(120), nullable=True)
+    masquerade = db.Column(db.Boolean(), nullable=True)
+    snat = db.Column(db.String(120), nullable=True)
+    dnat = db.Column(db.String(120), nullable=True)
+    redirect = db.Column(db.String(120), nullable=True)
+
 
     def __repr__(self):
         return '<NotTerminalStatement %r>' % self.id

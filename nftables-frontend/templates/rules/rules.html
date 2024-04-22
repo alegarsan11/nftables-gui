@@ -88,6 +88,18 @@
                 {% if statement.nflog != None %}
                  {{ statement.nflog }}
                  {% endif %}
+                {% if statement.masquerade != None %}
+                {{ statement.masquerade }}
+                {% endif %}
+                {% if statement.snat != None %}
+                {{ statement.snat }}
+                {% endif %}
+                {% if statement.dnat != None %}
+                {{ statement.dnat }}
+                {% endif %}
+                {% if statement.redirect != None %}
+                {{ statement.redirect }}
+                {% endif %}
                 {% endif %}  
               {% endfor %}    </td>
       </tr>
