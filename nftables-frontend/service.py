@@ -216,8 +216,8 @@ def iteration_on_chains(rule, chain_id, family):
         if(rule_.expr != str(rule["rule"]["expr"]) ):
             rule_.expr = str(rule["rule"]["expr"])
         db.session.commit()
-        delete_statements_from_rule(rule_id)
     for j, expr in enumerate(rule["rule"]["expr"]):
+        print(expr)
         saddr = None
         daddr = None
         sport = None
@@ -292,6 +292,7 @@ def iteration_on_chains(rule, chain_id, family):
         if expr.get("queue", None) != None:
             queue = str(expr.get("queue"))
         if saddr != None or daddr != None or sport  != None or dport != None or protocol != None or counter != None or limit != None or log != None or nflog != None or reject != None or drop != None or accept != None or queue != None or return_ != None or jump != None or go_to != None or masquerade != None or snat != None or dnat != None or redirect != None or input_interface != None or output_interface != None:
+            
             insert_statement(rule_id=rule_id, sport=sport, dport=dport, saddr=saddr, daddr=daddr, protocol=protocol, accept=accept, drop=drop, reject=reject, log=log, nflog=nflog, limit=limit, counter=counter, return_=return_, jump=jump, go_to=go_to, queue=queue, masquerade=masquerade, snat=snat, dnat=dnat, redirect=redirect, input_interface=input_interface, output_interface=output_interface)
 
                 
@@ -365,3 +366,9 @@ def load_data():
 def get_rule(rule_id):
     rule = Rule.query.filter_by(id=rule_id).first()
     return rule
+
+def delete_all_statements():
+    statements = Statement.query.all()
+    for statement in statements:
+        db.session.delete(statement)
+    db.session.commit()

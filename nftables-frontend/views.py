@@ -338,14 +338,15 @@ def flush_chain(chain_id, family,table):
 @visualization_bp.route('/rules')
 def get_rules():
     rules = service.get_rules()
-    for rule in rules:
-        rule_result = api.list_chain_request(rule.chain.name, rule.family, rule.chain.table.name)
-        service.delete_statements_from_rule(rule.id)
-        for i, rule in enumerate(rule_result):
+    service.delete_all_statements()
+    for rule_aux in rules:
+        rule_result = api.list_chain_request(rule_aux.chain.name, rule_aux.family, rule_aux.chain.table.name)
+        for i, rule in enumerate(rule_result["rules"]["nftables"]):
             if i == 0 or i == 1:
                 continue
             else:
-                service.iteration_on_chains(rule=rule["rules"]["nftables"], chain_id=rule.chain.name, family=rule.family)
+                print(rule)
+                service.iteration_on_chains(rule=rule, chain_id=rule_aux.chain.name, family=rule_aux.family)
     statements = service.get_statements()
     return render_template('rules/rules.html', rules=rules, statements=statements)
 
@@ -354,13 +355,14 @@ def get_rule(rule_id):
     rule = service.get_rule(rule_id)
     rule_result = api.list_chain_request(rule.chain.name, rule.family, rule.chain.table.name)
     service.delete_statements_from_rule(rule_id)
-    for i, rule_aux in enumerate(rule_result):
+    for i, rule_aux in enumerate(rule_result["rules"]["nftables"]):
         if i == 0 or i == 1:
             continue
         else:
-            service.iteration_on_chains(rule=rule_aux["rules"]["nftables"], chain_id=rule.chain.name, family=rule.family)
-    statements = service.get_statements_from_rule(rule_id)
+            service.iteration_on_chains(rule=rule_aux, chain_id=rule.chain.name, family=rule.family)
     
+    statements = service.get_statements_from_rule(rule_id)
+    print(statements)
     return render_template('rules/rule.html', rule=rule, statements=statements)
 
 @visualization_bp.route('/rules/create_rule')
