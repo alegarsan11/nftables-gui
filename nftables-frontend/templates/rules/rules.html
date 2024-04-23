@@ -10,14 +10,12 @@
   <table class="table personal-table">
     <thead>
       <tr>
-        <th>Id</th>
         <th>Handle</th>
-        <th>Expresion</th>
+        <th>Expresions</th>
         <th>Description</th>
         <th>Table</th>
         <th>Family</th>
         <th>Chain</th>
-        <th>Statements</th>
         <th>Actions</th>
       </tr>
     </thead>
@@ -25,7 +23,6 @@
        
     {% for rule in rules %}
       <tr>
-        <td><a href="/rule/{{ rule.id }}"> {{rule.id}} </a></td>
         <td>{{ rule.handle }}</td>
         <td>{{ rule.expr }}</td>
         <td>
@@ -38,70 +35,6 @@
         <td>{{ rule.family }}</td>
         <td><a href="/chain/{{ rule.chain.name }}/{{ rule.chain.family }}/{{ rule.table().name }}"> {{ rule.chain.name }}</a></td>
 
-                    <td> {% for statement in statements %}
-                {% if statement.rule_id == rule.id %}
-                {% if statement.accept != None %}
-                  {{ statement.accept }}
-                {% endif %}
-                {% if statement.reject != None %}
-                  {{ statement.reject }}
-                {% endif %}
-                {% if statement.drop != None %}
-                  {{ statement.drop }}
-                {% endif %}
-                {% if statement.counter != None %}
-                  {{ statement.counter }}
-                {% endif %}
-                {% if statement.log != None %}
-                  {{ statement.log }}
-                {% endif %}
-                {% if statement.jump != None %}
-                  {{ statement.jump }}
-                {% endif %}
-                {% if statement.return_ != None %}
-                  {{ statement.return_ }}
-                {% endif %}
-                {% if statement.limit != None %}
-                  {{ statement.limit }}
-                {% endif %}
-                {% if statement.go_to != None %}
-                  {{ statement.go_to }}
-                {% endif %}
-                {% if statement.protocol != None %}
-                  {{ statement.protocol }}
-                {% endif %}
-                {% if statement.src_ip != None %}
-                  {{ statement.src_ip }}
-                {% endif %}
-                {% if statement.dst_ip != None %}
-                  {{ statement.dst_ip }}
-                {% endif %}
-                {% if statement.src_port != None %}
-                  {{ statement.src_port }}
-                {% endif %}
-                {% if statement.dst_port != None %}
-                  {{ statement.dst_port }}
-                {% endif %}
-                {% if statement.queue != None %}
-                  {{ statement.queue }}
-                {% endif %}
-                {% if statement.nflog != None %}
-                 {{ statement.nflog }}
-                 {% endif %}
-                {% if statement.masquerade != None %}
-                {{ statement.masquerade }}
-                {% endif %}
-                {% if statement.snat != None %}
-                {{ statement.snat }}
-                {% endif %}
-                {% if statement.dnat != None %}
-                {{ statement.dnat }}
-                {% endif %}
-                {% if statement.redirect != None %}
-                {{ statement.redirect }}
-                {% endif %}
-                {% endif %}  
-              {% endfor %}    </td>
               <td>
                 <button class="btn btn-danger" onclick="window.location.href='/rules/{{ rule.handle }}/delete'">Delete</button> 
                 <br></br>

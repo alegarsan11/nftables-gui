@@ -1,0 +1,32 @@
+.personal-table {
+    background-color: #343a40;
+    color: #fff;
+    border: 1px solid #343a40;
+    margin: 0 auto; /* Centrar la tabla */
+  }
+  
+  .personal-table th {
+    background-color: #343a40;
+    color: #fff;
+    border: 1px solid #343a40;
+    text-align: center;
+    padding: 10px; /* Añadir espacio alrededor del texto */
+    font-weight: bold; /* Texto en negrita */
+  }
+  
+  .personal-table td {
+    background-color: #fff;
+    color: #343a40;
+    border: 1px solid #343a40;
+    text-align: center;
+    padding: 10px; /* Añadir espacio alrededor del texto */
+  }
+  
+  .personal-table tr:nth-child(odd) {
+    background-color: #f0f0f0; /* Color de fondo gris claro para filas pares */
+  }
+  
+  .personal-table tr:hover {
+    background-color: #e0e0e0; /* Color de fondo gris claro para filas al pasar el cursor */
+  }
+  

@@ -340,3 +340,12 @@ def get_rules():
     rules = service.get_rules()
     statements = service.get_statements()
     return render_template('rules/rules.html', rules=rules, statements=statements)
+
+@visualization_bp.route('/rule/<rule_id>')
+def get_rule(rule_id):
+    rule = service.get_rule(rule_id)
+    statements = service.get_statements_from_rule(rule_id)
+    print(statements)
+
+    
+    return render_template('rules/rule.html', rule=rule, statements=statements)

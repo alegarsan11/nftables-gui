@@ -86,6 +86,7 @@ class Rule(db.Model):
         chain = Chain.query.filter_by(name=self.chain_id, family=self.family).first()
         return chain.get_table()
     
+    
 class Statement(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     rule_id = db.Column(db.Integer, db.ForeignKey('rule.id'), nullable=False)

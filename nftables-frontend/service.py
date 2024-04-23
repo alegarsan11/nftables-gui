@@ -181,15 +181,29 @@ def check_existing_statement( saddr, daddr, sport, dport, protocol, accept, drop
         statement = Statement( src_ip=saddr, dst_ip=daddr, src_port=sport, dst_port=dport, protocol=protocol)
     return statement.rule_id
 
+def check_terminal_or_not_terminal(statement):
+    if statement.reject != None or statement.drop != None or statement.accept != None or statement.queue != None or statement.return_ != None or statement.jump != None or statement.go_to != None:
+        return "terminal"
+    return "not_terminal"
+
 def get_statements_from_rule(rule_id):
-    rule = Rule.query.get(rule_id)
-    return rule.statements
+    rule = Rule.query.filter_by(id=rule_id).first()
+    statements = []
+    for statement in rule.statement:
+        not_terminal = NotTerminalStatement.query.filter_by(id=statement.id).first()
+        terminal = TerminalStatement.query.filter_by(id=statement.id).first()
+        if check_terminal_or_not_terminal(terminal) == "not_terminal":
+            statements.append(not_terminal)
+        elif check_terminal_or_not_terminal(terminal) == "terminal":
+            statements.append(terminal)
+        else:
+            statements.append(statement)
+    return statements
 
 def iteration_on_chains(rule, chain_id, family):
     if check_existing_rule(rule=str(rule["rule"]["expr"]), chain_id=chain_id, family=family) == False :   
         rule_id = insert_rule(handle=str(rule["rule"]["handle"]), chain_id=rule["rule"]["chain"], family=rule["rule"]["family"], expr=str(rule["rule"]["expr"]))
         for j, expr in enumerate(rule["rule"]["expr"]):
-            print(expr)
             saddr = None
             daddr = None
             sport = None
@@ -318,7 +332,6 @@ def load_data():
     for chain in chains:
         result_rules = api.list_chain_request(chain.name, chain.family, chain.table.name)
         result_rules = result_rules["rules"]["nftables"]
-        print(result_rules)
         for i, rule in enumerate(result_rules):
             if i ==0 or i ==1:
                 continue
@@ -327,3 +340,6 @@ def load_data():
 
     return  [Rule.query.count(), Chain.query.count(), Table.query.count()]
     
+def get_rule(rule_id):
+    rule = Rule.query.filter_by(id=rule_id).first()
+    return rule
