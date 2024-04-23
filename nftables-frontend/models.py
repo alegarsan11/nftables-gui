@@ -95,6 +95,8 @@ class Statement(db.Model):
     dst_ip = db.Column(db.String(120), nullable=True)
     src_port = db.Column(db.String(120), nullable=True)
     dst_port = db.Column(db.String(120), nullable=True)
+    input_interface = db.Column(db.String(120), nullable=True)
+    output_interface = db.Column(db.String(120), nullable=True)
     protocol = db.Column(db.String(120), nullable=True)
     
     def __repr__(self):

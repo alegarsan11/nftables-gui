@@ -41,6 +41,7 @@ def get_rule_chain(json_data: hug.types.json):
     aux = None
     if "masquerade" in masquerade:
         aux = True
+    print(result[1])
     return {"rules": result[1], "masquerade": aux}
 
 @hug.post('/edit_chain')

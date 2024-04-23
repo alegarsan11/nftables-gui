@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, flash, redirect, url_for
 from flask_login import login_user, logout_user, login_required, current_user
 from models import BaseChain, Chain, Rule, Statement, Table, User
-from forms.forms import BaseChainForm, ChainForm, LoginForm, CreateUserForm, TableForm, UpdateUserForm
+from forms.forms import BaseChainForm, ChainForm, LoginForm, CreateUserForm, RuleForm, TableForm, UpdateUserForm
 import service, api, os, matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
@@ -338,14 +338,47 @@ def flush_chain(chain_id, family,table):
 @visualization_bp.route('/rules')
 def get_rules():
     rules = service.get_rules()
+    for rule in rules:
+        rule_result = api.list_chain_request(rule.chain.name, rule.family, rule.chain.table.name)
+        service.delete_statements_from_rule(rule.id)
+        for i, rule in enumerate(rule_result):
+            if i == 0 or i == 1:
+                continue
+            else:
+                service.iteration_on_chains(rule=rule["rules"]["nftables"], chain_id=rule.chain.name, family=rule.family)
     statements = service.get_statements()
     return render_template('rules/rules.html', rules=rules, statements=statements)
 
 @visualization_bp.route('/rule/<rule_id>')
 def get_rule(rule_id):
     rule = service.get_rule(rule_id)
+    rule_result = api.list_chain_request(rule.chain.name, rule.family, rule.chain.table.name)
+    service.delete_statements_from_rule(rule_id)
+    for i, rule_aux in enumerate(rule_result):
+        if i == 0 or i == 1:
+            continue
+        else:
+            service.iteration_on_chains(rule=rule_aux["rules"]["nftables"], chain_id=rule.chain.name, family=rule.family)
     statements = service.get_statements_from_rule(rule_id)
-    print(statements)
-
     
     return render_template('rules/rule.html', rule=rule, statements=statements)
+
+@visualization_bp.route('/rules/create_rule')
+def create_rule():
+    form = RuleForm()
+    return render_template('rules/create_rule.html', form=form)
+
+@creation_bp.route('/rules/create_rule', methods=['POST'])
+def create_rule_post():
+    form = RuleForm()
+    if form.validate_on_submit():
+        response = api.create_rule_request(form.chain.data, form.family.data, form.expr.data, form.handle.data)
+        if(response == "Success"):
+            service.insert_rule(form.chain.data, form.family.data, form.expr.data, form.handle.data)
+            flash('Rule created successfully.')
+            return redirect('/rules')
+        else:
+            flash('Error creating rule.')
+    else:
+        flash('Error creating rule.')
+    return render_template('rules/create_rule.html', form=form)

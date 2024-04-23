@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% block head %}
+{{ super() }}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/rules.css') }}">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script>
+$(document).ready(function(){
+    $('#formSelect').change(function(){
+        if ($(this).val() == 'form1') {
+            $('#statements').show();
+            $('#statements_term').hide();
+        } else if ($(this).val() == 'form2') {
+            $('#statements').hide();
+            $('#statements_term').show();
+        } else {
+            $('#statements').hide();
+            $('#statements_term').hide();
+        }
+    });
+});
+</script>
+{% endblock %}
+{% block content %}
+<div class="container">
+    <h1>Create Rule</h1>
+    <form method="POST" action="/rules/create_rule" class="needs-validation" novalidate>
+        {{ form.csrf_token}}
+        <div class="form-group">
+            {{ form.description.label(class="form-control-label") }}
+            {{ form.description(class="form-control form-control-lg") }}
+        </div>
+        <div class="form-group">
+            {{ form.chain.label(class="form-control-label") }}
+            {{ form.chain(class="form-control form-control-lg") }}
+        </div>
+        <div class="form-group">
+            {{ form.family.label(class="form-control-label") }}
+            {{ form.family(class="form-control form-control-lg") }}
+        </div>
+        <div class="form-group">
+            {{ form.handle.label(class="form-control-label") }}
+            {{ form.handle(class="form-control form-control-lg") }}
+        </div>
+        <div class="form-group">
+            <label for="formSelect">Selects the statements:</label>
+            <select class="form-control" id="formSelect">
+                <option value="">--Selects--</option>
+                <option value="form1">Not terminal statements</option>
+                <option value="form2">Terminal statements</option>
+            </select>
+        </div>
+        <div id="statements" class="form-group" style="display:none">
+            {% for field in form.statements %}
+                {% if field.name != 'csrf_token' and field.type != 'SubmitField' %}
+                    <div class="form-group">
+                        {{ field.label(class="form-control-label") }}
+                        {{ field(class="form-control form-control-lg") }}
+                    </div>
+                {% endif %}
+            {% endfor %}
+        </div>
+        <div id="statements_term" class="form-group" style="display:none">
+            {% for field in form.statements_term %}
+                {% if field.name != 'csrf_token' and field.type != 'SubmitField' %}
+                    <div class="form-group">
+                        {{ field.label(class="form-control-label") }}
+                        {{ field(class="form-control form-control-lg") }}
+                    </div>
+                {% endif %}
+            {% endfor %}
+        </div>
+        <div class="form-group">
+            {{ form.submit (class="btn btn-primary") }}
+        </div>
+    </form>
+</div>
+{% endblock %}

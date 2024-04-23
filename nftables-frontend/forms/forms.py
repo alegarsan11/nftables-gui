@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SubmitField, SelectField, IntegerField
+from wtforms import StringField, PasswordField, SubmitField, SelectField, IntegerField, FormField, FieldList
 from wtforms.validators import DataRequired, Email, EqualTo
 from wtforms import ValidationError
 from models import Chain, Table, User
@@ -116,7 +116,6 @@ class BaseChainForm(ChainForm):
             raise ValidationError('Priority must be between -400 and 300.')
 
 class StatementForm(FlaskForm):
-    type = SelectField('Type', choices=[('terminal', 'terminal'), ('not_terminal', 'not_terminal')], validators=[DataRequired()])
     src_ip = StringField('Source IP')
     dst_ip = StringField('Destination IP')
     src_port = StringField('Source Port')
@@ -191,8 +190,9 @@ class NotTerminalStatementForm(StatementForm):
 class RuleForm(FlaskForm):
     chain = StringField('Chain', validators=[DataRequired()])
     family = StringField('Family', validators=[DataRequired()])
-    expr = StringField('Expression', validators=[DataRequired()])
     handle = StringField('Handle', validators=[DataRequired()])
+    statements = FormField(NotTerminalStatementForm)
+    statements_term = FormField(TerminalStatementForm)
     description = StringField('Description')
     submit = SubmitField('Add Rule')
     
