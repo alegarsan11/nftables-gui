@@ -18,6 +18,14 @@ $(document).ready(function(){
         }
     });
 });
+
+    // Función para actualizar el valor del input oculto con la table.family seleccionada
+function updateHiddenInput() {
+    var selectedTable = document.getElementById('chain').value;
+    var hiddenInput = document.getElementById('family');
+    hiddenInput.value = selectedTable.split('-')[1].trim(); // Obtener la parte de la familia de la tabla seleccionada
+}
+
 </script>
 {% endblock %}
 {% block content %}
@@ -30,17 +38,21 @@ $(document).ready(function(){
             {{ form.description(class="form-control form-control-lg") }}
         </div>
         <div class="form-group">
-            {{ form.chain.label(class="form-control-label") }}
-            {{ form.chain(class="form-control form-control-lg") }}
+            {{ form.chain.label }}
+            <select id="chain" name="chain" class="form-control" onchange="updateHiddenInput()">
+                {% for chain in chains %}
+                <option value="{{ chain.name }}-{{chain.family}}-{{chain.table.name}}">Name: {{ chain.name }} - Family: {{ chain.family }} - Table: {{ chain.table.name }}</option>
+                {% endfor %}
+            </select>
+            {% if form.chain.errors %}
+            <ul class="errors">
+                {% for error in form.chain.errors %}
+                <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+            {% endif %}
         </div>
-        <div class="form-group">
-            {{ form.family.label(class="form-control-label") }}
-            {{ form.family(class="form-control form-control-lg") }}
-        </div>
-        <div class="form-group">
-            {{ form.handle.label(class="form-control-label") }}
-            {{ form.handle(class="form-control form-control-lg") }}
-        </div>
+
         <div class="form-group">
             <label for="formSelect">Selects the statements:</label>
             <select class="form-control" id="formSelect">
@@ -49,12 +61,24 @@ $(document).ready(function(){
                 <option value="form2">Terminal statements</option>
             </select>
         </div>
+        {% if form.chain.errors == [] and form.description.errors == [] %}
+        <div class="alert alert-danger" role="alert">
+            <strong>Warning!</strong> The rule could not be created because there are errors in the statement form.
+        </div>
+        {% endif %}
         <div id="statements" class="form-group" style="display:none">
             {% for field in form.statements %}
                 {% if field.name != 'csrf_token' and field.type != 'SubmitField' %}
                     <div class="form-group">
                         {{ field.label(class="form-control-label") }}
                         {{ field(class="form-control form-control-lg") }}
+                        {% if field.errors %}
+                        <ul class="errors">
+                            {% for error in field.errors %}
+                            <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                        {% endif %}
                     </div>
                 {% endif %}
             {% endfor %}
@@ -65,10 +89,25 @@ $(document).ready(function(){
                     <div class="form-group">
                         {{ field.label(class="form-control-label") }}
                         {{ field(class="form-control form-control-lg") }}
+                        {% if field.errors %}
+                        <ul class="errors">
+                            {% for error in field.errors %}
+                            <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                        {% endif %}
                     </div>
                 {% endif %}
             {% endfor %}
         </div>
+        <input type="hidden" id="family" name="family" value="">
+        {% if form.errors %}
+        <ul class="errors">
+            {% for error in form.errors %}
+            <li>{{ error }}</li>
+            {% endfor %}
+        </ul>
+        {% endif %}
         <div class="form-group">
             {{ form.submit (class="btn btn-primary") }}
         </div>

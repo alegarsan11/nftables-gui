@@ -11,7 +11,6 @@
     <thead>
       <tr>
         <th>Handle</th>
-        <th>Expresions</th>
         <th>Description</th>
         <th>Table</th>
         <th>Family</th>
@@ -24,7 +23,6 @@
     {% for rule in rules %}
       <tr>
         <td>{{ rule.handle }}</td>
-        <td>{{ rule.expr }}</td>
         <td>
           {% if rule.description == None %}
             No description
@@ -38,7 +36,7 @@
               <td>
                 <button class="btn btn-danger" onclick="window.location.href='/rules/{{ rule.handle }}/delete'">Delete</button> 
                 <br></br>
-                <button class="btn btn-primary" onclick="window.location.href='/rule/{{ rule.id }}'">Details</button>
+                <button class="btn btn-primary" onclick="window.location.href='/rules/{{ rule.id }}'">Details</button>
               </td>
       </tr>
 

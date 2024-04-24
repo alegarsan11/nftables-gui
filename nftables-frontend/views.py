@@ -9,11 +9,12 @@ import matplotlib.pyplot as plt
 visualization_bp = Blueprint('visualization', __name__)
 creation_bp = Blueprint('creation', __name__)
 
+@login_required
 @visualization_bp.route('/list_ruleset')
 def list_ruleset():
     result = api.list_ruleset_request()    
     return render_template('ruleset.html', ruleset=result)
-
+@login_required
 @visualization_bp.route('/')
 def main_view():
     if current_user.is_authenticated:
@@ -21,7 +22,7 @@ def main_view():
         ip_address = os.popen('hostname -I').read().split(" ")[0] 
         categories = ['Reglas', 'Cadenas', 'Tablas']
         # Get the number of rules, chains and tables
-        values = service.load_data()
+        values = service.load_data(False)
         image_path = 'static/img/nftables_info.png'
         plt.figure(figsize=(8, 6))
         plt.bar(categories, values, color=['blue', 'green', 'orange'])
@@ -121,7 +122,7 @@ def get_chain(chain_id, family, table):
         if i == 0 or i == 1:
             continue
         else:                    
-            service.iteration_on_chains(rule, chain_id, family)
+            service.iteration_on_chains(rule, chain_id, family, True)
             statements = service.get_statements_from_chain(chain_id=chain.name, family=family)
     return render_template('chains/chain.html', chain=chain, statements=statements)
 
@@ -214,7 +215,7 @@ def create_chain_post():
 def login_view():
     form = LoginForm()
     return render_template('login.html', form=form)
-
+@login_required
 @visualization_bp.route('/tables')
 def tables():
     result = api.list_tables_request()
@@ -299,7 +300,7 @@ def logout():
     '''Cerrar sesión'''
     logout_user()
     return redirect('/')
-    
+@login_required
 @visualization_bp.route("/chains")
 def get_chains():
     result = api.list_chains_request()
@@ -335,22 +336,14 @@ def flush_chain(chain_id, family,table):
     service.delete_rules_form_chain(chain_id, family, table)
     return redirect('/chains')
 
+@login_required
 @visualization_bp.route('/rules')
 def get_rules():
     rules = service.get_rules()
-    service.delete_all_statements()
-    for rule_aux in rules:
-        rule_result = api.list_chain_request(rule_aux.chain.name, rule_aux.family, rule_aux.chain.table.name)
-        for i, rule in enumerate(rule_result["rules"]["nftables"]):
-            if i == 0 or i == 1:
-                continue
-            else:
-                print(rule)
-                service.iteration_on_chains(rule=rule, chain_id=rule_aux.chain.name, family=rule_aux.family)
-    statements = service.get_statements()
-    return render_template('rules/rules.html', rules=rules, statements=statements)
 
-@visualization_bp.route('/rule/<rule_id>')
+    return render_template('rules/rules.html', rules=rules)
+
+@visualization_bp.route('/rules/<rule_id>')
 def get_rule(rule_id):
     rule = service.get_rule(rule_id)
     rule_result = api.list_chain_request(rule.chain.name, rule.family, rule.chain.table.name)
@@ -359,28 +352,32 @@ def get_rule(rule_id):
         if i == 0 or i == 1:
             continue
         else:
-            service.iteration_on_chains(rule=rule_aux, chain_id=rule.chain.name, family=rule.family)
+            service.iteration_on_chains(rule=rule_aux, chain_id=rule.chain.name, family=rule.family, condicion=True)
     
     statements = service.get_statements_from_rule(rule_id)
-    print(statements)
     return render_template('rules/rule.html', rule=rule, statements=statements)
 
 @visualization_bp.route('/rules/create_rule')
 def create_rule():
     form = RuleForm()
-    return render_template('rules/create_rule.html', form=form)
+    chains = service.get_chains()
+    return render_template('rules/create_rule.html', form=form, chains=chains)
 
 @creation_bp.route('/rules/create_rule', methods=['POST'])
 def create_rule_post():
     form = RuleForm()
+    # El handle ha de asignarse con la peticion de la api y el resultado que se obtenga de esta rule
+    chain_name = form.chain.data.split("-")[0]
+    table_name = form.chain.data.split("-")[2]
+    family = form.chain.data.split("-")[1]
+    form.chain.data = chain_name
+    form.family.data = family
     if form.validate_on_submit():
-        response = api.create_rule_request(form.chain.data, form.family.data, form.expr.data, form.handle.data)
-        if(response == "Success"):
-            service.insert_rule(form.chain.data, form.family.data, form.expr.data, form.handle.data)
-            flash('Rule created successfully.')
-            return redirect('/rules')
-        else:
-            flash('Error creating rule.')
+        id_ = service.get_rules()[-1].id + 1
+        expr = str(form.statements.data) + str(form.statements_term.data)
+        service.insert_rule_with_table(chain_id=form.chain.data, handle=2, expr=expr, family=form.family.data, description=form.description.data, table_id=table_name)    
+        return redirect('/rules/' + str(id_))
     else:
         flash('Error creating rule.')
-    return render_template('rules/create_rule.html', form=form)
+    chains = service.get_chains()
+    return render_template('rules/create_rule.html', form=form, chains=chains)

@@ -118,6 +118,14 @@ def check_existing_rule(chain_id, rule, family):
         return True
     return False
 
+def insert_rule_with_table(chain_id, family, expr, handle, table_id, description=None):
+    chain = get_chain(chain_id, family, table_id)
+    print(chain.table.name)
+    rule = Rule(chain_id=chain.name, family=family, expr=expr, handle=handle, description=description)
+    db.session.add(rule)
+    db.session.commit()
+    return rule.id
+
 def insert_rule(chain_id, family, expr, handle, description=None):
     rule = Rule(chain_id=chain_id, family=family, expr=expr, handle=handle, description=description)
     db.session.add(rule)
@@ -207,17 +215,16 @@ def delete_statements_from_rule(rule_id):
         db.session.delete(statement)
     db.session.commit()
 
-def iteration_on_chains(rule, chain_id, family):
+def iteration_on_chains(rule, chain_id, family, condicion):
     if check_existing_rule(rule=str(rule["rule"]["expr"]), chain_id=chain_id, family=family) == False :   
         rule_id = insert_rule(handle=str(rule["rule"]["handle"]), chain_id=rule["rule"]["chain"], family=rule["rule"]["family"], expr=str(rule["rule"]["expr"]))
-    else: 
+    elif check_existing_rule(rule=str(rule["rule"]["expr"]), chain_id=chain_id, family=family) == True and condicion == True: 
         rule_ = Rule.query.filter_by(expr=str(rule["rule"]["expr"]), chain_id=chain_id, family=family).first()
         rule_id = rule_.id
-        if(rule_.expr != str(rule["rule"]["expr"]) ):
-            rule_.expr = str(rule["rule"]["expr"])
+        print(rule)
+        rule_.expr = str(rule["rule"]["expr"])
         db.session.commit()
     for j, expr in enumerate(rule["rule"]["expr"]):
-        print(expr)
         saddr = None
         daddr = None
         sport = None
@@ -257,9 +264,9 @@ def iteration_on_chains(rule, chain_id, family):
                 protocol = str(payload.get("protocol"))
         if expr.get("match", None) != None and expr.get("match").get("left", None) != None and expr.get("match").get("left").get("meta", None) != None and expr.get("match").get("left").get("meta").get("key", None) != None:
             meta = expr.get("match").get("left").get("meta")
-            if meta == "iifname":
+            if "iifname" in meta.get("key"): 
                 input_interface = str(expr.get("match").get("op") + " " + expr.get("match").get("right"))
-            if meta == "oifname":
+            if "oifname" in meta.get("key") :
                 output_interface = str(expr.get("match").get("op") + " " + expr.get("match").get("right"))
         if expr.get("counter", None) != None:
             counter = str(expr.get("counter"))
@@ -322,7 +329,11 @@ def get_statements():
 
     return statements
 
-def load_data():
+def get_rules_from_api():
+    result = api.list_tables_request()
+    return result
+
+def load_data(condicion):
     result_tables = api.list_tables_request()
     result_chains = api.list_chains_request()
     family = []
@@ -350,6 +361,7 @@ def load_data():
                     item["chain"]["policy"] = None
                 if("type" in item["chain"]):
                     type = item["chain"]["type"]
+                
                 insert_chain(item["chain"]["name"], item["chain"]["family"], item["chain"]["policy"], item["chain"]["table"],type=type,  priority=prio, hook_type=hook)
     chains = get_chains()
     for chain in chains:
@@ -359,7 +371,8 @@ def load_data():
             if i ==0 or i ==1:
                 continue
             else:
-                iteration_on_chains(rule, chain.name, chain.family)
+                if check_existing_rule(rule=str(rule["rule"]["expr"]), chain_id=chain.name, family=chain.family) == False:
+                    insert_rule(handle=str(rule["rule"]["handle"]), chain_id=rule["rule"]["chain"], family=rule["rule"]["family"], expr=str(rule["rule"]["expr"]))
 
     return  [Rule.query.count(), Chain.query.count(), Table.query.count()]
     

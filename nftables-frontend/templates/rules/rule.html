@@ -6,25 +6,37 @@
 {% block content %}
 <div class="container">
     <h1>Rule</h1>
+    <button class="btn btn-primary" onclick="window.location.href='/rules/create_statement/{{ rule.id }}'">Create Statement</button>
     <div>
-        <h2>Handle: {{ rule.handle }}</h2>
-        <h2>Family: {{ rule.family }}</h2>
-        <h2>Table: {{ rule.table().name }}</h2>
-        <h2>Chain: {{ rule.chain.name }}</h2>
-        <h2>Description: {{ rule.description }}</h2>
+      <ul>
+        <li>
+        <h3>Handle: {{ rule.handle }}</h3>
+        </li>
+        <li>
+        <h3>Family: {{ rule.family }}</h3>
+        </li>
+        <li>
+        <h3>Table: {{ rule.table().name }}</h3>
+        </li>
+        <li>
+        <h3>Chain: {{ rule.chain.name }}</h3>
+        </li>
+        <li>
+        <h3>Description: {{ rule.description }}</h3>
+        </li>
+      </ul>
     </div>
     </div>
     <h1>Statements</h1>
         <table class="table personal-table">
                 <thead>
                   <tr>
-                    <th>id</th>
-                    <th>rule_id</th>
-                    <th>description</th>
                     <th>src_ip</th>
                     <th>dst_ip</th>
                     <th>src_port</th>
                     <th>dst_port</th>
+                    <th>input_interface</th>
+                    <th>output_interface</th>
                     <th>protocol</th>
                     <th>reject</th>
                     <th>drop</th>
@@ -47,13 +59,6 @@
                   
                     {% for statement in statements %}
                     <tr>
-                    <td>{{ statement.id }}</td>
-                    <td>{{ statement.rule_id }}</td>
-                    {% if statement.description != None %}
-                    <td>{{ statement.description }}</td>
-                    {% else %}
-                    <td>No description</td>
-                    {% endif %}
                     {% if statement.src_ip != None %}
                     <td>{{ statement.src_ip }}</td>
                     {% else %}
@@ -74,11 +79,9 @@
                     {% else %}
                     <td>No destination port</td>
                     {% endif %}
-                    {% if statement.protocol != None %}
-                    <td>{{ statement.protocol }}</td>
-                    {% else %}
-                    <td>No protocol</td>
-                    {% endif %}
+                    <td>{{ statement.input_interface or "" }}</td>
+                    <td>{{ statement.output_interface or "" }}</td>
+                    <td>{{ statement.protocol or "" }}</td>
                     <td>{{ statement.reject or "" }}</td>
                     <td>{{ statement.drop or "" }}</td>
                     <td>{{ statement.accept or "" }}</td>

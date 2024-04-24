@@ -1,6 +1,6 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SubmitField, SelectField, IntegerField, FormField, FieldList
-from wtforms.validators import DataRequired, Email, EqualTo
+from wtforms.validators import DataRequired, Email, EqualTo, Optional
 from wtforms import ValidationError
 from models import Chain, Table, User
 
@@ -116,13 +116,13 @@ class BaseChainForm(ChainForm):
             raise ValidationError('Priority must be between -400 and 300.')
 
 class StatementForm(FlaskForm):
-    src_ip = StringField('Source IP')
-    dst_ip = StringField('Destination IP')
-    src_port = StringField('Source Port')
-    dst_port = StringField('Destination Port')
-    protocol = StringField('Protocol')
-    description = StringField('Description')
-    submit = SubmitField('Add Statement')
+    src_ip = StringField('Source IP', validators=[Optional()])
+    dst_ip = StringField('Destination IP', validators=[Optional()])
+    src_port = StringField('Source Port', validators=[Optional()])
+    dst_port = StringField('Destination Port', validators=[Optional()])
+    protocol = StringField('Protocol', validators=[Optional()])
+    description = StringField('Description', validators=[Optional()])
+    submit = SubmitField('Add Statement', validators=[Optional()])
     
     def validate_src_ip(self, src_ip):
         if src_ip.data and not src_ip.data.replace(".", "").replace("/", "").replace(":", "").isdigit():
@@ -145,13 +145,13 @@ class StatementForm(FlaskForm):
             raise ValidationError('Protocol must be one of: tcp, udp, icmp, all.')
 
 class TerminalStatementForm(StatementForm):
-    reject = SelectField('Reject', choices=[('True', 'True'), ('False', 'False')])
-    drop = SelectField('Drop', choices=[('True', 'True'), ('False', 'False')])
-    accept = SelectField('Accept', choices=[('True', 'True'), ('False', 'False')])
-    queue = StringField('Queue')
-    return_ = SelectField('Return', choices=[('True', 'True'), ('False', 'False')])
-    jump = StringField('Jump')
-    go_to = StringField('Go To')
+    reject = SelectField('Reject', choices=[('True', 'True'), ('False', 'False')], validators=[Optional()])
+    drop = SelectField('Drop', choices=[('True', 'True'), ('False', 'False')], validators=[Optional()])
+    accept = SelectField('Accept', choices=[('True', 'True'), ('False', 'False')], validators=[Optional()])
+    queue = StringField('Queue', validators=[Optional()])
+    return_ = SelectField('Return', choices=[('True', 'True'), ('False', 'False')], validators=[Optional()])
+    jump = StringField('Jump', validators=[Optional()])
+    go_to = StringField('Go To', validators=[Optional()])
     
     def validate_queue(self, queue):
         if queue.data and not queue.data.isdigit():
@@ -166,10 +166,10 @@ class TerminalStatementForm(StatementForm):
             raise ValidationError('Go To must be a valid chain name.')
         
 class NotTerminalStatementForm(StatementForm):
-    limit = IntegerField('Limit')
-    log = StringField('Log')
-    counter = StringField('Counter')
-    nflog = StringField('NFLog')
+    limit = IntegerField('Limit', validators=[Optional()] )
+    log = StringField('Log', validators=[Optional()])
+    counter = StringField('Counter', validators=[Optional()])
+    nflog = StringField('NFLog', validators=[Optional()])
     
     def validate_limit(self, limit):
         if limit.data and not limit.data.isdigit():
@@ -179,9 +179,9 @@ class NotTerminalStatementForm(StatementForm):
         if log.data and not log.data.replace(":", "").replace("-", "").replace("_", "").replace(".", "").replace("/", "").replace(" ", "").isalnum():
             raise ValidationError('Log must be a valid log.')
         
-    def validate_counter(self, counter):
-        if counter.data and not counter.data.replace(":", "").replace("-", "").replace("_", "").replace(".", "").replace("/", "").replace(" ", "").isalnum():
-            raise ValidationError('Counter must be a valid counter.')
+  #  def validate_counter(self, counter):
+  #      if counter.data and not counter.data.replace(":", "").replace("-", "").replace("_", "").replace(".", "").replace("/", "").replace(" ", "").isalnum():
+  #          raise ValidationError('Counter must be a valid counter.')
         
     def validate_nflog(self, nflog):
         if nflog.data and not nflog.data.replace(":", "").replace("-", "").replace("_", "").replace(".", "").replace("/", "").replace(" ", "").isalnum():
@@ -190,17 +190,12 @@ class NotTerminalStatementForm(StatementForm):
 class RuleForm(FlaskForm):
     chain = StringField('Chain', validators=[DataRequired()])
     family = StringField('Family', validators=[DataRequired()])
-    handle = StringField('Handle', validators=[DataRequired()])
+    handle = StringField('Handle', validators=[Optional()])
     statements = FormField(NotTerminalStatementForm)
     statements_term = FormField(TerminalStatementForm)
-    description = StringField('Description')
+    description = StringField('Description', validators=[Optional()])
     submit = SubmitField('Add Rule')
-    
-    def validate_chain(self, chain):
-        chain = Chain.query.filter_by(name=chain.data).first()
-        if not chain:
-            raise ValidationError('Chain does not exist.')
-        
+            
     def validate_family(self, family):
         if family.data not in ['ip', 'inet', 'arp', 'bridge', 'netdev']:
             raise ValidationError('Family must be one of: ip, inet, arp, bridge, netdev.')

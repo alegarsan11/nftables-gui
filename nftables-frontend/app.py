@@ -13,6 +13,8 @@ app.register_blueprint(creation_bp)
 dir_path = os.path.dirname(os.path.realpath(__file__))
 app.config['SECRET_KEY'] = 'hfds732klejds90ahg'
 app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{dir_path}/instance/nftables.db'
+app.config['SESSION_COOKIE_SAMESITE'] = 'Strict'
+app.config['SESSION_COOKIE_SECURE'] = True
 login_manager.init_app(app)
 db.init_app(app)
 
