@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SubmitField, SelectField, IntegerField, FormField, FieldList
+from wtforms import StringField, PasswordField, SubmitField, SelectField, IntegerField, FormField, FieldList, BooleanField
 from wtforms.validators import DataRequired, Email, EqualTo, Optional
 from wtforms import ValidationError
 from models import Chain, Table, User
@@ -145,11 +145,11 @@ class StatementForm(FlaskForm):
             raise ValidationError('Protocol must be one of: tcp, udp, icmp, all.')
 
 class TerminalStatementForm(StatementForm):
-    reject = SelectField('Reject', choices=[('True', 'True'), ('False', 'False')], validators=[Optional()])
-    drop = SelectField('Drop', choices=[('True', 'True'), ('False', 'False')], validators=[Optional()])
-    accept = SelectField('Accept', choices=[('True', 'True'), ('False', 'False')], validators=[Optional()])
+    reject = BooleanField('Reject',validators=[Optional()])
+    drop = BooleanField('Drop',  validators=[Optional()])
+    accept = BooleanField('Accept', validators=[Optional()])
     queue = StringField('Queue', validators=[Optional()])
-    return_ = SelectField('Return', choices=[('True', 'True'), ('False', 'False')], validators=[Optional()])
+    return_ = BooleanField('Return',  validators=[Optional()])
     jump = StringField('Jump', validators=[Optional()])
     go_to = StringField('Go To', validators=[Optional()])
     

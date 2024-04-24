@@ -1,4 +1,5 @@
 import requests
+import service
 
 def create_table_request(name , family):
     json_data = {"json_data": {"nftables": [{"add": {"table":{"name": name, "family": family}}}]}}
@@ -116,3 +117,15 @@ def flush_chain_request(name, family, table):
     else:
         return "Error flushing chain."
     
+def create_rule_request(rule_id, chain_name, chain_table, family):
+    expr = {}
+    rule = service.get_rule(rule_id)
+    for statement in rule.statement:
+        expr[statement.expr] = statement.value
+        print(expr)
+    json_data = {"json_data": {"nftables": [{"add": {"rule":{"chain": chain_name, "table": chain_table, "family": family, "expr": expr}}}]}}
+    # response = requests.post('http://localhost:8000/rules/create_rule', json=json_data)
+    # if(response.json()["status"] == "success"):
+    #     return "Success"
+    # else:
+    #     return "Error creating rule."

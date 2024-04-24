@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, render_template
 from views import visualization_bp, creation_bp
 from flask_bootstrap import Bootstrap
 from models import db
@@ -25,9 +25,18 @@ with app.app_context():
 migrate = Migrate(app, db)
 Bootstrap(app)
 
+# @app.errorhandler(404)
+# def page_not_found(e):
+#     return render_template('error.html', message='Page not found'), 404
+
+
+# @app.errorhandler(500)
+# def internal_error(e):
+#     return render_template('error.html', message="Internal server error"), 500
+
 @app.route('/favicon.ico')
 def favicon():
     return app.send_static_file('favicon.ico')
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=False)

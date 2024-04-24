@@ -1,3 +1,4 @@
+import json
 from models import Chain, NotTerminalStatement, Rule, Statement, Table, BaseChain, TerminalStatement, db, User
 from flask_login import LoginManager
 import api
@@ -138,6 +139,80 @@ def get_rules_from_chain(chain_id):
 
 def get_rules():
     return Rule.query.all()
+
+def from_form_to_statement(statement, statement_term, rule_id):
+    print(statement)
+    statement = json.loads(statement)
+    saddr = statement.get("src_ip")
+    daddr = statement.get("dst_ip")
+    print(daddr)
+    print(statement)
+    sport = statement.src_port.data
+    dport = statement.dst_port.data
+    protocol = statement.protocol.data
+    input_interface = statement.input_interface.data
+    output_interface = statement.output_interface.data
+    if statement_term.accept.data == True:
+        accept = True
+    else:
+        accept = None
+    if statement_term.drop.data == True:
+        drop = True
+    else:
+        drop = None
+    if statement_term.reject.data == True:
+        reject = True
+    else:
+        reject = None
+    if statement_term.log.data != True:
+        log = True
+    else:
+        log = None
+    if statement_term.nflog.data != True:
+        nflog = True
+    else:
+        nflog = None
+    if statement_term.limit.data != True:
+        limit = True
+    else:
+        limit = None
+    if statement_term.counter.data != None:
+        counter = True
+    else:
+        counter = None
+    if statement_term.return_.data == True:
+        return_ = True
+    else:
+        return_ = None
+    if statement_term.jump.data != None:
+        jump = True
+    else:
+        jump = None
+    if statement_term.go_to.data != None:
+        go_to = True
+    else:
+        go_to = None
+    if statement_term.queue.data != None:
+        queue = True
+    else:
+        queue = None
+    if statement_term.masquerade.data == True:
+        masquerade = True
+    else:
+        masquerade = None
+    if statement_term.snat.data != None:
+        snat = True
+    else:
+        snat = None
+    if statement_term.dnat.data != None:
+        dnat = True
+    else:
+        dnat = None
+    if statement_term.redirect.data == True:
+        redirect = True
+    else:
+        redirect = None
+    insert_statement(rule_id=rule_id, sport=sport, dport=dport, saddr=saddr, daddr=daddr, protocol=protocol, accept=accept, drop=drop, reject=reject, log=log, nflog=nflog , limit=limit, counter=counter, return_=return_, jump=jump, go_to=go_to, queue=queue, masquerade=masquerade, snat=snat, dnat=dnat, redirect=redirect, input_interface=input_interface, output_interface=output_interface)
 
 def edit_chain(chain_description, chain_name, family, policy, type, hook_type=None, priority=None):
     chain = Chain.query.get(chain_name)
@@ -385,3 +460,4 @@ def delete_all_statements():
     for statement in statements:
         db.session.delete(statement)
     db.session.commit()
+    

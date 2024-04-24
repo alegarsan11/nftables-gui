@@ -9,13 +9,14 @@ import matplotlib.pyplot as plt
 visualization_bp = Blueprint('visualization', __name__)
 creation_bp = Blueprint('creation', __name__)
 
-@login_required
 @visualization_bp.route('/list_ruleset')
+@login_required
 def list_ruleset():
     result = api.list_ruleset_request()    
     return render_template('ruleset.html', ruleset=result)
-@login_required
+
 @visualization_bp.route('/')
+@login_required
 def main_view():
     if current_user.is_authenticated:
         host = os.uname().nodename
@@ -40,6 +41,7 @@ def main_view():
         return render_template('login.html', form=form)
     
 @visualization_bp.route('/users', methods=['GET'])  
+@login_required
 def users():
     users = User.query.all()
     return render_template('users/users.html', users=users)
@@ -215,8 +217,9 @@ def create_chain_post():
 def login_view():
     form = LoginForm()
     return render_template('login.html', form=form)
-@login_required
+
 @visualization_bp.route('/tables')
+@login_required
 def tables():
     result = api.list_tables_request()
     family = []
@@ -300,8 +303,9 @@ def logout():
     '''Cerrar sesión'''
     logout_user()
     return redirect('/')
-@login_required
+
 @visualization_bp.route("/chains")
+@login_required
 def get_chains():
     result = api.list_chains_request()
     for item in result["chains"]["nftables"]:
@@ -336,8 +340,8 @@ def flush_chain(chain_id, family,table):
     service.delete_rules_form_chain(chain_id, family, table)
     return redirect('/chains')
 
-@login_required
 @visualization_bp.route('/rules')
+@login_required
 def get_rules():
     rules = service.get_rules()
 
@@ -375,7 +379,15 @@ def create_rule_post():
     if form.validate_on_submit():
         id_ = service.get_rules()[-1].id + 1
         expr = str(form.statements.data) + str(form.statements_term.data)
+        print("Statements")
+        print(form.statements.data)
+        print(form.statements_term.data)
+        if (form.statements.data != None or form.statements_term.data != None):
+            print("HA ENTRADO")
+            service.from_form_to_statement(form.statements.data, form.statements_term.data, id_)
         service.insert_rule_with_table(chain_id=form.chain.data, handle=2, expr=expr, family=form.family.data, description=form.description.data, table_id=table_name)    
+        result = api.create_rule_request(id_, chain_name, family, table_name)
+        # Añadir el Handle desde otra peticion para obtener datos
         return redirect('/rules/' + str(id_))
     else:
         flash('Error creating rule.')
