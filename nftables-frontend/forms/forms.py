@@ -121,7 +121,6 @@ class StatementForm(FlaskForm):
     src_port = StringField('Source Port', validators=[Optional()])
     dst_port = StringField('Destination Port', validators=[Optional()])
     protocol = StringField('Protocol', validators=[Optional()])
-    description = StringField('Description', validators=[Optional()])
     submit = SubmitField('Add Statement', validators=[Optional()])
     
     def validate_src_ip(self, src_ip):
@@ -194,6 +193,7 @@ class RuleForm(FlaskForm):
     statements = FormField(NotTerminalStatementForm)
     statements_term = FormField(TerminalStatementForm)
     description = StringField('Description', validators=[Optional()])
+    statement_select = SelectField('Statement Type', choices=[('terminal', 'Terminal'), ('not_terminal', 'Not Terminal')], validators=[DataRequired()])
     submit = SubmitField('Add Rule')
             
     def validate_family(self, family):

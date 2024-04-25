@@ -90,7 +90,6 @@ class Rule(db.Model):
 class Statement(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     rule_id = db.Column(db.Integer, db.ForeignKey('rule.id'), nullable=False)
-    description = db.Column(db.String(120), nullable=True)
     src_ip = db.Column(db.String(120), nullable=True)
     dst_ip = db.Column(db.String(120), nullable=True)
     src_port = db.Column(db.String(120), nullable=True)

@@ -140,79 +140,109 @@ def get_rules_from_chain(chain_id):
 def get_rules():
     return Rule.query.all()
 
-def from_form_to_statement(statement, statement_term, rule_id):
-    print(statement)
-    statement = json.loads(statement)
-    saddr = statement.get("src_ip")
-    daddr = statement.get("dst_ip")
-    print(daddr)
-    print(statement)
-    sport = statement.src_port.data
-    dport = statement.dst_port.data
-    protocol = statement.protocol.data
-    input_interface = statement.input_interface.data
-    output_interface = statement.output_interface.data
-    if statement_term.accept.data == True:
-        accept = True
+def from_form_to_statement(statement, statement_term, rule_id, statement_select):
+    saddr = None
+    daddr = None
+    sport = None
+    dport = None
+    accept = None
+    drop = None
+    reject = None
+    log = None
+    nflog = None
+    limit = None
+    return_ = None
+    jump = None
+    masquerade = None
+    go_to = None
+    queue = None
+    counter = None
+    protocol = None
+    snat = None
+    dnat = None
+    input_interface = None
+    output_interface = None
+    redirect = None
+    if statement_select == "terminal":
+        saddr = statement_term.get("src_ip")
+        daddr = statement_term.get("dst_ip")
+        sport = statement_term.src_port.data
+        dport = statement_term.dst_port.data
+        protocol = statement_term.protocol.data
+        input_interface = statement_term.input_interface.data
+        output_interface = statement_term.output_interface.data
+        if statement_term.accept.data == True:
+            accept = True
+        else:
+            accept = None
+        if statement_term.drop.data == True:
+            drop = True
+        else:
+            drop = None
+        if statement_term.reject.data == True:
+            reject = True
+        else:
+            reject = None
+        if statement_term.return_.data == True:
+            return_ = True
+        else:
+            return_ = None
+        if statement_term.jump.data != None:
+            jump = True
+        else:
+            jump = None
+        if statement_term.go_to.data != None:
+            go_to = True
+        else:
+            go_to = None
+        if statement_term.queue.data != None:
+            queue = True
+        else:
+            queue = None
+
+        insert_statement(rule_id=rule_id, sport=sport, dport=dport, saddr=saddr, daddr=daddr, protocol=protocol, accept=accept, drop=drop, reject=reject, log=log, nflog=nflog , limit=limit, counter=counter, return_=return_, jump=jump, go_to=go_to, queue=queue, masquerade=masquerade, snat=snat, dnat=dnat, redirect=redirect, input_interface=input_interface, output_interface=output_interface)
+
     else:
-        accept = None
-    if statement_term.drop.data == True:
-        drop = True
-    else:
-        drop = None
-    if statement_term.reject.data == True:
-        reject = True
-    else:
-        reject = None
-    if statement_term.log.data != True:
-        log = True
-    else:
-        log = None
-    if statement_term.nflog.data != True:
-        nflog = True
-    else:
-        nflog = None
-    if statement_term.limit.data != True:
-        limit = True
-    else:
-        limit = None
-    if statement_term.counter.data != None:
-        counter = True
-    else:
-        counter = None
-    if statement_term.return_.data == True:
-        return_ = True
-    else:
-        return_ = None
-    if statement_term.jump.data != None:
-        jump = True
-    else:
-        jump = None
-    if statement_term.go_to.data != None:
-        go_to = True
-    else:
-        go_to = None
-    if statement_term.queue.data != None:
-        queue = True
-    else:
-        queue = None
-    if statement_term.masquerade.data == True:
-        masquerade = True
-    else:
-        masquerade = None
-    if statement_term.snat.data != None:
-        snat = True
-    else:
-        snat = None
-    if statement_term.dnat.data != None:
-        dnat = True
-    else:
-        dnat = None
-    if statement_term.redirect.data == True:
-        redirect = True
-    else:
-        redirect = None
-    insert_statement(rule_id=rule_id, sport=sport, dport=dport, saddr=saddr, daddr=daddr, protocol=protocol, accept=accept, drop=drop, reject=reject, log=log, nflog=nflog , limit=limit, counter=counter, return_=return_, jump=jump, go_to=go_to, queue=queue, masquerade=masquerade, snat=snat, dnat=dnat, redirect=redirect, input_interface=input_interface, output_interface=output_interface)
+        saddr = statement.get("src_ip")
+        daddr = statement.get("dst_ip")
+        sport = statement.get('src_port')
+        dport = statement.get('dst_port')
+        protocol = statement.get('protocol')
+        input_interface = statement.get('input_interface')
+        output_interface = statement.get('output_interface')
+        if statement_term.get("log") != None:
+            log = True
+        else:
+            log = None
+        if statement_term.get("nflog") != None:
+            nflog = True
+        else:
+            nflog = None
+        if statement_term.get("limit") != None:
+            limit = True
+        else:
+            limit = None
+        if statement_term.get("counter") == True:
+            counter = True
+        else:
+            counter = None
+        if statement_term.get("masquerade") == True:
+            masquerade = True
+        else:
+            masquerade = None
+        if statement_term.get("snat") != None:
+            snat = True
+        else:
+            snat = None
+        if statement_term.get("dnat") != None:
+            dnat = True
+        else:
+            dnat = None
+        if statement_term.get("redirect") == True:
+            redirect = True
+        else:
+            redirect = None
+        insert_statement(rule_id=rule_id, sport=sport, dport=dport, saddr=saddr, daddr=daddr, protocol=protocol, accept=accept, drop=drop, reject=reject, log=log, nflog=nflog , limit=limit, counter=counter, return_=return_, jump=jump, go_to=go_to, queue=queue, masquerade=masquerade, snat=snat, dnat=dnat, redirect=redirect, input_interface=input_interface, output_interface=output_interface)
 
 def edit_chain(chain_description, chain_name, family, policy, type, hook_type=None, priority=None):
     chain = Chain.query.get(chain_name)
@@ -245,13 +275,13 @@ def delete_rules_form_chain(chain_id, family, table):
         db.session.delete(rule)
     db.session.commit()
     
-def insert_statement(rule_id, saddr, daddr, sport, dport, protocol, description=None, reject=None, log=None, nflog=None, drop=None, accept=None, queue=None, limit=None, counter=None, return_=None, jump=None, go_to=None, masquerade=None, snat=None, dnat=None, redirect=None, input_interface=None, output_interface=None):
+def insert_statement(rule_id, saddr, daddr, sport, dport, protocol, reject=None, log=None, nflog=None, drop=None, accept=None, queue=None, limit=None, counter=None, return_=None, jump=None, go_to=None, masquerade=None, snat=None, dnat=None, redirect=None, input_interface=None, output_interface=None):
     if limit != None or log != None or nflog != None or counter != None or masquerade != None or snat != None or dnat != None or redirect != None:
-        statement = NotTerminalStatement(rule_id=rule_id, src_ip=saddr, dst_ip=daddr, src_port=sport, dst_port=dport,input_interface=input_interface, output_interface=output_interface, protocol=protocol, description=description, limit=limit, log=log, nflog=nflog, counter=counter, masquerade=masquerade, snat=snat, dnat=dnat, redirect=redirect)
+        statement = NotTerminalStatement(rule_id=rule_id, src_ip=saddr, dst_ip=daddr, src_port=sport, dst_port=dport,input_interface=input_interface, output_interface=output_interface, protocol=protocol, limit=limit, log=log, nflog=nflog, counter=counter, masquerade=masquerade, snat=snat, dnat=dnat, redirect=redirect)
     elif reject != None or drop != None or accept != None or queue != None or return_ != None or jump != None or go_to != None :
-        statement = TerminalStatement(rule_id=rule_id, src_ip=saddr, dst_ip=daddr, src_port=sport, dst_port=dport, input_interface=input_interface, output_interface=output_interface, protocol=protocol, description=description, reject=reject, drop=drop, accept=accept, queue=queue, return_=return_, jump=jump, go_to=go_to)
+        statement = TerminalStatement(rule_id=rule_id, src_ip=saddr, dst_ip=daddr, src_port=sport, dst_port=dport, input_interface=input_interface, output_interface=output_interface, protocol=protocol, reject=reject, drop=drop, accept=accept, queue=queue, return_=return_, jump=jump, go_to=go_to)
     else:
-        statement = Statement(rule_id=rule_id, src_ip=saddr, dst_ip=daddr, src_port=sport, dst_port=dport,input_interface=input_interface, output_interface=output_interface, protocol=protocol, description=description)
+        statement = Statement(rule_id=rule_id, src_ip=saddr, dst_ip=daddr, src_port=sport, dst_port=dport,input_interface=input_interface, output_interface=output_interface, protocol=protocol)
     db.session.add(statement)
     db.session.commit()
 

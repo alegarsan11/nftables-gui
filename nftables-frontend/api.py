@@ -121,7 +121,7 @@ def create_rule_request(rule_id, chain_name, chain_table, family):
     expr = {}
     rule = service.get_rule(rule_id)
     for statement in rule.statement:
-        expr[statement.expr] = statement.value
+        expr[statement] = statement
         print(expr)
     json_data = {"json_data": {"nftables": [{"add": {"rule":{"chain": chain_name, "table": chain_table, "family": family, "expr": expr}}}]}}
     # response = requests.post('http://localhost:8000/rules/create_rule', json=json_data)

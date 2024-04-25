@@ -16,7 +16,6 @@ def list_ruleset():
     return render_template('ruleset.html', ruleset=result)
 
 @visualization_bp.route('/')
-@login_required
 def main_view():
     if current_user.is_authenticated:
         host = os.uname().nodename
@@ -380,11 +379,9 @@ def create_rule_post():
         id_ = service.get_rules()[-1].id + 1
         expr = str(form.statements.data) + str(form.statements_term.data)
         print("Statements")
-        print(form.statements.data)
-        print(form.statements_term.data)
+        print(form.statement_select.data)
         if (form.statements.data != None or form.statements_term.data != None):
-            print("HA ENTRADO")
-            service.from_form_to_statement(form.statements.data, form.statements_term.data, id_)
+            service.from_form_to_statement(form.statements.data, form.statements_term.data, id_, form.statement_select.data)
         service.insert_rule_with_table(chain_id=form.chain.data, handle=2, expr=expr, family=form.family.data, description=form.description.data, table_id=table_name)    
         result = api.create_rule_request(id_, chain_name, family, table_name)
         # Añadir el Handle desde otra peticion para obtener datos

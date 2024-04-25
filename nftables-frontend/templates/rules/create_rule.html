@@ -6,10 +6,10 @@
 <script>
 $(document).ready(function(){
     $('#formSelect').change(function(){
-        if ($(this).val() == 'form1') {
+        if ($(this).val() == 'not_terminal') {
             $('#statements').show();
             $('#statements_term').hide();
-        } else if ($(this).val() == 'form2') {
+        } else if ($(this).val() == 'terminal') {
             $('#statements').hide();
             $('#statements_term').show();
         } else {
@@ -55,10 +55,10 @@ function updateHiddenInput() {
 
         <div class="form-group">
             <label for="formSelect">Selects the statements:</label>
-            <select class="form-control" id="formSelect">
+            <select class="form-control" id="formSelect" name="statement_select">
                 <option value="">--Selects--</option>
-                <option value="form1">Not terminal statements</option>
-                <option value="form2">Terminal statements</option>
+                <option value="not_terminal">Not terminal statements</option>
+                <option value="terminal">Terminal statements</option>
             </select>
         </div>
         {% if form.chain.errors == [] and form.description.errors == [] %}
