@@ -120,7 +120,7 @@ def flush_chain_request(name, family, table):
 import requests
 
 def create_rule_request(rule_id, chain_name, chain_table, family, statement, statement_term, statement_type):
-    expr = {}
+    expr = []
     rule = service.get_rule(rule_id)
     saddr = None
     daddr = None
@@ -153,15 +153,7 @@ def create_rule_request(rule_id, chain_name, chain_table, family, statement, sta
         protocol = statement_term["protocol"]
         input_interface = statement_term["input_interface"]
         output_interface = statement_term["output_interface"]
-        accept = statement_term["accept"]
-        drop = statement_term["drop"]
-        reject = statement_term["reject"]
-        return_ = statement_term["return_"]
-        jump = statement_term["jump"]
-        go_to = statement_term["go_to"]
-        queue = statement_term["queue"]
-
-
+    
     else:
         saddr = statement.get("src_ip")
         daddr = statement.get("dst_ip")
@@ -170,60 +162,70 @@ def create_rule_request(rule_id, chain_name, chain_table, family, statement, sta
         protocol = statement.get('protocol')
         input_interface = statement.get('input_interface')
         output_interface = statement.get('output_interface')
-        log = statement.get("log")
-        nflog = statement.get("nflog")
-        limit = statement.get("limit")
-        counter = statement.get("counter")
-        masquerade = statement.get("masquerade")
-        snat = statement.get("snat")
-        dnat = statement.get("dnat")
-        redirect = statement.get("redirect")
+    accept = statement_term["accept"]
+    drop = statement_term["drop"]
+    reject = statement_term["reject"]
+    return_ = statement_term["return_"]
+    jump = statement_term["jump"]
+    go_to = statement_term["go_to"]
+    queue = statement_term["queue"]
+
+
+    log = statement.get("log")
+    nflog = statement.get("nflog")
+    limit = statement.get("limit")
+    counter = statement.get("counter")
+    masquerade = statement.get("masquerade")
+    snat = statement.get("snat")
+    dnat = statement.get("dnat")
+    redirect = statement.get("redirect")
     
     # Agrega los elementos al diccionario expr
     if saddr:
-        expr["saddr"] = saddr
+        expr.append({"saddr": saddr})
     if daddr:
-        expr["daddr"] = daddr
+        expr.append({"daddr": daddr})
     if sport:
-        expr["sport"] = sport
+        expr.append({"sport": sport})
     if dport:
-        expr["dport"] = dport
+        expr.append({"dport": dport})
     if protocol:
-        expr["protocol"] = protocol
+        expr.append({"protocol": protocol})
     if input_interface:
-        expr["input_interface"] = input_interface
+        expr.append({"input_interface": input_interface})
     if output_interface:
-        expr["output_interface"] = output_interface
-    if accept:
-        expr["accept"] = accept
-    if drop:
-        expr["drop"] = drop
-    if reject:
-        expr["reject"] = reject
-    if return_:
-        expr["return_"] = return_
-    if jump:
-        expr["jump"] = jump
-    if go_to:
-        expr["go_to"] = go_to
-    if queue:
-        expr["queue"] = queue
-    if log: 
-        expr["log"] = log
-    if nflog:
-        expr["nflog"] = nflog
-    if limit:
-        expr["limit"] = limit
+        expr.append({"output_interface": output_interface})
     if counter:
-        expr["counter"] = None
+        expr.append({"counter": None})
+
+    if accept:
+        expr.append({"accept": None})
+    if drop:
+        expr.append({"drop": None})
+    if reject:
+        expr.append({"reject": None})
+    if return_:
+        expr.append({"return": None})
+    if jump:
+        expr.append({"jump": jump})
+    if go_to:
+        expr.append({"go_to": go_to})
+    if queue:
+        expr.append({"queue": queue})
+    if log: 
+        expr.append({"log": log})
+    if nflog:
+        expr.append({"nflog": nflog})
+    if limit:
+        expr.append({"limit": limit})
     if masquerade:
-        expr["masquerade"] = masquerade
+        expr.append({"masquerade": None})
     if snat:
-        expr["snat"] = snat
+        expr.append({"snat": snat})
     if dnat:
-        expr["dnat"] = dnat
+        expr.append({"dnat": dnat})
     if redirect:
-        expr["redirect"] = redirect
+        expr.append({"redirect": redirect})
     
     json_data = {
         "json_data": {
@@ -233,7 +235,7 @@ def create_rule_request(rule_id, chain_name, chain_table, family, statement, sta
                         "chain": chain_name,
                         "table": chain_table,
                         "family": family,
-                        "expr": [expr]
+                        "expr": expr
                     }
                 }
             }]
