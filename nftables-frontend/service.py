@@ -113,16 +113,16 @@ def get_chain(chain_id, family, table):
     return chain
 
 
-def check_existing_rule(chain_id, rule, family):
-    rule = Rule.query.filter_by(chain_id=chain_id, expr=rule, family=family).first()
+def check_existing_rule(chain_id, handle, family):
+    rule = Rule.query.filter_by(chain_id=chain_id, handle=handle, family=family).first()
     if rule:
         return True
     return False
 
-def insert_rule_with_table(chain_id, family, expr, handle, table_id, description=None):
+def insert_rule_with_table(chain_id, family, expr, table_id, description=None):
     chain = get_chain(chain_id, family, table_id)
     print(chain.table.name)
-    rule = Rule(chain_id=chain.name, family=family, expr=expr, handle=handle, description=description)
+    rule = Rule(chain_id=chain.name, family=family, expr=expr, description=description)
     db.session.add(rule)
     db.session.commit()
     return rule.id
@@ -320,13 +320,20 @@ def delete_statements_from_rule(rule_id):
         db.session.delete(statement)
     db.session.commit()
 
-def iteration_on_chains(rule, chain_id, family, condicion):
-    if check_existing_rule(rule=str(rule["rule"]["expr"]), chain_id=chain_id, family=family) == False :   
+def iteration_on_chains(rule, chain_id, family, handle=None, rule_id=None):
+    if rule_id != None:
+        print("HSJDAKL")
+        rule_ = Rule.query.filter_by(id=rule_id).first()
+        print(rule_)
+        rule_.handle = handle
+        rule_.expr = str(rule["rule"]["expr"])
+        db.session.commit()
+    elif check_existing_rule(handle=handle, chain_id=chain_id, family=family) == False :   
         rule_id = insert_rule(handle=str(rule["rule"]["handle"]), chain_id=rule["rule"]["chain"], family=rule["rule"]["family"], expr=str(rule["rule"]["expr"]))
-    elif check_existing_rule(rule=str(rule["rule"]["expr"]), chain_id=chain_id, family=family) == True and condicion == True: 
+    elif check_existing_rule(handle=handle, chain_id=chain_id, family=family) == True: 
         rule_ = Rule.query.filter_by(expr=str(rule["rule"]["expr"]), chain_id=chain_id, family=family).first()
         rule_id = rule_.id
-        print(rule)
+        rule_.handle = handle
         rule_.expr = str(rule["rule"]["expr"])
         db.session.commit()
     for j, expr in enumerate(rule["rule"]["expr"]):
@@ -476,7 +483,7 @@ def load_data(condicion):
             if i ==0 or i ==1:
                 continue
             else:
-                if check_existing_rule(rule=str(rule["rule"]["expr"]), chain_id=chain.name, family=chain.family) == False:
+                if check_existing_rule(handle=str(rule["rule"]["handle"]), chain_id=chain.name, family=chain.family) == False:
                     insert_rule(handle=str(rule["rule"]["handle"]), chain_id=rule["rule"]["chain"], family=rule["rule"]["family"], expr=str(rule["rule"]["expr"]))
 
     return  [Rule.query.count(), Chain.query.count(), Table.query.count()]

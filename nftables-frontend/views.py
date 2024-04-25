@@ -119,11 +119,10 @@ def get_chain(chain_id, family, table):
     rules = rules["rules"]["nftables"]
     statements = []
     for i, rule in enumerate(rules):
-        
         if i == 0 or i == 1:
             continue
         else:                    
-            service.iteration_on_chains(rule, chain_id, family, True)
+            service.iteration_on_chains(rule, chain_id, family)
             statements = service.get_statements_from_chain(chain_id=chain.name, family=family)
     return render_template('chains/chain.html', chain=chain, statements=statements)
 
@@ -355,7 +354,7 @@ def get_rule(rule_id):
         if i == 0 or i == 1:
             continue
         else:
-            service.iteration_on_chains(rule=rule_aux, chain_id=rule.chain.name, family=rule.family, condicion=True)
+            service.iteration_on_chains(rule=rule_aux, chain_id=rule.chain.name, family=rule.family, handle=rule_aux["rule"]["handle"], rule_id=rule_id)
     
     statements = service.get_statements_from_rule(rule_id)
     return render_template('rules/rule.html', rule=rule, statements=statements)
@@ -375,18 +374,27 @@ def create_rule_post():
     family = form.chain.data.split("-")[1]
     form.chain.data = chain_name
     form.family.data = family
+    chains = service.get_chains()
     if form.validate_on_submit():
-        id_ = service.get_rules()[-1].id + 1
+        if service.get_rules() != []:
+            id_ = service.get_rules()[-1].id + 1
+        else:
+            id_ = 1
         expr = str(form.statements.data) + str(form.statements_term.data)
         print("Statements")
         print(form.statement_select.data)
-        if (form.statements.data != None or form.statements_term.data != None):
-            service.from_form_to_statement(form.statements.data, form.statements_term.data, id_, form.statement_select.data)
-        service.insert_rule_with_table(chain_id=form.chain.data, handle=2, expr=expr, family=form.family.data, description=form.description.data, table_id=table_name)    
-        result = api.create_rule_request(id_, chain_name, family, table_name)
-        # Añadir el Handle desde otra peticion para obtener datos
+        #if (form.statements.data != None or form.statements_term.data != None):
+            #service.from_form_to_statement(form.statements.data, form.statements_term.data, id_, form.statement_select.data)
+        service.insert_rule_with_table(chain_id=form.chain.data, expr=expr, family=form.family.data, description=form.description.data, table_id=table_name)    
+        result = api.create_rule_request(rule_id=id_, chain_name=chain_name, family=family, chain_table=table_name, statement=form.statements.data, statement_term=form.statements_term.data, statement_type=form.statement_select.data)
+        if(result == "Success"):
+            flash('Rule created successfully.')
+        else:
+            flash('Error creating rule.')
+            
+            return render_template('rules/create_rule.html', form=form, chains=chains)
         return redirect('/rules/' + str(id_))
     else:
         flash('Error creating rule.')
-    chains = service.get_chains()
+
     return render_template('rules/create_rule.html', form=form, chains=chains)

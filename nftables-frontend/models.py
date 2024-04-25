@@ -69,7 +69,7 @@ class Rule(db.Model):
     chain_id = db.Column(db.Integer, db.ForeignKey('chain.name'), nullable=False)
     family = db.Column(db.String(120), nullable=False)
     expr = db.Column(db.String(120), nullable=False)
-    handle = db.Column(db.String(120), nullable=False)
+    handle = db.Column(db.String(120), nullable=True)
     description = db.Column(db.String(120), nullable=True)
     statement = db.relationship('Statement', backref='rule', lazy=True, cascade="all, delete-orphan")
 

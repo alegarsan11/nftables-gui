@@ -117,15 +117,130 @@ def flush_chain_request(name, family, table):
     else:
         return "Error flushing chain."
     
-def create_rule_request(rule_id, chain_name, chain_table, family):
+import requests
+
+def create_rule_request(rule_id, chain_name, chain_table, family, statement, statement_term, statement_type):
     expr = {}
     rule = service.get_rule(rule_id)
-    for statement in rule.statement:
-        expr[statement] = statement
-        print(expr)
-    json_data = {"json_data": {"nftables": [{"add": {"rule":{"chain": chain_name, "table": chain_table, "family": family, "expr": expr}}}]}}
-    # response = requests.post('http://localhost:8000/rules/create_rule', json=json_data)
-    # if(response.json()["status"] == "success"):
-    #     return "Success"
-    # else:
-    #     return "Error creating rule."
+    saddr = None
+    daddr = None
+    sport = None
+    dport = None
+    accept = None
+    drop = None
+    reject = None
+    log = None
+    nflog = None
+    limit = None
+    return_ = None
+    jump = None
+    masquerade = None
+    go_to = None
+    queue = None
+    counter = None
+    protocol = None
+    snat = None
+    dnat = None
+    input_interface = None
+    output_interface = None
+    redirect = None
+    
+    if statement_type == "terminal":
+        saddr = statement_term["src_ip"]
+        daddr = statement_term["dst_ip"]
+        sport = statement_term["src_port"]
+        dport = statement_term["dst_port"]
+        protocol = statement_term["protocol"]
+        input_interface = statement_term["input_interface"]
+        output_interface = statement_term["output_interface"]
+        accept = statement_term["accept"]
+        drop = statement_term["drop"]
+        reject = statement_term["reject"]
+        return_ = statement_term["return_"]
+        jump = statement_term["jump"]
+        go_to = statement_term["go_to"]
+        queue = statement_term["queue"]
+
+
+    else:
+        saddr = statement.get("src_ip")
+        daddr = statement.get("dst_ip")
+        sport = statement.get('src_port')
+        dport = statement.get('dst_port')
+        protocol = statement.get('protocol')
+        input_interface = statement.get('input_interface')
+        output_interface = statement.get('output_interface')
+        log = statement.get("log")
+        nflog = statement.get("nflog")
+        limit = statement.get("limit")
+        counter = statement.get("counter")
+        masquerade = statement.get("masquerade")
+        snat = statement.get("snat")
+        dnat = statement.get("dnat")
+        redirect = statement.get("redirect")
+    
+    # Agrega los elementos al diccionario expr
+    if saddr:
+        expr["saddr"] = saddr
+    if daddr:
+        expr["daddr"] = daddr
+    if sport:
+        expr["sport"] = sport
+    if dport:
+        expr["dport"] = dport
+    if protocol:
+        expr["protocol"] = protocol
+    if input_interface:
+        expr["input_interface"] = input_interface
+    if output_interface:
+        expr["output_interface"] = output_interface
+    if accept:
+        expr["accept"] = accept
+    if drop:
+        expr["drop"] = drop
+    if reject:
+        expr["reject"] = reject
+    if return_:
+        expr["return_"] = return_
+    if jump:
+        expr["jump"] = jump
+    if go_to:
+        expr["go_to"] = go_to
+    if queue:
+        expr["queue"] = queue
+    if log: 
+        expr["log"] = log
+    if nflog:
+        expr["nflog"] = nflog
+    if limit:
+        expr["limit"] = limit
+    if counter:
+        expr["counter"] = None
+    if masquerade:
+        expr["masquerade"] = masquerade
+    if snat:
+        expr["snat"] = snat
+    if dnat:
+        expr["dnat"] = dnat
+    if redirect:
+        expr["redirect"] = redirect
+    
+    json_data = {
+        "json_data": {
+            "nftables": [{
+                "add": {
+                    "rule": {
+                        "chain": chain_name,
+                        "table": chain_table,
+                        "family": family,
+                        "expr": [expr]
+                    }
+                }
+            }]
+        }
+    }
+    response = requests.post('http://localhost:8000/rules/create_rule', json=json_data)
+    if response.json()["status"] == "success":
+        return "Success"
+    else:
+        return "Error creating rule."

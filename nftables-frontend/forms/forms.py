@@ -166,21 +166,17 @@ class TerminalStatementForm(StatementForm):
         
 class NotTerminalStatementForm(StatementForm):
     limit = IntegerField('Limit', validators=[Optional()] )
-    log = StringField('Log', validators=[Optional()])
-    counter = StringField('Counter', validators=[Optional()])
-    nflog = StringField('NFLog', validators=[Optional()])
+    log = BooleanField('Log', validators=[Optional()])
+    counter = BooleanField('Counter', validators=[Optional()])
+    nflog = IntegerField('NFLog', validators=[Optional()])
     
     def validate_limit(self, limit):
         if limit.data and not limit.data.isdigit():
             raise ValidationError('Limit must be a valid number.')   
         
-    def validate_log(self, log):
-        if log.data and not log.data.replace(":", "").replace("-", "").replace("_", "").replace(".", "").replace("/", "").replace(" ", "").isalnum():
-            raise ValidationError('Log must be a valid log.')
-        
-  #  def validate_counter(self, counter):
-  #      if counter.data and not counter.data.replace(":", "").replace("-", "").replace("_", "").replace(".", "").replace("/", "").replace(" ", "").isalnum():
-  #          raise ValidationError('Counter must be a valid counter.')
+    def validate_nflog(self, nflog):
+        if nflog.data and not nflog.data.isdigit():
+            raise ValidationError('NFLog must be a valid NFLog.')
         
     def validate_nflog(self, nflog):
         if nflog.data and not nflog.data.replace(":", "").replace("-", "").replace("_", "").replace(".", "").replace("/", "").replace(" ", "").isalnum():
