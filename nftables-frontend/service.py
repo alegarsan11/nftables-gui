@@ -276,13 +276,18 @@ def delete_rules_form_chain(chain_id, family, table):
     db.session.commit()
     
 def insert_statement(rule_id, saddr, daddr, sport, dport, protocol, reject=None, log=None, nflog=None, drop=None, accept=None, queue=None, limit=None, counter=None, return_=None, jump=None, go_to=None, masquerade=None, snat=None, dnat=None, redirect=None, input_interface=None, output_interface=None):
+    statement_ = None
+    statement = None
+    
     if limit != None or log != None or nflog != None or counter != None or masquerade != None or snat != None or dnat != None or redirect != None:
         statement = NotTerminalStatement(rule_id=rule_id, src_ip=saddr, dst_ip=daddr, src_port=sport, dst_port=dport,input_interface=input_interface, output_interface=output_interface, protocol=protocol, limit=limit, log=log, nflog=nflog, counter=counter, masquerade=masquerade, snat=snat, dnat=dnat, redirect=redirect)
-    elif reject != None or drop != None or accept != None or queue != None or return_ != None or jump != None or go_to != None :
-        statement = TerminalStatement(rule_id=rule_id, src_ip=saddr, dst_ip=daddr, src_port=sport, dst_port=dport, input_interface=input_interface, output_interface=output_interface, protocol=protocol, reject=reject, drop=drop, accept=accept, queue=queue, return_=return_, jump=jump, go_to=go_to)
+        db.session.add(statement)
+    if reject != None or drop != None or accept != None or queue != None or return_ != None or jump != None or go_to != None :
+        statement_ = TerminalStatement(rule_id=rule_id, src_ip=saddr, dst_ip=daddr, src_port=sport, dst_port=dport, input_interface=input_interface, output_interface=output_interface, protocol=protocol, reject=reject, drop=drop, accept=accept, queue=queue, return_=return_, jump=jump, go_to=go_to)
+        db.session.add(statement_)
     else:
-        statement = Statement(rule_id=rule_id, src_ip=saddr, dst_ip=daddr, src_port=sport, dst_port=dport,input_interface=input_interface, output_interface=output_interface, protocol=protocol)
-    db.session.add(statement)
+        statement_2 = Statement(rule_id=rule_id, src_ip=saddr, dst_ip=daddr, src_port=sport, dst_port=dport,input_interface=input_interface, output_interface=output_interface, protocol=protocol)
+        db.session.add(statement_2)
     db.session.commit()
 
 def check_existing_statement( saddr, daddr, sport, dport, protocol, accept, drop, reject, log, nflog, limit, counter, return_, jump, go_to, queue, masquerade):
@@ -322,9 +327,7 @@ def delete_statements_from_rule(rule_id):
 
 def iteration_on_chains(rule, chain_id, family, handle=None, rule_id=None):
     if rule_id != None:
-        print("HSJDAKL")
         rule_ = Rule.query.filter_by(id=rule_id).first()
-        print(rule_)
         rule_.handle = handle
         rule_.expr = str(rule["rule"]["expr"])
         db.session.commit()
@@ -336,30 +339,32 @@ def iteration_on_chains(rule, chain_id, family, handle=None, rule_id=None):
         rule_.handle = handle
         rule_.expr = str(rule["rule"]["expr"])
         db.session.commit()
+    print(rule["rule"]["expr"][0])
+    saddr = None
+    daddr = None
+    sport = None
+    dport = None
+    accept = None
+    drop = None
+    reject = None
+    log = None
+    nflog = None
+    limit = None
+    return_ = None
+    jump = None
+    masquerade = None
+    go_to = None
+    queue = None
+    counter = None
+    protocol = None
+    protocol = None
+    snat = None
+    dnat = None
+    input_interface = None
+    output_interface = None
+    redirect = None
     for j, expr in enumerate(rule["rule"]["expr"]):
-        saddr = None
-        daddr = None
-        sport = None
-        dport = None
-        accept = None
-        drop = None
-        reject = None
-        log = None
-        nflog = None
-        limit = None
-        return_ = None
-        jump = None
-        masquerade = None
-        go_to = None
-        queue = None
-        counter = None
-        protocol = None
-        protocol = None
-        snat = None
-        dnat = None
-        input_interface = None
-        output_interface = None
-        redirect = None
+        
         if expr.get("match", None) != None and expr.get("match").get("left", None) != None and expr.get("match").get("left").get("payload", None) != None:
             match = expr.get("match")
             payload = match.get("left").get("payload")
@@ -410,9 +415,8 @@ def iteration_on_chains(rule, chain_id, family, handle=None, rule_id=None):
             go_to = str(expr.get("go_to"))
         if expr.get("queue", None) != None:
             queue = str(expr.get("queue"))
-        if saddr != None or daddr != None or sport  != None or dport != None or protocol != None or counter != None or limit != None or log != None or nflog != None or reject != None or drop != None or accept != None or queue != None or return_ != None or jump != None or go_to != None or masquerade != None or snat != None or dnat != None or redirect != None or input_interface != None or output_interface != None:
-            
-            insert_statement(rule_id=rule_id, sport=sport, dport=dport, saddr=saddr, daddr=daddr, protocol=protocol, accept=accept, drop=drop, reject=reject, log=log, nflog=nflog, limit=limit, counter=counter, return_=return_, jump=jump, go_to=go_to, queue=queue, masquerade=masquerade, snat=snat, dnat=dnat, redirect=redirect, input_interface=input_interface, output_interface=output_interface)
+    if saddr != None or daddr != None or sport  != None or dport != None or protocol != None or counter != None or limit != None or log != None or nflog != None or reject != None or drop != None or accept != None or queue != None or return_ != None or jump != None or go_to != None or masquerade != None or snat != None or dnat != None or redirect != None or input_interface != None or output_interface != None:
+        insert_statement(rule_id=rule_id, sport=sport, dport=dport, saddr=saddr, daddr=daddr, protocol=protocol, accept=accept, drop=drop, reject=reject, log=log, nflog=nflog, limit=limit, counter=counter, return_=return_, jump=jump, go_to=go_to, queue=queue, masquerade=masquerade, snat=snat, dnat=dnat, redirect=redirect, input_interface=input_interface, output_interface=output_interface)
 
                 
                 

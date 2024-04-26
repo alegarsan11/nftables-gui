@@ -153,6 +153,13 @@ def create_rule_request(rule_id, chain_name, chain_table, family, statement, sta
         protocol = statement_term["protocol"]
         input_interface = statement_term["input_interface"]
         output_interface = statement_term["output_interface"]
+        accept = statement_term["accept"]
+        drop = statement_term["drop"]
+        reject = statement_term["reject"]
+        return_ = statement_term["return_"]
+        jump = statement_term["jump"]
+        go_to = statement_term["go_to"]
+        queue = statement_term["queue"]
     
     else:
         saddr = statement.get("src_ip")
@@ -162,23 +169,14 @@ def create_rule_request(rule_id, chain_name, chain_table, family, statement, sta
         protocol = statement.get('protocol')
         input_interface = statement.get('input_interface')
         output_interface = statement.get('output_interface')
-    accept = statement_term["accept"]
-    drop = statement_term["drop"]
-    reject = statement_term["reject"]
-    return_ = statement_term["return_"]
-    jump = statement_term["jump"]
-    go_to = statement_term["go_to"]
-    queue = statement_term["queue"]
-
-
-    log = statement.get("log")
-    nflog = statement.get("nflog")
-    limit = statement.get("limit")
-    counter = statement.get("counter")
-    masquerade = statement.get("masquerade")
-    snat = statement.get("snat")
-    dnat = statement.get("dnat")
-    redirect = statement.get("redirect")
+        log = statement.get("log")
+        nflog = statement.get("nflog")
+        limit = statement.get("limit")
+        counter = statement.get("counter")
+        masquerade = statement.get("masquerade")
+        snat = statement.get("snat")
+        dnat = statement.get("dnat")
+        redirect = statement.get("redirect")
     
     # Agrega los elementos al diccionario expr
     if saddr:
@@ -213,7 +211,7 @@ def create_rule_request(rule_id, chain_name, chain_table, family, statement, sta
     if queue:
         expr.append({"queue": queue})
     if log: 
-        expr.append({"log": log})
+        expr.append({"log": {"prefix": "Rule" + str(rule.id)+ " " + str(rule.table().name), "level": "info"}})
     if nflog:
         expr.append({"nflog": nflog})
     if limit:
