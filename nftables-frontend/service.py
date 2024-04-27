@@ -114,6 +114,7 @@ def get_chain(chain_id, family, table):
 
 
 def check_existing_rule(chain_id, handle, family):
+    print(chain_id, handle, family)
     rule = Rule.query.filter_by(chain_id=chain_id, handle=handle, family=family).first()
     if rule:
         return True
@@ -326,6 +327,9 @@ def delete_statements_from_rule(rule_id):
     db.session.commit()
 
 def iteration_on_chains(rule, chain_id, family, handle=None, rule_id=None):
+    print("HOLAAAAAAAA")
+    print(rule)
+    print(rule_id)
     if rule_id != None:
         rule_ = Rule.query.filter_by(id=rule_id).first()
         rule_.handle = handle
@@ -339,7 +343,6 @@ def iteration_on_chains(rule, chain_id, family, handle=None, rule_id=None):
         rule_.handle = handle
         rule_.expr = str(rule["rule"]["expr"])
         db.session.commit()
-    print(rule["rule"]["expr"][0])
     saddr = None
     daddr = None
     sport = None
@@ -416,6 +419,7 @@ def iteration_on_chains(rule, chain_id, family, handle=None, rule_id=None):
         if expr.get("queue", None) != None:
             queue = str(expr.get("queue"))
     if saddr != None or daddr != None or sport  != None or dport != None or protocol != None or counter != None or limit != None or log != None or nflog != None or reject != None or drop != None or accept != None or queue != None or return_ != None or jump != None or go_to != None or masquerade != None or snat != None or dnat != None or redirect != None or input_interface != None or output_interface != None:
+        
         insert_statement(rule_id=rule_id, sport=sport, dport=dport, saddr=saddr, daddr=daddr, protocol=protocol, accept=accept, drop=drop, reject=reject, log=log, nflog=nflog, limit=limit, counter=counter, return_=return_, jump=jump, go_to=go_to, queue=queue, masquerade=masquerade, snat=snat, dnat=dnat, redirect=redirect, input_interface=input_interface, output_interface=output_interface)
 
                 

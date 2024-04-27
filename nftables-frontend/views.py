@@ -122,7 +122,7 @@ def get_chain(chain_id, family, table):
         if i == 0 or i == 1:
             continue
         else:                    
-            service.iteration_on_chains(rule, chain_id, family)
+            service.iteration_on_chains(rule, chain_id, family, handle=rule["rule"]["handle"])
             statements = service.get_statements_from_chain(chain_id=chain.name, family=family)
     return render_template('chains/chain.html', chain=chain, statements=statements)
 
@@ -350,13 +350,20 @@ def get_rule(rule_id):
     rule = service.get_rule(rule_id)
     rule_result = api.list_chain_request(rule.chain.name, rule.family, rule.chain.table.name)
     service.delete_statements_from_rule(rule_id)
+    print(rule_result)
     for i, rule_aux in enumerate(rule_result["rules"]["nftables"]):
         if i == 0 or i == 1:
             continue
         else:
-            service.iteration_on_chains(rule=rule_aux, chain_id=rule.chain.name, family=rule.family, handle=rule_aux["rule"]["handle"], rule_id=rule_id)
+            print("HLSDAÑJLÑASLDJASLKÑ")
+            if rule.handle == None:
+                rule.handle = rule_aux["rule"]["handle"]
+
+            if(str(rule.handle) == str(rule_aux["rule"]["handle"])):
+                service.iteration_on_chains(rule=rule_aux, chain_id=rule.chain.name, family=rule.family, handle=rule_aux["rule"]["handle"], rule_id=rule_id)
     
     statements = service.get_statements_from_rule(rule_id)
+    print(statements)
     return render_template('rules/rule.html', rule=rule, statements=statements)
 
 @visualization_bp.route('/rules/create_rule')
