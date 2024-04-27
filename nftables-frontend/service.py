@@ -114,7 +114,6 @@ def get_chain(chain_id, family, table):
 
 
 def check_existing_rule(chain_id, handle, family):
-    print(chain_id, handle, family)
     rule = Rule.query.filter_by(chain_id=chain_id, handle=handle, family=family).first()
     if rule:
         return True
@@ -327,9 +326,6 @@ def delete_statements_from_rule(rule_id):
     db.session.commit()
 
 def iteration_on_chains(rule, chain_id, family, handle=None, rule_id=None):
-    print("HOLAAAAAAAA")
-    print(rule)
-    print(rule_id)
     if rule_id != None:
         rule_ = Rule.query.filter_by(id=rule_id).first()
         rule_.handle = handle

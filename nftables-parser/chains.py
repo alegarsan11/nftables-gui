@@ -7,6 +7,7 @@ import hug
 def list_chains(json_data: hug.types.json):
     nft = Nftables()
     result = nft.json_cmd(json_data)
+    print(result[1])
     return {"chains": result[1]}
 
 @hug.post('/create_chain')

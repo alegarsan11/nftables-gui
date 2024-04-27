@@ -83,6 +83,7 @@ def create_base_chain_request(name, family, table, type, priority, policy, hook_
 def list_chain_request(chain_name, chain_family, chain_table):
     json_data = {"json_data": {"nftables": [{"list": {"chain":{"name": chain_name, "family": chain_family, "table": chain_table}}}]}}
     response = requests.get('http://localhost:8000/chains/list_rule_chain', json=json_data)
+    print(response.json())
     return response.json()
         
 def edit_chain_request(name, family, table, type, priority, hook_type, policy):
@@ -151,14 +152,16 @@ def create_rule_request(rule_id, chain_name, chain_table, family, statement, sta
         sport = statement_term["src_port"]
         dport = statement_term["dst_port"]
         protocol = statement_term["protocol"]
-        input_interface = statement_term["input_interface"]
-        output_interface = statement_term["output_interface"]
+        input_interface = statement_term.get("input_interface")
+        output_interface = statement_term.get("output_interface")
         accept = statement_term["accept"]
         drop = statement_term["drop"]
         reject = statement_term["reject"]
         return_ = statement_term["return_"]
-        jump = statement_term["jump"]
-        go_to = statement_term["go_to"]
+        if statement_term.get("jump") != "--Selects--":
+            jump = statement_term["jump"]
+        if statement_term.get("go_to") != "--Selects--":
+            go_to = statement_term["go_to"]
         queue = statement_term["queue"]
     
     else:
@@ -205,15 +208,15 @@ def create_rule_request(rule_id, chain_name, chain_table, family, statement, sta
     if return_:
         expr.append({"return": None})
     if jump:
-        expr.append({"jump": jump})
+        expr.append({"jump": {"target": jump}})
     if go_to:
-        expr.append({"go_to": go_to})
+        expr.append({"goto": go_to})
     if queue:
-        expr.append({"queue": queue})
+        expr.append({"queue": {"num": queue}})
     if log: 
         expr.append({"log": {"prefix": "Rule" + str(rule.id)+ " " + str(rule.table().name), "level": "info"}})
     if nflog:
-        expr.append({"nflog": nflog})
+        expr.append({"nflog": {"prefix": nflog}})
     if limit:
         expr.append({"limit": limit})
     if masquerade:
@@ -224,7 +227,7 @@ def create_rule_request(rule_id, chain_name, chain_table, family, statement, sta
         expr.append({"dnat": dnat})
     if redirect:
         expr.append({"redirect": redirect})
-    
+    print(chain_name, chain_table, family, expr)
     json_data = {
         "json_data": {
             "nftables": [{

@@ -17,6 +17,13 @@ $(document).ready(function(){
             $('#statements_term').hide();
         }
     });
+    // Añadir listeners de eventos para los cambios en los selects go_to y jump
+    $('#statements_term-go_to').change(function(){
+        $('#go_to').val($(this).val());
+    });
+    $('#statements_term-jump').change(function(){
+        $('#jump').val($(this).val());
+    });
 });
 
     // Función para actualizar el valor del input oculto con la table.family seleccionada
@@ -41,7 +48,7 @@ function updateHiddenInput() {
             {{ form.chain.label }}
             <select id="chain" name="chain" class="form-control" onchange="updateHiddenInput()">
                 {% for chain in chains %}
-                <option value="{{ chain.name }}-{{chain.family}}-{{chain.table.name}}">Name: {{ chain.name }} - Family: {{ chain.family }} - Table: {{ chain.table.name }}</option>
+                <option value="{{ chain.name }}&&{{chain.family}}&&{{chain.table.name}}">Name: {{ chain.name }} - Family: {{ chain.family }} - Table: {{ chain.table.name }}</option>
                 {% endfor %}
             </select>
             {% if form.chain.errors %}
@@ -69,6 +76,20 @@ function updateHiddenInput() {
         <div id="statements" class="form-group" style="display:none">
             {% for field in form.statements %}
                 {% if field.name != 'csrf_token' and field.type != 'SubmitField' %}
+                    {% if field.name == 'statements-nflog' %}
+                    <div class="form-group">
+                        {{ field.label(class="form-control-label") }}
+                        <p>Insert the name of the flog flow</p>
+                        {{ field(class="form-control form-control-lg") }}
+                        {% if field.errors %}
+                        <ul class="errors">
+                            {% for error in field.errors %}
+                            <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                        {% endif %}
+                    </div>
+                    {% else %}
                     <div class="form-group">
                         {{ field.label(class="form-control-label") }}
                         {{ field(class="form-control form-control-lg") }}
@@ -81,11 +102,56 @@ function updateHiddenInput() {
                         {% endif %}
                     </div>
                 {% endif %}
+                {% endif %}
             {% endfor %}
         </div>
         <div id="statements_term" class="form-group" style="display:none">
             {% for field in form.statements_term %}
                 {% if field.name != 'csrf_token' and field.type != 'SubmitField' %}
+
+                    {% if field.name == 'statements_term-jump' %}
+                    <div class="form-group">
+                        {{ field.label(class="form-control-label") }}
+                        <p>Insert the name of the chain to jump</p>
+                        <select id="statements_term-jump" name="statements_term-jump" class="form-control">
+                            <option>--Selects--</option>
+                            {% for chain in chains %}
+                            
+                            <option value="{{ chain.name }}">{{ chain.name }}</option>
+                            {% endfor %}
+                            </select>
+                            <input type="hidden" id="jump" name="jump" value=""></input>
+
+                        {% if field.errors %}
+                        <ul class="errors">
+                            {% for error in field.errors %}
+                            <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                        {% endif %}
+                    </div>
+                    {% elif field.name == 'statements_term-go_to' %}
+                    <div class="form-group">
+                        {{ field.label(class="form-control-label") }}
+                        <p>Insert the name of the chain to go to</p>
+                        <select id="statements_term-go_to" name="statements_term-go_to" class="form-control">
+                            <option>--Selects--</option>
+                            {% for chain in chains %}
+                            <option value="{{ chain.name }}">{{ chain.name }}</option>
+                            {% endfor %}
+                            </select>
+                            <input type="hidden" id="go_to" name="go_to" value=""></input>
+
+                        {% if field.errors %}
+                        <ul class="errors">
+                            {% for error in field.errors %}
+                            <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                        {% endif %}
+                    </div>
+
+                    {% else %}                        
                     <div class="form-group">
                         {{ field.label(class="form-control-label") }}
                         {{ field(class="form-control form-control-lg") }}
@@ -97,6 +163,7 @@ function updateHiddenInput() {
                         </ul>
                         {% endif %}
                     </div>
+                    {% endif %}
                 {% endif %}
             {% endfor %}
         </div>

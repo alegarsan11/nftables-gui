@@ -350,12 +350,10 @@ def get_rule(rule_id):
     rule = service.get_rule(rule_id)
     rule_result = api.list_chain_request(rule.chain.name, rule.family, rule.chain.table.name)
     service.delete_statements_from_rule(rule_id)
-    print(rule_result)
     for i, rule_aux in enumerate(rule_result["rules"]["nftables"]):
         if i == 0 or i == 1:
             continue
         else:
-            print("HLSDAÑJLÑASLDJASLKÑ")
             if rule.handle == None:
                 rule.handle = rule_aux["rule"]["handle"]
 
@@ -363,7 +361,6 @@ def get_rule(rule_id):
                 service.iteration_on_chains(rule=rule_aux, chain_id=rule.chain.name, family=rule.family, handle=rule_aux["rule"]["handle"], rule_id=rule_id)
     
     statements = service.get_statements_from_rule(rule_id)
-    print(statements)
     return render_template('rules/rule.html', rule=rule, statements=statements)
 
 @visualization_bp.route('/rules/create_rule')
@@ -376,24 +373,36 @@ def create_rule():
 def create_rule_post():
     form = RuleForm()
     # El handle ha de asignarse con la peticion de la api y el resultado que se obtenga de esta rule
-    chain_name = form.chain.data.split("-")[0]
-    table_name = form.chain.data.split("-")[2]
-    family = form.chain.data.split("-")[1]
+    print(form.chain.data)
+    chain_name = form.chain.data.split("&&")[0]
+    table_name = form.chain.data.split("&&")[2]
+    family = form.chain.data.split("&&")[1]
     form.chain.data = chain_name
-    form.family.data = family
+    form.family.data = str(family)
     chains = service.get_chains()
     if form.validate_on_submit():
+        print("HFDSAJÑFLAJSLFÑA")
+        if form.statements_term.jump.data != "--Selects--":
+            if service.get_chain(chain_id=form.statements_term.jump.data ,table=table_name, family=family) == None:
+                print("ZONA 1")
+                flash('Error creating rule.')
+                return render_template('rules/create_rule.html', form=form, chains=chains)
+        if  form.statements_term.go_to.data != "--Selects--":
+            if service.get_chain(chain_id=form.statements_term.go_to.data ,table=table_name, family=family) == None:
+                print("ZONA 2")
+                flash('Error creating rule.')
+                return render_template('rules/create_rule.html', form=form, chains=chains)
         if service.get_rules() != []:
             id_ = service.get_rules()[-1].id + 1
         else:
             id_ = 1
         expr = str(form.statements.data) + str(form.statements_term.data)
-        print("Statements")
-        print(form.statement_select.data)
         #if (form.statements.data != None or form.statements_term.data != None):
             #service.from_form_to_statement(form.statements.data, form.statements_term.data, id_, form.statement_select.data)
         service.insert_rule_with_table(chain_id=form.chain.data, expr=expr, family=form.family.data, description=form.description.data, table_id=table_name)    
-        result = api.create_rule_request(rule_id=id_, chain_name=chain_name, family=family, chain_table=table_name, statement=form.statements.data, statement_term=form.statements_term.data, statement_type=form.statement_select.data)
+        print(table_name)
+        print(chain_name)
+        result = api.create_rule_request(rule_id=id_, chain_name=form.chain.data, family=family, chain_table=table_name, statement=form.statements.data, statement_term=form.statements_term.data, statement_type=form.statement_select.data)
         if(result == "Success"):
             flash('Rule created successfully.')
         else:

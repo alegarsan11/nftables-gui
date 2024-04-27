@@ -1,8 +1,10 @@
+from ipaddress import ip_network
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SubmitField, SelectField, IntegerField, FormField, FieldList, BooleanField
 from wtforms.validators import DataRequired, Email, EqualTo, Optional
 from wtforms import ValidationError
 from models import Chain, Table, User
+import service
 
 class LoginForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired()])
@@ -124,30 +126,33 @@ class StatementForm(FlaskForm):
     submit = SubmitField('Add Statement', validators=[Optional()])
     
     def validate_src_ip(self, src_ip):
-        if src_ip.data and not src_ip.data.replace(".", "").replace("/", "").replace(":", "").isdigit():
-            raise ValidationError('Source IP must be a valid IP address.')
-        
+        try:
+            ip_network(src_ip.data)
+        except ValueError:
+            raise ValidationError('Source IP must be a valid IP address with a network mask.')
+
     def validate_dst_ip(self, dst_ip):
-        if dst_ip.data and not dst_ip.data.replace(".", "").replace("/", "").replace(":", "").isdigit():
-            raise ValidationError('Destination IP must be a valid IP address.')
-        
+        try:
+            ip_network(dst_ip.data)
+        except ValueError:
+            raise ValidationError('Destination IP must be a valid IP address with a network mask.')
+                
     def validate_src_port(self, src_port):
-        if src_port.data and not src_port.data.isdigit():
-            raise ValidationError('Source Port must be a valid port number.')
-        
+        if src_port.data and (not src_port.data.isdigit() or not 0 <= int(src_port.data) <= 65535):
+            raise ValidationError('Source Port must be a valid port number between 0 and 65535.')
+
     def validate_dst_port(self, dst_port):
-        if dst_port.data and not dst_port.data.isdigit():
-            raise ValidationError('Destination Port must be a valid port number.')
-        
+        if dst_port.data and (not dst_port.data.isdigit() or not 0 <= int(dst_port.data) <= 65535):
+            raise ValidationError('Destination Port must be a valid port number between 0 and 65535.')        
     def validate_protocol(self, protocol):
-        if protocol.data and protocol.data not in ['tcp', 'udp', 'icmp', 'all']:
-            raise ValidationError('Protocol must be one of: tcp, udp, icmp, all.')
+        if protocol.data and protocol.data not in ['tcp', 'udp', 'icmp', 'all', 'ip']:
+            raise ValidationError('Protocol must be one of: tcp, udp, icmp, ip, all.')
 
 class TerminalStatementForm(StatementForm):
     reject = BooleanField('Reject',validators=[Optional()])
     drop = BooleanField('Drop',  validators=[Optional()])
     accept = BooleanField('Accept', validators=[Optional()])
-    queue = StringField('Queue', validators=[Optional()])
+    queue = IntegerField('Queue', validators=[Optional()])
     return_ = BooleanField('Return',  validators=[Optional()])
     jump = StringField('Jump', validators=[Optional()])
     go_to = StringField('Go To', validators=[Optional()])
@@ -160,6 +165,7 @@ class TerminalStatementForm(StatementForm):
         if jump.data and not jump.data.replace(":", "").replace("-", "").replace("_", "").replace(".", "").replace("/", "").replace(" ", "").isalnum():
             raise ValidationError('Jump must be a valid chain name.')
         
+        
     def validate_go_to(self, go_to):
         if go_to.data and not go_to.data.replace(":", "").replace("-", "").replace("_", "").replace(".", "").replace("/", "").replace(" ", "").isalnum():
             raise ValidationError('Go To must be a valid chain name.')
@@ -168,7 +174,7 @@ class NotTerminalStatementForm(StatementForm):
     limit = IntegerField('Limit', validators=[Optional()] )
     log = BooleanField('Log', validators=[Optional()])
     counter = BooleanField('Counter', validators=[Optional()])
-    nflog = IntegerField('NFLog', validators=[Optional()])
+    nflog = StringField('NFLog', validators=[Optional()])
     
     def validate_limit(self, limit):
         if limit.data and not limit.data.isdigit():
@@ -204,4 +210,3 @@ class RuleForm(FlaskForm):
         if handle.data and not handle.data.replace(":", "").replace("-", "").replace("_", "").replace(".", "").replace("/", "").replace(" ", "").isalnum():
             raise ValidationError('Handle must be a valid handle.')
         
-    
