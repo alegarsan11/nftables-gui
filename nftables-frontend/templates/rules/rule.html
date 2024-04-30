@@ -55,49 +55,49 @@
                   </tr>
                 </thead>
                 <tbody>
-                  
                     {% for statement in statements %}
-                    <tr>
-                    {% if statement.src_ip != None %}
-                    <td>{{ statement.src_ip }}</td>
-                    {% else %}
-                    <td>No source IP</td>
+                    {% if statement.rule_id == rule.id %}
+                      <tr>
+                      {% if statement.src_ip != None %}
+                      <td>{{ statement.src_ip }}</td>
+                      {% else %}
+                      <td>No source IP</td>
+                      {% endif %}
+                      {% if statement.dst_ip != None %}
+                      <td>{{ statement.dst_ip }}</td>
+                      {% else %}
+                      <td>No destination IP</td>
+                      {% endif %}
+                      {% if statement.src_port != None %}
+                      <td>{{ statement.src_port }}</td>
+                      {% else %}
+                      <td>No source port</td>
+                      {% endif %}
+                      {% if statement.dst_port != None %}
+                      <td>{{ statement.dst_port }}</td>
+                      {% else %}
+                      <td>No destination port</td>
+                      {% endif %}
+                      <td>{{ statement.input_interface or "" }}</td>
+                      <td>{{ statement.output_interface or "" }}</td>
+                      <td>{{ statement.protocol or "" }}</td>
+                      <td>{{ statement.reject or "" }}</td>
+                      <td>{{ statement.drop or "" }}</td>
+                      <td>{{ statement.accept or "" }}</td>
+                      <td>{{ statement.queue or ""}}</td>
+                      <td>{{ statement.return_  or ""}}</td>
+                      <td>{{ statement.jump or ""}}</td>
+                      <td>{{ statement.go_to or "" }}</td>
+                      <td>{{ statement.limit or ""}}</td>
+                      <td>{{ statement.log or ""}}</td>
+                      <td>{{ statement.counter or "" }}</td>
+                      <td>{{ statement.nflog or "" }}</td>
+                      <td>{{ statement.masquerade or "" }}</td>
+                      <td>{{ statement.snat or "" }}</td>
+                      <td>{{ statement.dnat or ""}}</td>
+                      <td>{{ statement.redirect or ""}}</td>
+                    </tr>
                     {% endif %}
-                    {% if statement.dst_ip != None %}
-                    <td>{{ statement.dst_ip }}</td>
-                    {% else %}
-                    <td>No destination IP</td>
-                    {% endif %}
-                    {% if statement.src_port != None %}
-                    <td>{{ statement.src_port }}</td>
-                    {% else %}
-                    <td>No source port</td>
-                    {% endif %}
-                    {% if statement.dst_port != None %}
-                    <td>{{ statement.dst_port }}</td>
-                    {% else %}
-                    <td>No destination port</td>
-                    {% endif %}
-                    <td>{{ statement.input_interface or "" }}</td>
-                    <td>{{ statement.output_interface or "" }}</td>
-                    <td>{{ statement.protocol or "" }}</td>
-                    <td>{{ statement.reject or "" }}</td>
-                    <td>{{ statement.drop or "" }}</td>
-                    <td>{{ statement.accept or "" }}</td>
-                    <td>{{ statement.queue or ""}}</td>
-                    <td>{{ statement.return_  or ""}}</td>
-                    <td>{{ statement.jump or ""}}</td>
-                    <td>{{ statement.go_to or "" }}</td>
-                    <td>{{ statement.limit or ""}}</td>
-                    <td>{{ statement.log or ""}}</td>
-                    <td>{{ statement.counter or "" }}</td>
-                    <td>{{ statement.nflog or "" }}</td>
-                    <td>{{ statement.masquerade or "" }}</td>
-                    <td>{{ statement.snat or "" }}</td>
-                    <td>{{ statement.dnat or ""}}</td>
-                    <td>{{ statement.redirect or ""}}</td>
-                  </tr>
-
                     {% endfor %}
                 </tbody>
               </table>

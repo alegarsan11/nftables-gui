@@ -118,11 +118,16 @@ def check_existing_rule(chain_id, handle, family):
     if rule:
         return True
     return False
+def get_chain_id(chain_id, family, table):
+    chain = Chain.query.filter_by(id=chain_id, family=family, table_id=table).first()
+    base_chain = BaseChain.query.filter_by(id=chain_id, family=family, table_id=table).first()
+    if base_chain:
+        return base_chain
+    return chain
 
 def insert_rule_with_table(chain_id, family, expr, table_id, description=None):
-    chain = get_chain(chain_id, family, table_id)
-    print(chain.table.name)
-    rule = Rule(chain_id=chain.name, family=family, expr=expr, description=description)
+    chain = get_chain_id(chain_id, family, table_id)
+    rule = Rule(chain_id=chain.id, family=family, expr=expr, description=description)
     db.session.add(rule)
     db.session.commit()
     return rule.id
@@ -326,19 +331,20 @@ def delete_statements_from_rule(rule_id):
     db.session.commit()
 
 def iteration_on_chains(rule, chain_id, family, handle=None, rule_id=None):
+    print(handle)
     if rule_id != None:
         rule_ = Rule.query.filter_by(id=rule_id).first()
-        rule_.handle = handle
         rule_.expr = str(rule["rule"]["expr"])
         db.session.commit()
     elif check_existing_rule(handle=handle, chain_id=chain_id, family=family) == False :   
         rule_id = insert_rule(handle=str(rule["rule"]["handle"]), chain_id=rule["rule"]["chain"], family=rule["rule"]["family"], expr=str(rule["rule"]["expr"]))
     elif check_existing_rule(handle=handle, chain_id=chain_id, family=family) == True: 
-        rule_ = Rule.query.filter_by(expr=str(rule["rule"]["expr"]), chain_id=chain_id, family=family).first()
+        rule_ = Rule.query.filter_by(handle=str(rule["rule"]["handle"]), chain_id=chain_id, family=family).first()
         rule_id = rule_.id
-        rule_.handle = handle
         rule_.expr = str(rule["rule"]["expr"])
         db.session.commit()
+    else:
+        rule_id = insert_rule(handle=str(rule["rule"]["handle"]), chain_id=rule["rule"]["chain"], family=rule["rule"]["family"], expr=str(rule["rule"]["expr"]))
     saddr = None
     daddr = None
     sport = None
@@ -415,8 +421,8 @@ def iteration_on_chains(rule, chain_id, family, handle=None, rule_id=None):
         if expr.get("queue", None) != None:
             queue = str(expr.get("queue"))
     if saddr != None or daddr != None or sport  != None or dport != None or protocol != None or counter != None or limit != None or log != None or nflog != None or reject != None or drop != None or accept != None or queue != None or return_ != None or jump != None or go_to != None or masquerade != None or snat != None or dnat != None or redirect != None or input_interface != None or output_interface != None:
-        
-        insert_statement(rule_id=rule_id, sport=sport, dport=dport, saddr=saddr, daddr=daddr, protocol=protocol, accept=accept, drop=drop, reject=reject, log=log, nflog=nflog, limit=limit, counter=counter, return_=return_, jump=jump, go_to=go_to, queue=queue, masquerade=masquerade, snat=snat, dnat=dnat, redirect=redirect, input_interface=input_interface, output_interface=output_interface)
+        if str(get_rule(rule_id).handle) == str(handle):
+            insert_statement(rule_id=rule_id, sport=sport, dport=dport, saddr=saddr, daddr=daddr, protocol=protocol, accept=accept, drop=drop, reject=reject, log=log, nflog=nflog, limit=limit, counter=counter, return_=return_, jump=jump, go_to=go_to, queue=queue, masquerade=masquerade, snat=snat, dnat=dnat, redirect=redirect, input_interface=input_interface, output_interface=output_interface)
 
                 
                 
@@ -487,8 +493,8 @@ def load_data(condicion):
             if i ==0 or i ==1:
                 continue
             else:
-                if check_existing_rule(handle=str(rule["rule"]["handle"]), chain_id=chain.name, family=chain.family) == False:
-                    insert_rule(handle=str(rule["rule"]["handle"]), chain_id=rule["rule"]["chain"], family=rule["rule"]["family"], expr=str(rule["rule"]["expr"]))
+                if check_existing_rule(handle=str(rule["rule"]["handle"]), chain_id=chain.id, family=chain.family) == False:
+                    insert_rule(handle=str(rule["rule"]["handle"]), chain_id=chain.id, family=rule["rule"]["family"], expr=str(rule["rule"]["expr"]))
 
     return  [Rule.query.count(), Chain.query.count(), Table.query.count()]
     
@@ -501,4 +507,14 @@ def delete_all_statements():
     for statement in statements:
         db.session.delete(statement)
     db.session.commit()
-    
+
+def get_rules_by_chain_and_table(chain_id, family, table):
+    chain = get_chain(chain_id, family, table)
+    rules = chain.rules
+    return rules
+def get_rule_by_chain_and_table(chain_id, family, table):
+    rule = Rule.query.filter_by(chain_id=chain_id, family=family).first()
+    return rule
+def get_rule_by_chain_and_handle(chain_id, family, handle):
+    rule = Rule.query.filter_by(chain_id=chain_id, family=family, handle=handle).first()
+    return rule

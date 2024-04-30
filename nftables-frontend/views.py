@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, flash, redirect, url_for
 from flask_login import login_user, logout_user, login_required, current_user
-from models import BaseChain, Chain, Rule, Statement, Table, User
+from models import BaseChain, Chain, Rule, Statement, Table, User, db
 from forms.forms import BaseChainForm, ChainForm, LoginForm, CreateUserForm, RuleForm, TableForm, UpdateUserForm
 import service, api, os, matplotlib
 matplotlib.use('Agg')
@@ -348,19 +348,24 @@ def get_rules():
 @visualization_bp.route('/rules/<rule_id>')
 def get_rule(rule_id):
     rule = service.get_rule(rule_id)
+    print(rule)
     rule_result = api.list_chain_request(rule.chain.name, rule.family, rule.chain.table.name)
     service.delete_statements_from_rule(rule_id)
     for i, rule_aux in enumerate(rule_result["rules"]["nftables"]):
         if i == 0 or i == 1:
             continue
         else:
-            if rule.handle == None:
+            rule_ = service.get_rule_by_chain_and_handle(rule.chain.id,rule.family ,rule_aux["rule"]["handle"])
+            print(rule_)
+            if(rule_ == None):
                 rule.handle = rule_aux["rule"]["handle"]
-
-            if(str(rule.handle) == str(rule_aux["rule"]["handle"])):
+                db.session.commit()
+            if str(rule.handle) == str(rule_aux["rule"]["handle"]):    
                 service.iteration_on_chains(rule=rule_aux, chain_id=rule.chain.name, family=rule.family, handle=rule_aux["rule"]["handle"], rule_id=rule_id)
-    
+
     statements = service.get_statements_from_rule(rule_id)
+    statements = [s for s in statements if s and not s.is_empty()]
+
     return render_template('rules/rule.html', rule=rule, statements=statements)
 
 @visualization_bp.route('/rules/create_rule')
@@ -374,10 +379,11 @@ def create_rule_post():
     form = RuleForm()
     # El handle ha de asignarse con la peticion de la api y el resultado que se obtenga de esta rule
     print(form.chain.data)
-    chain_name = form.chain.data.split("&&")[0]
+    chaind_id = form.chain.data.split("&&")[0]
     table_name = form.chain.data.split("&&")[2]
     family = form.chain.data.split("&&")[1]
-    form.chain.data = chain_name
+    chain_name = form.chain.data.split("&&")[3]
+    form.chain.data = chaind_id
     form.family.data = str(family)
     chains = service.get_chains()
     if form.validate_on_submit():
@@ -400,9 +406,7 @@ def create_rule_post():
         #if (form.statements.data != None or form.statements_term.data != None):
             #service.from_form_to_statement(form.statements.data, form.statements_term.data, id_, form.statement_select.data)
         service.insert_rule_with_table(chain_id=form.chain.data, expr=expr, family=form.family.data, description=form.description.data, table_id=table_name)    
-        print(table_name)
-        print(chain_name)
-        result = api.create_rule_request(rule_id=id_, chain_name=form.chain.data, family=family, chain_table=table_name, statement=form.statements.data, statement_term=form.statements_term.data, statement_type=form.statement_select.data)
+        result = api.create_rule_request(rule_id=id_, chain_name=chain_name, family=family, chain_table=table_name, statement=form.statements.data, statement_term=form.statements_term.data, statement_type=form.statement_select.data)
         if(result == "Success"):
             flash('Rule created successfully.')
         else:

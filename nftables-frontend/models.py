@@ -66,7 +66,7 @@ class BaseChain(Chain):
         return '<BaseChain %r>' % self.name
 class Rule(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    chain_id = db.Column(db.Integer, db.ForeignKey('chain.name'), nullable=False)
+    chain_id = db.Column(db.Integer, db.ForeignKey('chain.id'), nullable=False)
     family = db.Column(db.String(120), nullable=False)
     expr = db.Column(db.String(120), nullable=False)
     handle = db.Column(db.String(120), nullable=True)
@@ -83,9 +83,12 @@ class Rule(db.Model):
         return Statement.query.filter_by(rule_id=self.id).all()
     
     def table(self):
-        chain = Chain.query.filter_by(name=self.chain_id, family=self.family).first()
-        return chain.get_table()
-    
+        chain = Chain.query.filter_by(id=self.chain_id, family=self.family).first()
+        base_chain = BaseChain.query.filter_by(id=self.chain_id, family=self.family).first()
+        if base_chain:
+            return base_chain.table
+        else:
+            return chain.table
     
 class Statement(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -100,6 +103,9 @@ class Statement(db.Model):
     
     def __repr__(self):
         return '<Statement %r>' % self.id
+    
+    def is_empty(self):
+        return not any([self.src_ip, self.dst_ip, self.src_port, self.dst_port, self.input_interface, self.output_interface, self.protocol])
 
 class TerminalStatement(Statement):
     reject = db.Column(db.String(120), nullable=True)
@@ -112,6 +118,9 @@ class TerminalStatement(Statement):
 
     def __repr__(self):
         return '<TerminalStatement %r>' % self.id
+    
+    def is_empty(self):
+        return not any([self.reject, self.drop, self.accept, self.queue, self.return_, self.jump, self.go_to])
 
 class NotTerminalStatement(Statement):
     limit = db.Column(db.String(120), nullable=True)
@@ -127,6 +136,8 @@ class NotTerminalStatement(Statement):
     def __repr__(self):
         return '<NotTerminalStatement %r>' % self.id
 
+    def is_empty(self):
+        return not any([self.limit, self.log, self.counter, self.nflog, self.masquerade, self.snat, self.dnat, self.redirect])
     
 class Set(db.Model):
     id = db.Column(db.Integer, primary_key=True)

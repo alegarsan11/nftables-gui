@@ -175,6 +175,23 @@ class NotTerminalStatementForm(StatementForm):
     log = BooleanField('Log', validators=[Optional()])
     counter = BooleanField('Counter', validators=[Optional()])
     nflog = StringField('NFLog', validators=[Optional()])
+    masquerade = BooleanField('Masquerade', validators=[Optional()])
+    redirect = BooleanField('Redirect', validators=[Optional()])
+    src_nat = StringField('SRC_NAT', validators=[Optional()])
+    dst_nat = StringField('DST_NAT', validators=[Optional()])
+    
+    def validate_src_nat(self, src_nat):
+        try:
+            ip_network(src_nat.data)
+        except ValueError:
+            raise ValidationError('Source IP must be a valid IP address with a network mask.')
+
+    def validate_dst_nat(self,dst_nat):
+        try:
+            ip_network(dst_nat.data)
+        except ValueError:
+            raise ValidationError('Destination IP must be a valid IP address with a network mask.')
+
     
     def validate_limit(self, limit):
         if limit.data and not limit.data.isdigit():
