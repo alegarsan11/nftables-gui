@@ -131,7 +131,6 @@ def create_rule_request(rule_id, chain_name, chain_table, family, statement, sta
     drop = None
     reject = None
     log = None
-    nflog = None
     limit = None
     return_ = None
     jump = None
@@ -173,7 +172,6 @@ def create_rule_request(rule_id, chain_name, chain_table, family, statement, sta
         input_interface = statement.get('input_interface')
         output_interface = statement.get('output_interface')
         log = statement.get("log")
-        nflog = statement.get("nflog")
         limit = statement.get("limit")
         counter = statement.get("counter")
         masquerade = statement.get("masquerade")
@@ -210,13 +208,11 @@ def create_rule_request(rule_id, chain_name, chain_table, family, statement, sta
     if jump:
         expr.append({"jump": {"target": jump}})
     if go_to:
-        expr.append({"goto": go_to})
+        expr.append({"goto": {"target": go_to}})
     if queue:
         expr.append({"queue": {"num": queue}})
     if log: 
         expr.append({"log": {"prefix": "Rule" + str(rule.id)+ " " + str(rule.table().name), "level": "info"}})
-    if nflog:
-        expr.append({"nflog": {"prefix": nflog}})
     if limit:
         expr.append({"limit": limit})
     if masquerade:

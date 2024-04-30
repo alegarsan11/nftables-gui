@@ -1,4 +1,4 @@
-from ipaddress import ip_network
+from ipaddress import ip_address
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SubmitField, SelectField, IntegerField, FormField, FieldList, BooleanField
 from wtforms.validators import DataRequired, Email, EqualTo, Optional
@@ -74,7 +74,12 @@ class ChainForm(FlaskForm):
     name = StringField('Name', validators=[DataRequired()])
     table = StringField('Table', validators=[DataRequired()])
     family = StringField('Family', validators=[DataRequired()])
-    policy = SelectField('Policy', choices=[('accept', 'accept'), ('drop', 'drop'), ('reject', 'reject'), ('dnat', 'dnat'), ('snat', 'snat'), ('masquerade', 'masquerade'), ('redirect', 'redirect'), ('log', 'log'), ('continue', 'continue'), ('return', 'return'), ('jump', 'jump'), ('queue', 'queue'), ('unreachable', 'unreachable'), ('error', 'error'), ('broadcast', 'broadcast'), ('dnat', 'dnat'), ('snat', 'snat'), ('redirect', 'redirect'), ('mirror', 'mirror'), ('tproxy', 'tproxy'), ('netmap', 'netmap'), ('nflog', 'nflog'), ('nfqueue', 'nfqueue'), ('nfacct', 'nfacct'), ('nfct', 'nfct'), ('nftrace', 'nftrace'), ('nftlb', 'nftlb')], validators=[DataRequired()])
+    policy = SelectField('Policy', choices=[
+        ('accept', 'accept'),
+        ('drop', 'drop'),
+        ('reject', 'reject'),
+        ('continue', 'continue')
+    ], validators=[DataRequired()])    
     description = StringField('Description')
     submit = SubmitField('Create Chain')
     
@@ -95,8 +100,8 @@ class ChainForm(FlaskForm):
             raise ValidationError('Family must be one of: ip, inet, arp, bridge, netdev.')
 
     def validate_policy(self, policy):
-        if policy.data not in ['accept', 'drop', 'reject', 'dnat', 'snat', 'masquerade', 'redirect', 'log', 'continue', 'return', 'jump', 'queue', 'unreachable', 'error', 'broadcast', 'dnat', 'snat', 'redirect', 'mirror', 'tproxy', 'netmap', 'nflog', 'nfqueue', 'nfacct', 'nfct', 'nftrace', 'nftlb']:
-            raise ValidationError('Policy must be one of: accept, drop, reject, dnat, snat, masquerade, redirect, log, continue, return, jump, queue, unreachable, error, broadcast, dnat, snat, redirect, mirror, tproxy, netmap, nflog, nfqueue, nfacct, nfct, nftrace, nftlb.')
+        if policy.data not in ['accept', 'drop', 'reject', 'dnat', 'snat', 'masquerade', 'redirect', 'log', 'continue', 'return', 'jump', 'queue', 'unreachable', 'error', 'broadcast', 'dnat', 'snat', 'redirect', 'mirror', 'tproxy', 'netmap', 'nfqueue', 'nfacct', 'nfct', 'nftrace', 'nftlb']:
+            raise ValidationError('Policy must be one of: accept, drop, reject, dnat, snat, masquerade, redirect, log, continue, return, jump, queue, unreachable, error, broadcast, dnat, snat, redirect, mirror, tproxy, netmap, nfqueue, nfacct, nfct, nftrace, nftlb.')
 
     def validate_type(self, type):
         if type.data not in ['filter', 'nat', 'route', 'mangle', 'raw']:
@@ -127,13 +132,13 @@ class StatementForm(FlaskForm):
     
     def validate_src_ip(self, src_ip):
         try:
-            ip_network(src_ip.data)
+            ip_address(src_ip.data)
         except ValueError:
             raise ValidationError('Source IP must be a valid IP address with a network mask.')
 
     def validate_dst_ip(self, dst_ip):
         try:
-            ip_network(dst_ip.data)
+            ip_address(dst_ip.data)
         except ValueError:
             raise ValidationError('Destination IP must be a valid IP address with a network mask.')
                 
@@ -158,7 +163,7 @@ class TerminalStatementForm(StatementForm):
     go_to = StringField('Go To', validators=[Optional()])
     
     def validate_queue(self, queue):
-        if queue.data and not queue.data.isdigit():
+        if queue.data and not isinstance(queue.data, int):
             raise ValidationError('Queue must be a valid number.')
         
     def validate_jump(self, jump):
@@ -174,7 +179,6 @@ class NotTerminalStatementForm(StatementForm):
     limit = IntegerField('Limit', validators=[Optional()] )
     log = BooleanField('Log', validators=[Optional()])
     counter = BooleanField('Counter', validators=[Optional()])
-    nflog = StringField('NFLog', validators=[Optional()])
     masquerade = BooleanField('Masquerade', validators=[Optional()])
     redirect = BooleanField('Redirect', validators=[Optional()])
     src_nat = StringField('SRC_NAT', validators=[Optional()])
@@ -182,13 +186,13 @@ class NotTerminalStatementForm(StatementForm):
     
     def validate_src_nat(self, src_nat):
         try:
-            ip_network(src_nat.data)
+            ip_address(src_nat.data)
         except ValueError:
             raise ValidationError('Source IP must be a valid IP address with a network mask.')
 
     def validate_dst_nat(self,dst_nat):
         try:
-            ip_network(dst_nat.data)
+            ip_address(dst_nat.data)
         except ValueError:
             raise ValidationError('Destination IP must be a valid IP address with a network mask.')
 
@@ -197,14 +201,6 @@ class NotTerminalStatementForm(StatementForm):
         if limit.data and not limit.data.isdigit():
             raise ValidationError('Limit must be a valid number.')   
         
-    def validate_nflog(self, nflog):
-        if nflog.data and not nflog.data.isdigit():
-            raise ValidationError('NFLog must be a valid NFLog.')
-        
-    def validate_nflog(self, nflog):
-        if nflog.data and not nflog.data.replace(":", "").replace("-", "").replace("_", "").replace(".", "").replace("/", "").replace(" ", "").isalnum():
-            raise ValidationError('NFLog must be a valid NFLog.')
-
 class RuleForm(FlaskForm):
     chain = StringField('Chain', validators=[DataRequired()])
     family = StringField('Family', validators=[DataRequired()])

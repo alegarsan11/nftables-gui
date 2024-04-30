@@ -126,7 +126,6 @@ class NotTerminalStatement(Statement):
     limit = db.Column(db.String(120), nullable=True)
     log = db.Column(db.String(120), nullable=True)
     counter = db.Column(db.String(120), nullable=True)
-    nflog = db.Column(db.String(120), nullable=True)
     masquerade = db.Column(db.Boolean(), nullable=True)
     snat = db.Column(db.String(120), nullable=True)
     dnat = db.Column(db.String(120), nullable=True)
@@ -137,7 +136,7 @@ class NotTerminalStatement(Statement):
         return '<NotTerminalStatement %r>' % self.id
 
     def is_empty(self):
-        return not any([self.limit, self.log, self.counter, self.nflog, self.masquerade, self.snat, self.dnat, self.redirect])
+        return not any([self.limit, self.log, self.counter, self.masquerade, self.snat, self.dnat, self.redirect])
     
 class Set(db.Model):
     id = db.Column(db.Integer, primary_key=True)
