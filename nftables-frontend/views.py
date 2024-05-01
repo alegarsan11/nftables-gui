@@ -341,6 +341,9 @@ def create_rule_post():
     form.family.data = str(family)
     chains = service.get_chains()
     if form.validate_on_submit():
+        if (not (form.statements.limit.data or form.statements.log.data or form.statements.counter.data or form.statements.masquerade.data or form.statements.redirect.data or form.statements.src_nat.data or form.statements.dst_nat.data or form.statements.limit_per.data) or (form.statements.data == None and form.statements_term.data == None)):
+            flash('Error creating rule.')
+            return render_template('rules/create_rule.html', form=form, chains=chains)
         if form.statements_term.jump.data != "--Selects--":
             if service.get_chain(chain_id=form.statements_term.jump.data ,table=table_name, family=family) == None:
                 flash('Error creating rule.')
