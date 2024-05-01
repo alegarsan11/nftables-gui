@@ -23,9 +23,13 @@
         <li class="nav-item{% if request.path == '/list_ruleset' %} active{% endif %}">
           <a class="nav-link" href="/list_ruleset">List ruleset</a>
         </li>
+        <li class="nav-item{% if request.path == '/sets' %} active{% endif %}">
+          <a class="nav-link" href="/sets">Sets</a>
+        </li>
         <li class="nav-item{% if request.path == '/users' %} active{% endif %}">
           <a class="nav-link" href="/users">Users</a>
         </li>
+
       </ul>
         <div class="salida">
           <p class="parrafo">{{ current_user.username }}</p>

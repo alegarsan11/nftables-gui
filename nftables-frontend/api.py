@@ -261,3 +261,12 @@ def delete_rule_request(rule_id):
         return "Success"
     else:
         return "Error deleting rule."
+
+def list_sets_request():
+    response = requests.get('http://localhost:8000/sets/list_sets')
+    return response.json()[1]["nftables"]
+
+def list_elements_in_set(set_name, set_family, set_table):
+    json_data = {"json_data": {"nftables": [{"list": {"set": {"name": set_name, "family": set_family, "table": set_table}}}]}}
+    response = requests.get('http://localhost:8000/sets/list_elements_in_set', json=json_data)
+    return response.json()

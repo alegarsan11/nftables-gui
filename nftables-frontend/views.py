@@ -373,3 +373,19 @@ def create_rule_post():
         flash('Error creating rule.')
 
     return render_template('rules/create_rule.html', form=form, chains=chains)
+
+@visualization_bp.route('/sets')
+def get_sets():
+    service.insert_sets()
+    return render_template('sets/sets.html', sets=service.get_sets())
+
+@visualization_bp.route('/sets/<set_id>')
+def get_set(set_id):
+    set_ = service.get_set(set_id)
+    result = api.list_elements_in_set(set_.name, set_.family, set_.table_id)
+    elements = ""
+    for i, item in enumerate(result[1]["nftables"]):
+        if("set" in item) and item["set"]["name"] == set_.name and item["set"]["family"] == set_.family and item["set"]["table"] == set_.table_id:
+            elements = str(item["set"]["elem"])
+    service.insert_elements_in_set(set_id, elements)
+    return render_template('sets/set.html', set=set_)

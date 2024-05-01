@@ -1,5 +1,5 @@
 import json
-from models import Chain, NotTerminalStatement, Rule, Statement, Table, BaseChain, TerminalStatement, db, User
+from models import Chain, NotTerminalStatement, Rule, Statement, Table, BaseChain, TerminalStatement, db, User, Set
 from flask_login import LoginManager
 import api
 
@@ -516,3 +516,36 @@ def get_rule_by_chain_and_table(chain_id, family, table):
 def get_rule_by_chain_and_handle(chain_id, family, handle):
     rule = Rule.query.filter_by(chain_id=chain_id, family=family, handle=handle).first()
     return rule
+
+def insert_sets():
+    result = api.list_sets_request()
+    for i, item in enumerate(result):
+        if("set" in item):
+            table = get_table(item["set"]["table"], item["set"]["family"])
+            if(check_existing_set(item["set"]["name"], table.name, item["set"]["family"]) == True):
+                
+                insert_set(item["set"]["name"], item["set"]["family"], item["set"]["table"], item["set"]["type"])
+    return "Success"
+
+def check_existing_set(name, table, family):
+    _set = Set.query.filter_by(name=name, table_id=table, family=family).first()
+    if _set:
+        return False
+    return True
+
+def insert_set(name, family, table_id, type):
+    _set = Set(name=name, family=family, table_id=table_id, type=type)
+    db.session.add(_set)
+    db.session.commit()
+    
+def get_sets():
+    return Set.query.all()
+
+def get_set(set_id):
+    _set = Set.query.get(set_id)
+    return _set
+
+def insert_elements_in_set(set_id, elements):
+    _set = get_set(set_id)
+    _set.elements = elements
+    db.session.commit()

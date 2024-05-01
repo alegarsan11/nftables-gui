@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block head %}
+{{ super() }}
+{% endblock %}
+{% block content %}
+<div class="container">
+  <h1>Set</h1>
+  <br></br>
+  <table class="table personal-table">
+    <tbody>
+      <tr>
+        <th>Name</th>
+        <td>{{ set.name }}</td>
+      </tr>
+      <tr>
+        <th>Type</th>
+        <td>{{ set.type }}</td>
+      </tr>
+      <tr>
+        <th>Family</th>
+        <td>{{ set.family }}</td>
+      </tr>
+      <tr>
+        <th>Elements</th>
+        <td>
+          <ul>
+            {% if set.elements != None %}
+            {{ set.elements }}
+            {% else %}
+            <li>No elements</li>
+            {% endif %}
+          </ul>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+{% endblock %}

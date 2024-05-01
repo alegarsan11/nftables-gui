@@ -139,36 +139,19 @@ class Set(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(120), nullable=False)
     family = db.Column(db.String(120), nullable=False)
+    type = db.Column(db.String(120), nullable=False)
+    elements = db.Column(db.String(120), nullable=True)
     description = db.Column(db.String(120), nullable=True)
-    entries = db.relationship('Entry', backref='set', lazy=True, cascade="all, delete-orphan")
+    table_id = db.Column(db.Integer, db.ForeignKey('table.name'), nullable=False)
     
     def __repr__(self):
         return '<Set %r>' % self.name
     
-class Entry(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    set_id = db.Column(db.Integer, db.ForeignKey('set.id'), nullable=False)
-    description = db.Column(db.String(120), nullable=True)
-    
-    def __repr__(self):
-        return '<Entry %r>' % self.key
-
 class Map(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(120), nullable=False)
     family = db.Column(db.String(120), nullable=False)
     description = db.Column(db.String(120), nullable=True)
-    entries = db.relationship('MapEntry', backref='map', lazy=True, cascade="all, delete-orphan")
     
     def __repr__(self):
         return '<Map %r>' % self.name
-
-class MapEntry(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    map_id = db.Column(db.Integer, db.ForeignKey('map.id'), nullable=False)
-    key = db.Column(db.String(120), nullable=False)
-    value = db.Column(db.String(120), nullable=False)
-    description = db.Column(db.String(120), nullable=True)
-    
-    def __repr__(self):
-        return '<MapEntry %r>' % self.key
