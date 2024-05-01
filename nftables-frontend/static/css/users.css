@@ -1,0 +1,26 @@
+.users-table {
+    width: 100%;
+    border-collapse: collapse;
+    border: 1px solid #333;
+
+}
+
+.head-user-table {
+    text-align: center;
+    background-color: #333;
+    color: white;
+    border: 1px solid #333;
+
+}
+
+.body-user-table {
+    background-color: white;
+    color: black;
+    border: 1px solid #333;
+}
+
+.tr, td , th{
+    text-align: center;
+    border: 1px solid #333;
+    height: 50px;
+}

@@ -1,0 +1,51 @@
+{% extends "bootstrap/base.html" %}
+{% block title %}nftables-gui{% endblock %}
+{% block head %}
+{{ super() }}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}">
+{% endblock %}
+{% block navbar %}
+<nav class="navbar">
+  <div>
+    <a class="navbar-brand" href="/">nftables-gui</a>
+  </div>
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav ml-auto">
+        <li class="nav-item{% if request.path == '/tables' %} active{% endif %}">
+          <a class="nav-link" href="/tables">Tables</a>
+        </li>
+        <li class="nav-item{% if request.path == '/chains' %} active{% endif %}">
+          <a class="nav-link" href="/chains">Chains</a>
+        </li>
+        <li class="nav-item{% if request.path == '/rules' %} active{% endif %}">
+          <a class="nav-link" href="/rules">Rules</a>
+        </li>
+        <li class="nav-item{% if request.path == '/list_ruleset' %} active{% endif %}">
+          <a class="nav-link" href="/list_ruleset">List ruleset</a>
+        </li>
+        <li class="nav-item{% if request.path == '/users' %} active{% endif %}">
+          <a class="nav-link" href="/users">Users</a>
+        </li>
+      </ul>
+        <div class="salida">
+          <p class="parrafo">{{ current_user.username }}</p>
+
+          <button class="button-logout" onclick="location.href='/logout'">Cerrar sesión</button>
+
+        </div>
+    </div>
+
+    </nav>
+{% endblock %}
+
+{% block content %}
+{% endblock %}
+
+
+  {% block footer %}
+  <footer class="footer">
+    <div class="container">
+      <span class="text-muted">Nftables-frontend</span>
+    </div>
+  </footer>
+  {% endblock %}

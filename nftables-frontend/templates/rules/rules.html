@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block head %}
+{{ super() }}
+{% endblock %}
+{% block content %}
+<div class="container">
+  <h1>Rules</h1>
+  <button class="btn btn-primary" onclick="window.location.href='/rules/create_rule'">Add</button>
+  <br></br>
+  <table class="table personal-table">
+    <thead>
+      <tr>
+        <th>Handle</th>
+        <th>Description</th>
+        <th>Table</th>
+        <th>Family</th>
+        <th>Chain</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+       
+    {% for rule in rules %}
+      <tr>
+        <td>{{ rule.handle }}</td>
+        <td>
+          {% if rule.description == None %}
+            No description
+          {% else %}
+          {{ rule.description }}
+          {% endif %}</td>
+        <td><a href="/table/{{ rule.table().name}}/{{ rule.family }}">   {{ rule.table().name }}</a></td>
+        <td>{{ rule.family }}</td>
+        <td><a href="/chain/{{ rule.chain.name }}/{{ rule.chain.family }}/{{ rule.table().name }}"> {{ rule.chain.name }}</a></td>
+
+              <td>
+                <button class="btn btn-danger" onclick="window.location.href='/rules/{{ rule.id }}/delete'">Delete</button> 
+                <br></br>
+                <button class="btn btn-primary" onclick="window.location.href='/rules/{{ rule.id }}'">Details</button>
+              </td>
+      </tr>
+
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

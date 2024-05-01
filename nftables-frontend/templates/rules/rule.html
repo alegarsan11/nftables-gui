@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+{% block head %}
+{{ super() }}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/rule.css') }}">
+{% endblock %}
+{% block content %}
+<div class="container">
+    <h1>Rule</h1>
+    <div>
+      <ul>
+        <li>
+        <h3>Handle: {{ rule.handle }}</h3>
+        </li>
+        <li>
+        <h3>Family: {{ rule.family }}</h3>
+        </li>
+        <li>
+        <h3>Table: {{ rule.table().name }}</h3>
+        </li>
+        <li>
+        <h3>Chain: {{ rule.chain.name }}</h3>
+        </li>
+        <li>
+        <h3>Description: {{ rule.description }}</h3>
+        </li>
+      </ul>
+    </div>
+    </div>
+    <h1>Statements</h1>
+        <table class="table personal-table">
+                <thead>
+                  <tr>
+                    <th>src_ip</th>
+                    <th>dst_ip</th>
+                    <th>src_port</th>
+                    <th>dst_port</th>
+                    <th>input_interface</th>
+                    <th>output_interface</th>
+                    <th>protocol</th>
+                    <th>reject</th>
+                    <th>drop</th>
+                    <th>accept</th>
+                    <th>queue</th>
+                    <th>return_</th>
+                    <th>jump</th>
+                    <th>go_to</th>
+                    <th>limit</th>
+                    <th>log</th>
+                    <th>counter</th>
+                    <th>masquerade</th>
+                    <th>snat</th>
+                    <th>dnat</th>
+                    <th>redirect</th>
+                  </tr>
+                </thead>
+                <tbody>
+                    {% for statement in statements %}
+                    {% if statement.rule_id == rule.id %}
+                      <tr>
+                      {% if statement.src_ip != None %}
+                      <td>{{ statement.src_ip }}</td>
+                      {% else %}
+                      <td>No source IP</td>
+                      {% endif %}
+                      {% if statement.dst_ip != None %}
+                      <td>{{ statement.dst_ip }}</td>
+                      {% else %}
+                      <td>No destination IP</td>
+                      {% endif %}
+                      {% if statement.src_port != None %}
+                      <td>{{ statement.src_port }}</td>
+                      {% else %}
+                      <td>No source port</td>
+                      {% endif %}
+                      {% if statement.dst_port != None %}
+                      <td>{{ statement.dst_port }}</td>
+                      {% else %}
+                      <td>No destination port</td>
+                      {% endif %}
+                      <td>{{ statement.input_interface or "" }}</td>
+                      <td>{{ statement.output_interface or "" }}</td>
+                      <td>{{ statement.protocol or "" }}</td>
+                      <td>{{ statement.reject or "" }}</td>
+                      <td>{{ statement.drop or "" }}</td>
+                      <td>{{ statement.accept or "" }}</td>
+                      <td>{{ statement.queue or ""}}</td>
+                      <td>{{ statement.return_  or ""}}</td>
+                      <td>{{ statement.jump or ""}}</td>
+                      <td>{{ statement.go_to or "" }}</td>
+                      <td>{{ statement.limit or ""}}</td>
+                      <td>{{ statement.log or ""}}</td>
+                      <td>{{ statement.counter or "" }}</td>
+                      <td>{{ statement.masquerade or "" }}</td>
+                      <td>{{ statement.snat or "" }}</td>
+                      <td>{{ statement.dnat or ""}}</td>
+                      <td>{{ statement.redirect or ""}}</td>
+                    </tr>
+                    {% endif %}
+                    {% endfor %}
+                </tbody>
+              </table>
+{% endblock %}              

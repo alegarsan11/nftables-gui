@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block head%}
+{{ super() }}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/tables.css') }}">
+{% endblock %}
+{% block content %} 
+    <div class="container">
+        <h1>Tables:</h1>
+        <button class="btn btn-primary" onclick="location.href='/add_table'">Add table</button>
+        <br></br>
+        <table class="table personal-table">
+            <thead>
+                <tr>
+                    <th>Table</th>
+                    <th>Family</th>
+                    <th>Description</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if tables == [] %}
+                    <tr>
+                        <td colspan="3">No tables</td>
+                    </tr>
+                {% else %}
+                {% for table in tables %}
+                    <tr>
+                        <td><a href="/table/{{ table.name }}/{{ table.family }}"> {{ table.name }}</a></td>
+                        <td>{{ table.family }}</td>
+                        <td>
+                            {% if table.description %}
+                                {{ table.description }}
+                            {% else %}
+                                No description
+                            {% endif %}
+                        </td>
+                        <td>
+                            <button class="btn btn-danger" onclick="location.href='/delete_table/{{ table.name }}/{{table.family}}'">Delete</button>
+                        </td>
+                    </tr>
+                {% endfor %}
+                {% endif %}
+            </tbody>
+</div>
+    {% endblock %}

@@ -1,0 +1,9 @@
+flask
+flask-bootstrap
+flask_sqlalchemy
+flask-migrate
+flask-login
+flask-wtf
+hug
+email_validator
+matplotlib

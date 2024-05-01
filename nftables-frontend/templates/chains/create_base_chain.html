@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+{% block head %}
+{{ super() }}
+<script>
+    // Función para actualizar el valor del input oculto con la table.family seleccionada
+    function updateHiddenInput() {
+        var selectedTable = document.getElementById('table').value;
+        var hiddenInput = document.getElementById('family');
+        hiddenInput.value = selectedTable.split('-')[1].trim(); // Obtener la parte de la familia de la tabla seleccionada
+    }
+</script>
+{% endblock %}
+{% block content %}
+<div class="container">
+  <h1>Create chain:</h1>
+    <h2 class="warning">Keep in mind that base chains can only be added to predefined tables.</h2>
+    <form id="myForm" action="/create_base_chain" method="POST">
+        {{ form.csrf_token }}
+        <div class="form-group">
+            {{ form.table.label }} 
+            <select name="table" class="form-control">
+                {% for table in tables %}
+                    <option name="family" value="{{ table.family }}&&{{ table.name }}">{{ table.name }} - {{table.family}}</option>
+                {% endfor %}
+            </select>
+            {% if form.table.errors %}
+                <ul class="errors">
+                    {% for error in form.table.errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        </div>
+        <div class="form-group">
+            {{ form.name.label }} {{ form.name(class="form-control") }}
+            {% if form.name.errors %}
+                <ul class="errors">
+                    {% for error in form.name.errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+            </div>
+        <div class="form-group">
+            {{ form.description.label }} {{ form.description(class="form-control") }}
+            {% if form.description.errors %}
+                <ul class="errors">
+                    {% for error in form.description.errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+            </div>
+        <div class="form-group">
+            {{ form.hook_type.label }} {{ form.hook_type(class="form-control") }}
+            {% if form.hook_type.errors %}
+                <ul class="errors">
+                    {% for error in form.hook_type.errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+            </div>
+        <div class="form-group">
+            {{ form.type.label}} {{ form.type(class="form-control") }}
+            {% if form.type.errors %}
+                <ul class="errors">
+                    {% for error in form.type.errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+            </div>
+        <div class="form-group">
+            {{ form.policy.label }} {{ form.policy(class="form-control") }}
+            {% if form.policy.errors %}
+                <ul class="errors">
+                    {% for error in form.policy.errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+            </div>
+        <div class="form-group">
+            {{ form.priority.label }} {{ form.priority(class="form-control") }}
+            {% if form.priority.errors %}
+                <ul class="errors">
+                    {% for error in form.priority.errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+            </div>
+        <button type="submit" class="btn btn-primary">Create</button>
+</div>
+{% endblock %}

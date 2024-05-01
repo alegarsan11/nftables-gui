@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block head %}
+{{ super() }}
+{% endblock %}
+{% block content %}
+<div class="container">
+  <h1>Chain: {{ chain.name }}</h1>
+  <button class="btn btn-danger" onclick="window.location.href='/chains/{{ chain.name }}/{{ chain.family }}/{{chain.table.name}}/delete'">Delete</button>
+  <button class="btn btn-warning" onclick="window.location.href='/chains/{{ chain.name }}/{{ chain.family }}/{{chain.table.name}}/flush'">Flush</button>
+  <div class="row">
+    <div class="col-md-6">
+      <h2>Details:</h2>
+      <p><strong>Table:</strong> {{ chain.table.name }}</p>
+      <p><strong>Hook type:</strong> 
+        {% if chain.hook_type == None %}
+          This chain is not associated with a hook
+        {% else %}
+        {{ chain.hook_type }}</p>
+        {% endif %}
+      {% if chain.type != None %}
+        <p><strong>Type:</strong> {{ chain.type }}</p>
+      {% endif %}
+      {% if chain.description == None %}
+        <p><strong>Description:</strong> No description</p>
+      {% else %}
+        <p><strong>Description:</strong> {{ chain.description }}</p>
+      {% endif %}
+      {% if chain.policy != None %}
+        <p><strong>Policy:</strong> {{ chain.policy }}</p>
+      {% endif %}
+      {% if chain.priority != None %}
+        <p><strong>Priority:</strong> {{ chain.priority }}</p>
+      {% endif %}
+      <p><strong>Family:</strong> {{ chain.family }}</p>
+    </div>
+    <div class="col-md-6">
+      <h2>Rules:</h2>
+      <table class="table personal-table">
+        <thead>
+          <tr>
+            <th>Handle</th>
+            <th>Expresion</th>
+            <th>Description</th>
+          </tr>
+        </thead>
+        <tbody>
+        {% for rule in chain.rules %}
+        {% if rule.table().name == chain.table.name and rule.family == chain.family %}
+
+          <tr>
+            <td>{{ rule.handle }}</td>
+            <td>{{ rule.expr }}</td>
+            <td>
+              {% if rule.description == None %}
+                No description
+              {% else %}
+              {{ rule.description }}
+              {% endif %}</td>
+          </tr>
+        {% endif %}
+        {% endfor %}
+        </tbody>
+    </div>
+  </div>
+</div>
+{% endblock %}

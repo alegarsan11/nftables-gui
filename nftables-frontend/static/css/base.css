@@ -1,0 +1,90 @@
+.navbar {
+    background-color: #333;
+    border-radius: 0%;
+}
+
+.navbar a {
+    display: block;
+    color: #f2f2f2;
+    padding: 16px;
+    text-decoration: none;
+}
+
+.navbar a:hover {
+    background-color: #ddd;
+    color: black;
+}
+
+.parrafo {
+    margin-top: 10px;
+    font-size: 18px;
+    color: #ddd;
+    margin-right: 10px;
+
+}
+
+.button-logout {
+    background-color: #f44336;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 10px 20px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 4px 2px;
+    cursor: pointer;
+
+}
+
+.salida {
+    display: flex;
+    text-align: right;
+    justify-content: flex-end;
+}
+
+.content {
+    margin-left: 20px !important;
+    padding: 1px 16px !important;
+}
+
+.personal-table{
+    background-color: #343a40;
+    color: #fff;
+    border: 1px solid #343a40 !important;
+}
+
+.personal-table th{
+    background-color: #343a40;
+    color: #fff;
+    border: 1px solid #343a40 !important;
+    text-align: center;
+}
+
+.personal-table td{
+    background-color: #fff;
+    color: #343a40;
+    border: 1px solid #343a40 !important;
+    text-align: center;
+}
+
+.container-main {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+
+.navbar-nav {
+    list-style: none;
+}
+
+.navbar-nav .active {
+    background-color: #858585;
+    color: #343a40 !important;
+    border-radius: 50px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
