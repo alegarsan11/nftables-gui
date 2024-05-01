@@ -83,24 +83,8 @@ def create_base_chain_request(name, family, table, type, priority, policy, hook_
 def list_chain_request(chain_name, chain_family, chain_table):
     json_data = {"json_data": {"nftables": [{"list": {"chain":{"name": chain_name, "family": chain_family, "table": chain_table}}}]}}
     response = requests.get('http://localhost:8000/chains/list_rule_chain', json=json_data)
-    print(response.json())
     return response.json()
         
-def edit_chain_request(name, family, table, type, priority, hook_type, policy):
-    json_data = {"json_data": {"nftables": [{"edit": {"chain":{"name": name, "family": family, "table": table, "type": type, "priority": priority, "hook": hook_type, "policy": policy}}}]}}
-    response = requests.post('http://localhost:8000/chains/edit_chain', json=json_data)
-    if(response.json()["status"] == "success"):
-        return "Success"
-    else:
-        return "Error editing chain."
-    
-def edit_base_chain_request(name, family, table, type, priority, policy, hook_type):
-    json_data = {"json_data": {"nftables": [{"edit": {"base_chain":{"name": name, "family": family, "table": table, "type": type, "priority": priority, "policy": policy, "hook_type": hook_type}}}]}}
-    response = requests.post('http://localhost:8000/chains/edit_base_chain', json=json_data)
-    if(response.json()["status"] == "success"):
-        return "Success"
-    else:
-        return "Error editing base chain."
     
 def delete_chain_request(name, family, table):
     json_data = {"json_data": {"nftables": [{"delete": {"chain":{"name": name, "family": family, "table": table}}}]}}
@@ -138,7 +122,6 @@ def create_rule_request(rule_id, chain_name, chain_table, family, statement, sta
     go_to = None
     queue = None
     counter = None
-    protocol = None
     snat = None
     dnat = None
     input_interface = None
@@ -150,7 +133,6 @@ def create_rule_request(rule_id, chain_name, chain_table, family, statement, sta
         daddr = statement_term["dst_ip"]
         sport = statement_term["src_port"]
         dport = statement_term["dst_port"]
-        protocol = statement_term["protocol"]
         input_interface = statement_term.get("input_interface")
         output_interface = statement_term.get("output_interface")
         accept = statement_term["accept"]
@@ -168,28 +150,38 @@ def create_rule_request(rule_id, chain_name, chain_table, family, statement, sta
         daddr = statement.get("dst_ip")
         sport = statement.get('src_port')
         dport = statement.get('dst_port')
-        protocol = statement.get('protocol')
         input_interface = statement.get('input_interface')
         output_interface = statement.get('output_interface')
         log = statement.get("log")
         limit = statement.get("limit")
+        limit_per = statement.get("limit_per")
         counter = statement.get("counter")
         masquerade = statement.get("masquerade")
-        snat = statement.get("snat")
-        dnat = statement.get("dnat")
+        snat = statement.get("src_nat")
+        dnat = statement.get("dst_nat")
         redirect = statement.get("redirect")
     
     # Agrega los elementos al diccionario expr
     if saddr:
-        expr.append({"saddr": saddr})
+        if family == "inet":
+            if ":" in saddr:
+                expr.append({"match":{"op":"==","left":{"payload":{"field":"saddr", "protocol":"ip6"}}, "right": saddr}})
+            elif "." in saddr:
+                expr.append({"match":{"op":"==","left":{"payload":{"field":"saddr", "protocol":"ip"}}, "right": saddr}})
+        else:
+            expr.append({"match":{"op":"==","left":{"payload":{"field":"saddr", "protocol":"ip"}}, "right": saddr}})
     if daddr:
-        expr.append({"daddr": daddr})
+        if family == "inet":
+            if ":" in daddr:
+                expr.append({"match":{"op":"==","left":{"payload":{"field":"daddr", "protocol":"ip6"}}, "right": daddr}})
+            elif "." in daddr:
+                expr.append({"match":{"op":"==","left":{"payload":{"field":"daddr", "protocol":"ip"}}, "right": daddr}})
+        else:
+            expr.append({"match":{"op":"==","left":{"payload":{"field":"daddr", "protocol":"ip"}}, "right": daddr}})
     if sport:
-        expr.append({"sport": sport})
+        expr.append({"match":{"op":"==","left":{"payload":{"field":"sport", "protocol":"tcp"}}, "right": sport}})
     if dport:
-        expr.append({"dport": dport})
-    if protocol:
-        expr.append({"protocol": protocol})
+        expr.append({"match":{"op":"==","left":{"payload":{"field":"dport", "protocol":"tcp"}}, "right": dport}})
     if input_interface:
         expr.append({"input_interface": input_interface})
     if output_interface:
@@ -214,16 +206,32 @@ def create_rule_request(rule_id, chain_name, chain_table, family, statement, sta
     if log: 
         expr.append({"log": {"prefix": "Rule" + str(rule.id)+ " " + str(rule.table().name), "level": "info"}})
     if limit:
-        expr.append({"limit": limit})
+        expr.append({"limit": {"rate": limit, "burst": 50, "per": limit_per}})
     if masquerade:
         expr.append({"masquerade": None})
     if snat:
-        expr.append({"snat": snat})
+        if(family == "inet"):
+            if ":" in snat:
+                expr.append({"snat": {"family": "ip6","addr": snat}})
+            elif "." in snat:
+                expr.append({"snat": {"family": "ip","addr": snat}})
+        else:
+            expr.append({"snat": {"addr": snat}})
     if dnat:
-        expr.append({"dnat": dnat})
+        if(family == "inet"):
+            if ":" in dnat:
+                
+                expr.append({"dnat": {"family": "ip6","addr": dnat}})
+            elif "." in dnat:
+                expr.append({"dnat": {"family": "ip","addr": dnat}})
+        else:
+            expr.append({"dnat": {"addr": dnat}})
+                    
     if redirect:
-        expr.append({"redirect": redirect})
-    print(chain_name, chain_table, family, expr)
+        if ":" in redirect:
+            expr.append({"redirect": {"to": redirect.split(":")[0], "port": redirect.split(":")[1]}})
+        else:
+            expr.append({"redirect": {"port": redirect}}) 
     json_data = {
         "json_data": {
             "nftables": [{
@@ -243,3 +251,13 @@ def create_rule_request(rule_id, chain_name, chain_table, family, statement, sta
         return "Success"
     else:
         return "Error creating rule."
+    
+def delete_rule_request(rule_id):
+    rule= service.get_rule(rule_id)
+    chain = service.get_chain_by_id(rule.chain_id)
+    json_data = {"json_data": {"nftables": [{"delete": {"rule": {"chain": chain.name ,"table":rule.table().name, "family":rule.family, "handle": int(rule.handle)}}}]}}
+    response = requests.post('http://localhost:8000/rules/delete_rule', json=json_data)
+    if(response.json()["status"] == "success"):
+        return "Success"
+    else:
+        return "Error deleting rule."

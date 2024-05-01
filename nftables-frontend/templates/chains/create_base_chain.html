@@ -1,17 +1,26 @@
 {% extends "base.html" %}
 {% block head %}
 {{ super() }}
+<script>
+    // Función para actualizar el valor del input oculto con la table.family seleccionada
+    function updateHiddenInput() {
+        var selectedTable = document.getElementById('table').value;
+        var hiddenInput = document.getElementById('family');
+        hiddenInput.value = selectedTable.split('-')[1].trim(); // Obtener la parte de la familia de la tabla seleccionada
+    }
+</script>
 {% endblock %}
 {% block content %}
 <div class="container">
   <h1>Create chain:</h1>
+    <h2 class="warning">Keep in mind that base chains can only be added to predefined tables.</h2>
     <form id="myForm" action="/create_base_chain" method="POST">
         {{ form.csrf_token }}
         <div class="form-group">
             {{ form.table.label }} 
             <select name="table" class="form-control">
                 {% for table in tables %}
-                    <option name="family" text={{ table.family }} value="{{ table.name }}">{{ table.name }} - {{table.family}}</option>
+                    <option name="family" value="{{ table.family }}&&{{ table.name }}">{{ table.name }} - {{table.family}}</option>
                 {% endfor %}
             </select>
             {% if form.table.errors %}

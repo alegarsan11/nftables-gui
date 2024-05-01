@@ -75,9 +75,6 @@ class Rule(db.Model):
 
     def __repr__(self):
         return '<Rule %r>' % self.handle
-
-    def chain(self):
-        return Chain.query.filter_by(name=self.chain_id, family=self.family).first()
     
     def statements(self):
         return Statement.query.filter_by(rule_id=self.id).all()

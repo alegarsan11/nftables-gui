@@ -12,6 +12,19 @@ def create_default_user():
         db.session.add(user)
         db.session.commit()
         
+def clean_table(table_id, family):
+    table = Table.query.filter_by(name=table_id, family=family).first()
+    chains = table.chains
+    for chain in chains:
+        rules = chain.rules
+        for rule in rules:
+            statements = rule.statement
+            for statement in statements:
+                db.session.delete(statement)
+            db.session.delete(rule)
+        db.session.delete(chain)
+    db.session.commit()
+        
 def create_user(username, email, password, role, is_active):
     user = User(username=username, email=email, password=password, role=role, is_active=is_active)
     db.session.add(user)
@@ -43,7 +56,7 @@ def get_table(table_id):
     table = Table.query.filter_by(name=table_id).first()
     return table
 
-def get_table(table_id, family):
+def get_table(table_id, family):  
     table = Table.query.filter_by(name=table_id, family=family).first()
     return table
 
@@ -69,8 +82,8 @@ def insert_in_table(name, family, description=None):
         return str(e)
     return "Success"
 
-def delete_table(table_id):
-    table = Table.query.get(table_id)
+def delete_table(table_id, family):
+    table = Table.query.filter_by(name=table_id, family=family).first()
     db.session.delete(table)
     db.session.commit()
     
@@ -110,6 +123,10 @@ def get_chain(chain_id, family, table):
     base_chain = BaseChain.query.filter_by(name=chain_id, family=family, table_id=table).first()
     if base_chain:
         return base_chain
+    return chain
+
+def get_chain_by_id(chain_id):
+    chain = Chain.query.filter_by(id=chain_id).first()
     return chain
 
 
@@ -243,29 +260,15 @@ def from_form_to_statement(statement, statement_term, rule_id, statement_select)
         else:
             redirect = None
         insert_statement(rule_id=rule_id, sport=sport, dport=dport, saddr=saddr, daddr=daddr, protocol=protocol, accept=accept, drop=drop, reject=reject, log=log, limit=limit, counter=counter, return_=return_, jump=jump, go_to=go_to, queue=queue, masquerade=masquerade, snat=snat, dnat=dnat, redirect=redirect, input_interface=input_interface, output_interface=output_interface)
-
-def edit_chain(chain_description, chain_name, family, policy, type, hook_type=None, priority=None):
-    chain = Chain.query.get(chain_name)
-    chain.name = chain_name
-    chain.family = family
-    chain.policy = policy
-    chain.type = type
-    chain.description = chain_description
-    if(hook_type != None and priority != None):
-        base_chain = BaseChain.query.get(chain_name)
-        base_chain.name = chain_name
-        base_chain.family = family
-        base_chain.policy = policy
-        base_chain.type = type
-        base_chain.hook_type = hook_type
-        base_chain.priority = priority
-        base_chain.description = chain_description
-        
-    db.session.commit()
     
 def delete_chain(chain_id, family, table):
     chain = get_chain(chain_id, family, table)
     db.session.delete(chain)
+    db.session.commit()
+    
+def delete_rule(rule_id):
+    rule = get_rule(rule_id)
+    db.session.delete(rule)
     db.session.commit()
     
 def delete_rules_form_chain(chain_id, family, table):
@@ -326,7 +329,6 @@ def delete_statements_from_rule(rule_id):
     db.session.commit()
 
 def iteration_on_chains(rule, chain_id, family, handle=None, rule_id=None):
-    print(handle)
     if rule_id != None:
         rule_ = Rule.query.filter_by(id=rule_id).first()
         rule_.expr = str(rule["rule"]["expr"])
