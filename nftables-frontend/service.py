@@ -144,6 +144,8 @@ def get_chain_id(chain_id, family, table):
 
 def insert_rule_with_table(chain_id, family, expr, table_id, description=None):
     chain = get_chain_id(chain_id, family, table_id)
+    if description == "":
+        description = None
     rule = Rule(chain_id=chain.id, family=family, expr=expr, description=description)
     db.session.add(rule)
     db.session.commit()
