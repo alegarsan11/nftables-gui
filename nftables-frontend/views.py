@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, flash, redirect, url_for
 from flask_login import login_user, logout_user, login_required, current_user
 from models import BaseChain, Chain, Rule, Statement, Table, User, db
-from forms.forms import BaseChainForm, ChainForm, LoginForm, CreateUserForm, RuleForm, TableForm, UpdateUserForm
+from forms.forms import AddElementSetForm, BaseChainForm, ChainForm, LoginForm, CreateUserForm, RuleForm, SetForm, TableForm, UpdateUserForm
 import service, api, os, matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
@@ -358,8 +358,6 @@ def create_rule_post():
         else:
             id_ = 1
         expr = str(form.statements.data) + str(form.statements_term.data)
-        #if (form.statements.data != None or form.statements_term.data != None):
-            #service.from_form_to_statement(form.statements.data, form.statements_term.data, id_, form.statement_select.data)
         service.insert_rule_with_table(chain_id=form.chain.data, expr=expr, family=form.family.data, description=form.description.data, table_id=table_name)    
         result = api.create_rule_request(rule_id=id_, chain_name=chain_name, family=family, chain_table=table_name, statement=form.statements.data, statement_term=form.statements_term.data, statement_type=form.statement_select.data)
         if(result == "Success"):
@@ -386,6 +384,57 @@ def get_set(set_id):
     elements = ""
     for i, item in enumerate(result[1]["nftables"]):
         if("set" in item) and item["set"]["name"] == set_.name and item["set"]["family"] == set_.family and item["set"]["table"] == set_.table_id:
-            elements = str(item["set"]["elem"])
+            if item.get("set").get("elem", None) != None:
+                elements = str(item["set"]["elem"])
     service.insert_elements_in_set(set_id, elements)
     return render_template('sets/set.html', set=set_)
+
+@visualization_bp.route('/sets/<set_id>/add_element')
+def add_element(set_id):
+    form = AddElementSetForm()
+    return render_template('sets/add_element.html', form=form)
+
+@creation_bp.route('/sets/<set_id>/add_element', methods=['POST'])
+def add_element_post(set_id):
+    form = AddElementSetForm()
+    set_ = service.get_set(set_id)
+    if service.validate_element(form.element.data, set_id) and (form.element.data != None or form.element.data != ""):
+        response = api.add_element_to_set_request(set_family=set_.family, element=form.element.data, set_name=set_.name, set_table=set_.table_id)
+        if response == "Success":
+            flash('Element added successfully.')
+        else:
+            flash('Error adding element.')
+        return redirect('/sets/' + set_id)
+    else:
+        flash('Error adding element.')
+        return render_template('sets/add_element.html', form=form)
+    
+@visualization_bp.route('/sets/new')
+def add_set():
+    form = SetForm()
+    tables = service.get_tables()
+    return render_template('sets/create_set.html', form=form, tables=tables)
+
+@creation_bp.route('/sets/new', methods=['POST'])
+def add_set_post():
+    form = SetForm()
+    form.family.data = form.table.data.split("&&")[1]
+    form.table.data = form.table.data.split("&&")[0]
+    if form.validate_on_submit():
+        service.insert_set_form(form.name.data, form.family.data, form.table.data, form.type.data, form.description.data)
+        response = api.create_set_request(set_name=form.name.data, set_family=form.family.data, set_table=form.table.data, set_type=form.type.data)
+        if response == "Success":
+            flash('Set created successfully.')
+        else:
+            flash('Error creating set.')
+        return redirect('/sets')
+    else:
+        flash('Error creating set.')
+        return render_template('sets/create_set.html', form=form)
+    
+@visualization_bp.route('/sets/<set_id>/delete')
+def delete_set(set_id):
+    set_ = service.get_set(set_id)
+    response = api.delete_set_request(set_name=set_.name, set_family=set_.family, set_table=set_.table_id)
+    service.delete_set(set_id)
+    return redirect('/sets')

@@ -245,3 +245,28 @@ class RuleForm(FlaskForm):
         if handle.data and not handle.data.replace(":", "").replace("-", "").replace("_", "").replace(".", "").replace("/", "").replace(" ", "").isalnum():
             raise ValidationError('Handle must be a valid handle.')
         
+class AddElementSetForm(FlaskForm):
+    element = StringField('Element', validators=[DataRequired()])
+    
+class SetForm(FlaskForm):
+    VALID_TYPES = [('ipv4_addr', 'ipv4_addr'), ('ipv6_addr', 'ipv6_addr'), ('ether_addr', 'ether_addr'), ('inet_service', 'inet_service'), ('inet_proto', 'inet_proto'), ('mark', 'mark')]
+
+    name = StringField('Name', validators=[DataRequired()])
+    family = StringField('Family', validators=[DataRequired()])
+    table = StringField('Table Name', validators=[DataRequired()])
+    type = SelectField('Type', choices=VALID_TYPES, validators=[DataRequired()])
+    description = StringField('Description', validators=[Optional()])
+    submit = SubmitField('Create Set')
+    
+    def validate_family(self, family):
+        if family.data not in ['ip', 'inet', 'arp', 'bridge', 'netdev']:
+            raise ValidationError('Family must be one of: ip, inet, arp, bridge, netdev.')
+        
+    def validate_name(self, name):
+        if " " in name.data or "-" in name.data or "/" in name.data or "." in name.data or "," in name.data or ";" in name.data or ":" in name.data or "@" in name.data or "#" in name.data or "$" in name.data or "%" in name.data or "^" in name.data or "&" in name.data or "*" in name.data or "(" in name.data or ")" in name.data or "+" in name.data or "=" in name.data or "[" in name.data or "]" in name.data or "{" in name.data or "}" in name.data or "|" in name.data or "<" in name.data or ">" in name.data or "?" in name.data or "!" in name.data or "'" in name.data or '"' in name.data or "\\" in name.data or "`" in name.data or "~" in name.data:
+            raise ValidationError('Set name invalid. (Must not contain special characters or spaces.)')
+        
+    def validate_type(self, type):
+        if type.data not in [choice[0] for choice in self.VALID_TYPES]:
+            raise ValidationError('Type must be one of: ' + ', '.join([choice[0] for choice in self.VALID_TYPES]))    
+    

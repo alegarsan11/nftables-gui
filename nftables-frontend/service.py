@@ -1,7 +1,10 @@
 import json
+import re
 from models import Chain, NotTerminalStatement, Rule, Statement, Table, BaseChain, TerminalStatement, db, User, Set
 from flask_login import LoginManager
 import api
+import ipaddress
+
 
 login_manager = LoginManager()
 
@@ -548,4 +551,52 @@ def get_set(set_id):
 def insert_elements_in_set(set_id, elements):
     _set = get_set(set_id)
     _set.elements = elements
+    db.session.commit()
+    
+def validate_element(element, set_id):
+    _set = get_set(set_id)
+    
+    if element in _set.elements:
+        return False
+    if _set.type == 'ipv4_addr':
+        try:
+            ipaddress.IPv4Address(element)
+        except ipaddress.AddressValueError:
+            return False
+    elif _set.type == 'ipv6_addr':
+        try:
+            ipaddress.IPv6Address(element)
+        except ipaddress.AddressValueError:
+            return False
+    elif _set.type == 'inet_service':
+        if not isinstance(element, int) or not (0 <= element <= 65535):
+            return False
+    elif _set.type == 'inet_proto':
+        if not isinstance(element, int) or not (0 <= element <= 255):
+            return False
+    elif _set.type == 'mark':
+        if not isinstance(element, int):
+            return False
+    elif _set.type == 'ether_addr':
+        if not isinstance(element, str) or not validate_mac_address(element):
+            return False
+    return True
+
+def validate_mac_address(mac):
+    return bool(re.match("^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$", mac))
+
+def insert_set_form(set_name, family, table, type, description=None):
+    if description == "":
+        description = None
+    if check_existing_set(set_name, table, family) == False:
+        return "Set already exists"
+    _set = Set(name=set_name, family=family, table_id=table, type=type, description=description)
+    db.session.add(_set)
+    db.session.commit()
+
+    return "Success"
+ 
+def delete_set(set_id):
+    _set = get_set(set_id)
+    db.session.delete(_set)
     db.session.commit()

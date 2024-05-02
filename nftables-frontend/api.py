@@ -270,3 +270,29 @@ def list_elements_in_set(set_name, set_family, set_table):
     json_data = {"json_data": {"nftables": [{"list": {"set": {"name": set_name, "family": set_family, "table": set_table}}}]}}
     response = requests.get('http://localhost:8000/sets/list_elements_in_set', json=json_data)
     return response.json()
+
+def add_element_to_set_request(set_name, set_family, set_table, element):
+    json_data = {"json_data": {"nftables": [{"add": {"element": {"family": set_family,  "table": set_table, "name": set_name,  "elem": element}}}]}}
+    response = requests.post('http://localhost:8000/sets/add_element_to_set', json=json_data)
+    if(response.json()[0] == 0):
+        return "Success"
+    else:
+        return "Error adding element to set."
+    
+def create_set_request(set_name, set_family, set_table, set_type):
+    json_data = {"json_data": {"nftables": [{"add": {"set": {"name": set_name, "family": set_family, "table": set_table, "type": set_type}}}]}}
+    response = requests.post('http://localhost:8000/sets/create_set', json=json_data)
+    print(response.json())
+    if(response.json()[0] == 0):
+        return "Success"
+    else:
+        return "Error creating set."
+    
+def delete_set_request(set_name, set_family, set_table):
+    json_data = {"json_data": {"nftables": [{"delete": {"set": {"name": set_name, "family": set_family, "table": set_table}}}]}}
+    response = requests.post('http://localhost:8000/sets/delete_set', json=json_data)
+    print(response.json())
+    if(response.json()[0] == 0):
+        return "Success"
+    else:
+        return "Error deleting set."

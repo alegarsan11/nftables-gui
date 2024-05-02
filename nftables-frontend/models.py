@@ -152,6 +152,7 @@ class Map(db.Model):
     name = db.Column(db.String(120), nullable=False)
     family = db.Column(db.String(120), nullable=False)
     description = db.Column(db.String(120), nullable=True)
+    elements = db.Column(db.String(120), nullable=True)
     
     def __repr__(self):
         return '<Map %r>' % self.name

@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block head %}
+{{ super() }}
+{% endblock %}
+{% block content %}
+<div class="container">
+  <h1>Add element</h1>
+  <a href="https://es.wikipedia.org/wiki/Anexo:N%C3%BAmeros_de_protocolo_IP" target="_blank">IP protocol numbers</a>
+  <br></br>
+  <form method="POST">
+    <div class="form-group">
+      <label for="element">Element</label>
+      <input type="text" class="form-control" id="element" name="element" required>
+    </div>
+    <button type="submit" class="btn btn-primary">Add</button>
+  </form>
+</div>
+{% endblock %}
