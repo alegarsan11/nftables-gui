@@ -569,13 +569,22 @@ def validate_element(element, set_id):
         except ipaddress.AddressValueError:
             return False
     elif _set.type == 'inet_service':
-        if not isinstance(element, int) or not (0 <= element <= 65535):
+        try:
+            if not isinstance(int(element), int) or not (0 <= int(element) <= 65535):
+                return False
+        except ValueError:
             return False
     elif _set.type == 'inet_proto':
-        if not isinstance(element, int) or not (0 <= element <= 255):
+        try:
+            if not isinstance(int(element), int) or not (0 <= int(element) <= 255):
+                return False
+        except ValueError: 
             return False
     elif _set.type == 'mark':
-        if not isinstance(element, int):
+        try:
+            if not isinstance(int(element), int):
+                return False
+        except ValueError:
             return False
     elif _set.type == 'ether_addr':
         if not isinstance(element, str) or not validate_mac_address(element):
@@ -600,3 +609,7 @@ def delete_set(set_id):
     _set = get_set(set_id)
     db.session.delete(_set)
     db.session.commit()
+    
+def get_elements_from_set(set_id):
+    _set = get_set(set_id)
+    return _set.elements

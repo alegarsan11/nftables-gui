@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, flash, redirect, url_for
 from flask_login import login_user, logout_user, login_required, current_user
 from models import BaseChain, Chain, Rule, Statement, Table, User, db
-from forms.forms import AddElementSetForm, BaseChainForm, ChainForm, LoginForm, CreateUserForm, RuleForm, SetForm, TableForm, UpdateUserForm
+from forms.forms import AddElementSetForm, BaseChainForm, ChainForm, DeleteElementSet, LoginForm, CreateUserForm, RuleForm, SetForm, TableForm, UpdateUserForm
 import service, api, os, matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
@@ -438,3 +438,41 @@ def delete_set(set_id):
     response = api.delete_set_request(set_name=set_.name, set_family=set_.family, set_table=set_.table_id)
     service.delete_set(set_id)
     return redirect('/sets')
+
+@visualization_bp.route('/sets/<set_id>/delete_element')
+def delete_element_set(set_id):
+    form = DeleteElementSet()
+    elements = service.get_elements_from_set(set_id)
+    aux = []
+    elements = elements.replace("]", "").replace("'", "")
+    for element in elements.split("["):
+        if "," in element:
+            for i in element.split(","):
+                aux.append(str(i))
+        else:
+            aux.append(str(element))
+    return render_template('sets/delete_element.html', form=form, aux=aux)
+
+@creation_bp.route('/sets/<set_id>/delete_element', methods=['POST'])
+def delete_element_set_post(set_id):
+    form = DeleteElementSet()
+    set_ = service.get_set(set_id)
+    if form.element.data != None or form.element.data != "":
+        response = api.delete_element_from_set_request(set_family=set_.family, element=form.element.data, set_name=set_.name, set_table=set_.table_id)
+        if response == "Success":
+            flash('Element deleted successfully.')
+        else:
+            flash('Error deleting element.')
+        return redirect('/sets/' + set_id)
+    else:
+        flash('Error deleting element.')
+        elements = service.get_elements_from_set(set_id)
+        aux = []
+        elements = elements.replace("]", "").replace("'", "")
+        for element in elements.split("["):
+            if "," in element:
+                for i in element.split(","):
+                    aux.append(str(i))
+            else:
+                aux.append(str(element))
+        return render_template('sets/delete_element.html', form=form,aux=aux)

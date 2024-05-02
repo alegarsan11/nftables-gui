@@ -269,4 +269,7 @@ class SetForm(FlaskForm):
     def validate_type(self, type):
         if type.data not in [choice[0] for choice in self.VALID_TYPES]:
             raise ValidationError('Type must be one of: ' + ', '.join([choice[0] for choice in self.VALID_TYPES]))    
+        
+class DeleteElementSet(FlaskForm):
+    element = StringField('Element', validators=[DataRequired()])
     
