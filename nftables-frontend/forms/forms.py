@@ -273,3 +273,34 @@ class SetForm(FlaskForm):
 class DeleteElementSet(FlaskForm):
     element = StringField('Element', validators=[DataRequired()])
     
+class MapForm(FlaskForm):
+    VALID_TYPES = [('ipv4_addr', 'ipv4_addr'), ('ipv6_addr', 'ipv6_addr'), ('ether_addr', 'ether_addr'), ('inet_service', 'inet_service'), ('inet_proto', 'inet_proto'), ('mark', 'mark')]
+    name = StringField('Name', validators=[DataRequired()])
+    family = StringField('Family', validators=[DataRequired()])
+    table = StringField('Table Name', validators=[DataRequired()])
+    type = SelectField('Type', choices=VALID_TYPES, validators=[DataRequired()])
+    description = StringField('Description', validators=[Optional()])
+    map_type = SelectField('Map Type', choices=VALID_TYPES, validators=[DataRequired()])
+    
+    def validate_family(self, family):
+        if family.data not in ['ip', 'inet', 'arp', 'bridge', 'netdev']:
+            raise ValidationError('Family must be one of: ip, inet, arp, bridge, netdev.')
+        
+    def validate_name(self, name):
+        if " " in name.data or "-" in name.data or "/" in name.data or "." in name.data or "," in name.data or ";" in name.data or ":" in name.data or "@" in name.data or "#" in name.data or "$" in name.data or "%" in name.data or "^" in name.data or "&" in name.data or "*" in name.data or "(" in name.data or ")" in name.data or "+" in name.data or "=" in name.data or "[" in name.data or "]" in name.data or "{" in name.data or "}" in name.data or "|" in name.data or "<" in name.data or ">" in name.data or "?" in name.data or "!" in name.data or "'" in name.data or '"' in name.data or "\\" in name.data or "`" in name.data or "~" in name.data:
+            raise ValidationError('Set name invalid. (Must not contain special characters or spaces.)')
+
+    def validate_type(self, type):
+        if type.data not in [choice[0] for choice in self.VALID_TYPES]:
+            raise ValidationError('Type must be one of: ' + ', '.join([choice[0] for choice in self.VALID_TYPES]))
+    def validate_map_type(self, map_type):
+        if map_type.data not in [choice[0] for choice in self.VALID_TYPES]:
+            raise ValidationError('Map Type must be one of: ' + ', '.join([choice[0] for choice in self.VALID_TYPES]))
+        
+class AddElementMap(FlaskForm):
+    key = StringField('Key', validators=[DataRequired()])
+    value = StringField('Value', validators=[DataRequired()])
+    
+class DeleteElementMap(FlaskForm):
+    key = StringField('Key', validators=[DataRequired()])
+    

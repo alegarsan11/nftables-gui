@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block head %}
+{{ super() }}
+{% endblock %}
+{% block content %}
+<div class="container">
+  <h1>Maps</h1>
+  <a href="/maps/new" class="btn btn-success">New map</a>
+    <br><br>
+  <table class="table personal-table">
+    <thead>
+      <tr>
+        <th>Map</th>
+        <th>Family</th>
+        <th>Table</th>
+        <th>Type</th>
+        <th>Mapper</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for map in maps %}
+      <tr>
+        <td>{{ map.name }}</td>
+        <td>{{ map.family }}</td>
+        <td>{{ map.table_id }}</td>
+        <td>{{ map.type }}</td>
+        <td>{{ map.map }}</td>
+        <td>
+          <a href="/maps/{{ map.id }}" class="btn btn-primary">View</a>
+          <a href="/maps/{{ map.id }}/delete" class="btn btn-danger">Delete</a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

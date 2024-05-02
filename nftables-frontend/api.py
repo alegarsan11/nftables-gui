@@ -301,3 +301,47 @@ def delete_element_from_set_request(set_name, set_family, set_table, element):
         return "Success"
     else:
         return "Error deleting element from set."
+    
+def list_maps_request():
+    json_data = {"json_data": {"nftables": [{"list": {"maps": {}}}]}}
+    response = requests.get('http://localhost:8000/maps/list_maps', json=json_data)
+    return response.json()[1]["nftables"]
+
+def list_elements_in_map(map_name, map_family, map_table):
+    json_data = {"json_data": {"nftables": [{"list": {"map": { "family": map_family, "table": map_table, "name": map_name}}}]}}
+    response = requests.get('http://localhost:8000/maps/list_elements_in_map', json=json_data)
+    return response.json()
+
+def create_map_request(map_name,type, map_family, map_table, map_type):
+    json_data = {"json_data": {"nftables": [{"add": {"map": {"name": map_name, "family": map_family, "table": map_table, "type": type, "map": map_type}}}]}}
+    response = requests.post('http://localhost:8000/maps/create_map', json=json_data)
+    if(response.json()[0] == 0):
+        return "Success"
+    else:
+        return "Error creating map."
+    
+def delete_map_request(map_name, map_family, map_table):
+    json_data = {"json_data": {"nftables": [{"delete": {"map": {"name": map_name, "family": map_family, "table": map_table}}}]}}
+    response = requests.post('http://localhost:8000/maps/delete_map', json=json_data)
+    if(response.json()[0] == 0):
+        return "Success"
+    else:
+        return "Error deleting map."
+    
+def add_element_to_map_request(map_name, map_family, map_table, key, value):
+    json_data = {"json_data": {"nftables": [{"add": {"element": {"family": map_family,  "table": map_table, "name": map_name,  "elem": [[key, {"concat": [value]}]]
+                                                                 }}}]}}    
+    response = requests.post('http://localhost:8000/maps/add_element_to_map', json=json_data)
+    if(response.json()[0] == 0):
+        return "Success"
+    else:
+        return "Error adding element to map."
+    
+def delete_element_from_map_request(map_name, map_family, map_table, key, value):
+    json_data = {"json_data": {"nftables": [{"delete": {"element": {"family": map_family,  "table": map_table, "name": map_name,  "elem": [[key, {"concat": [value]}]]}}}]}}
+    response = requests.post('http://localhost:8000/maps/delete_element_from_map', json=json_data)
+    print(response.json())
+    if(response.json()[0] == 0):
+        return "Success"
+    else:
+        return "Error deleting element from map."

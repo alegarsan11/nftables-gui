@@ -149,9 +149,12 @@ class Set(db.Model):
     
 class Map(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    table_id = db.Column(db.Integer, db.ForeignKey('table.name'), nullable=False)
     name = db.Column(db.String(120), nullable=False)
     family = db.Column(db.String(120), nullable=False)
     description = db.Column(db.String(120), nullable=True)
+    type = db.Column(db.String(120), nullable=True)
+    map = db.Column(db.String(120), nullable=True)
     elements = db.Column(db.String(120), nullable=True)
     
     def __repr__(self):

@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block head %}
+{{ super() }}
+{% endblock %}
+{% block content %}
+<div class="container">
+  <h1>Add element</h1>
+  <form method="POST">
+    <div class="form-group">
+      <label for="key">Key</label>
+      ({{ map.type }})
+      <input type="text" class="form-control" id="key" name="key" required>
+    </div>
+    <div class="form-group">
+      <label for="value">Value</label>
+      ({{ map.map}})
+      <input type="text" class="form-control" id="value" name="value" required>
+    </div>
+    <button type="submit" class="btn btn-primary">Add</button>
+  </form>
+</div>
+{% endblock %}

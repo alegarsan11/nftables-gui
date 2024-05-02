@@ -1,8 +1,9 @@
 import hug
-import tables, chains, rules, sets
+import tables, chains, rules, sets, maps
 
 api = hug.API(__name__)
 api.extend(tables, '/tables')
 api.extend(chains, '/chains')
 api.extend(rules, '/rules')
 api.extend(sets, '/sets')
+api.extend(maps, '/maps')

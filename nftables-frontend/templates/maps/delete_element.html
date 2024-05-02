@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block head %}
+{{ super() }}
+{% endblock %}
+{% block content %}
+<div class="container">
+  <h1>Delete element</h1>
+  <form method="POST">
+    <div class="form-group">
+      <label for="key">Key</label>
+      <select class="form-control" id="key" name="key" required>
+        {% for element in aux %}
+        <option value="{{ element }}">{{ element }}</option>
+        {% endfor %}
+        </select>
+    </div>
+    <button type="submit" class="btn btn-danger">Delete</button>
+  </form>
+</div>
+{% endblock %}

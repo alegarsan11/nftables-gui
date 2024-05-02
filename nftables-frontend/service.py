@@ -1,9 +1,10 @@
 import json
 import re
-from models import Chain, NotTerminalStatement, Rule, Statement, Table, BaseChain, TerminalStatement, db, User, Set
+from models import Chain, Map, NotTerminalStatement, Rule, Statement, Table, BaseChain, TerminalStatement, db, User, Set
 from flask_login import LoginManager
 import api
 import ipaddress
+import ast
 
 
 login_manager = LoginManager()
@@ -613,3 +614,139 @@ def delete_set(set_id):
 def get_elements_from_set(set_id):
     _set = get_set(set_id)
     return _set.elements
+
+def insert_maps():
+    result = api.list_maps_request()
+    print(result)
+    for i, item in enumerate(result):
+        if("map" in item):
+            table = get_table(item["map"]["table"], item["map"]["family"])
+            if(check_existing_map(item["map"]["name"], table.name, item["map"]["family"]) == True):
+                insert_map(name=item["map"]["name"], family=item["map"]["family"], table_id=item["map"]["table"], type=item["map"]["type"], map=item["map"]["map"])
+    return "Success"
+
+def check_existing_map(name, table, family):
+    _map = Map.query.filter_by(name=name, table_id=table, family=family).first()
+    if _map:
+        return False
+    return True
+
+def insert_map(name, family, table_id, type, map):
+    _map = Map(name=name, family=family, table_id=table_id, type=type, map=map)
+    db.session.add(_map)
+    db.session.commit()
+    
+def get_maps():
+    return Map.query.all()
+
+def insert_elements_in_map(map_id, elements):
+    _map = get_map(map_id)
+    if(elements != ""):
+        list_elements = ast.literal_eval(elements)
+        dict_elements = {item[0]: item[1] for item in list_elements}
+        _map.elements = str(dict_elements)
+    db.session.commit()
+    
+def get_map(map_id):
+    _map = Map.query.get(map_id)
+    return _map
+
+def insert_map_form(map_name, family, table, type, map_type, description=None):
+    if description == "":
+        description = None
+    if check_existing_map(map_name, table, family) == False:
+        return "Map already exists"
+    _map = Map(name=map_name, family=family, table_id=table, type=type, description=description, map=map_type)
+    db.session.add(_map)
+    db.session.commit()
+
+    return "Success"
+
+def delete_map(map_id):
+    _map = get_map(map_id)
+    db.session.delete(_map)
+    db.session.commit()
+    
+def validate_element_map(element , element_map, map_id):
+    _map = get_map(map_id)
+    if _map.type == 'ipv4_addr':
+        try:
+            ipaddress.IPv4Address(element)
+        except ipaddress.AddressValueError:
+            return False
+    elif _map.type == 'ipv6_addr':
+        try:
+            ipaddress.IPv6Address(element)
+        except ipaddress.AddressValueError:
+            return False
+    elif _map.type == 'inet_service':
+        try:
+            if not isinstance(int(element), int) or not (0 <= int(element) <= 65535):
+                return False
+        except ValueError:
+            return False
+    elif _map.type == 'inet_proto':
+        try:
+            if not isinstance(int(element), int) or not (0 <= int(element) <= 255):
+                return False
+        except ValueError: 
+            return False
+    elif _map.type == 'mark':
+        try:
+            if not isinstance(int(element), int):
+                return False
+        except ValueError:
+            return False
+    elif _map.type == 'ether_addr':
+        if not isinstance(element, str) or not validate_mac_address(element):
+            return False
+    elif _map.map == 'ipv4_addr':
+        try:
+            ipaddress.IPv4Address(element_map)
+        except ipaddress.AddressValueError:
+            return False
+    elif _map.map == 'ipv6_addr':
+        try:
+            ipaddress.IPv6Address(element_map)
+        except ipaddress.AddressValueError:
+            return False
+    elif _map.map == 'inet_service':
+        try:
+            if not isinstance(int(element_map), int) or not (0 <= int(element_map) <= 65535):
+                return False
+        except ValueError:
+            return False
+    elif _map.map == 'inet_proto':
+        try:
+            if not isinstance(int(element_map), int) or not (0 <= int(element_map) <= 255):
+                return False
+        except ValueError: 
+            return False
+    elif _map.map == 'mark':
+        try:
+            if not isinstance(int(element_map), int):
+                return False
+        except ValueError:
+            return False
+    elif _map.map == 'ether_addr':
+        if not isinstance(element_map, str) or not validate_mac_address(element_map):
+            return False
+    return True
+
+def get_elements_from_map(map_id):
+    _map = get_map(map_id)
+    return _map.elements
+
+def  delete_element_from_map(map_id, element):
+    _map = get_map(map_id)
+    elements = _map.elements
+    elements = ast.literal_eval(elements)
+    elements.pop(element)
+    _map.elements = str(elements)
+    db.session.commit()
+    
+def get_element_from_map(map_id, element):
+    _map = get_map(map_id)
+    elements = _map.elements
+    elements = ast.literal_eval(elements)
+    return elements[element]

@@ -1,7 +1,8 @@
+import ast
 from flask import Blueprint, render_template, flash, redirect, url_for
 from flask_login import login_user, logout_user, login_required, current_user
 from models import BaseChain, Chain, Rule, Statement, Table, User, db
-from forms.forms import AddElementSetForm, BaseChainForm, ChainForm, DeleteElementSet, LoginForm, CreateUserForm, RuleForm, SetForm, TableForm, UpdateUserForm
+from forms.forms import AddElementMap, AddElementSetForm, BaseChainForm, ChainForm, DeleteElementMap, DeleteElementSet, LoginForm, CreateUserForm, MapForm, RuleForm, SetForm, TableForm, UpdateUserForm
 import service, api, os, matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
@@ -476,3 +477,107 @@ def delete_element_set_post(set_id):
             else:
                 aux.append(str(element))
         return render_template('sets/delete_element.html', form=form,aux=aux)
+    
+@visualization_bp.route('/maps')
+def get_maps():
+    service.insert_maps()
+    maps = service.get_maps()
+    return render_template('maps/maps.html', maps=maps)
+
+@visualization_bp.route('/maps/<map_id>')
+def get_map(map_id):
+    map_ = service.get_map(map_id)
+    result = api.list_elements_in_map(map_.name, map_.family, map_.table_id)
+    elements = ""
+    print(result)
+    for i, item in enumerate(result[1]["nftables"]):
+        if("map" in item) and item["map"]["name"] == map_.name and item["map"]["family"] == map_.family and item["map"]["table"] == map_.table_id:
+            if item.get("map").get("elem", None) != None:
+                elements = str(item["map"]["elem"])
+    service.insert_elements_in_map(map_id, elements)
+    return render_template('maps/map.html', map=map_)
+
+@visualization_bp.route('/maps/new')
+def add_map():
+    form = MapForm()
+    tables = service.get_tables()
+    return render_template('maps/create_map.html', form=form, tables=tables)
+
+@creation_bp.route('/maps/new', methods=['POST'])
+def add_map_post():
+    form = MapForm()
+    print(form.table.data)
+    form.family.data = form.table.data.split("&&")[1]
+    form.table.data = form.table.data.split("&&")[0]
+    if form.validate_on_submit():
+        service.insert_map_form(form.name.data, form.family.data, form.table.data, form.type.data, form.map_type.data, form.description.data)
+        response = api.create_map_request(map_name=form.name.data, map_family=form.family.data, map_table=form.table.data, map_type=form.map_type.data, type=form.type.data)
+        if response == "Success":
+            flash('Map created successfully.')
+        else:
+            flash('Error creating map.')
+        return redirect('/maps')
+    else:
+        flash('Error creating map.')
+        return render_template('maps/create_map.html', form=form)
+    
+@visualization_bp.route('/maps/<map_id>/delete')
+def delete_map(map_id):
+    map_ = service.get_map(map_id)
+    response = api.delete_map_request(map_name=map_.name, map_family=map_.family, map_table=map_.table_id)
+    service.delete_map(map_id)
+    return redirect('/maps')
+
+@visualization_bp.route('/maps/<map_id>/add_element')
+def add_element_map(map_id):
+    form = AddElementMap()
+    map_ = service.get_map(map_id)
+    return render_template('maps/add_element.html', form=form, map=map_)
+
+@creation_bp.route('/maps/<map_id>/add_element', methods=['POST'])
+def add_element_map_post(map_id):
+    form = AddElementMap()
+    map_ = service.get_map(map_id)
+    if service.validate_element_map(form.key.data, form.value.data, map_id) and (form.key.data != None or form.key.data != "") and (form.value.data != None or form.value.data != ""):
+        response = api.add_element_to_map_request(map_family=map_.family, key=form.key.data, value=form.value.data, map_name=map_.name, map_table=map_.table_id)
+        if response == "Success":
+            flash('Element added successfully.')
+        else:
+            flash('Error adding element.')
+        return redirect('/maps/' + map_id)
+    else:
+        flash('Error adding element.')
+        return render_template('maps/add_element.html', form=form)
+    
+@visualization_bp.route('/maps/<map_id>/delete_element')
+def delete_element_map(map_id):
+    form = DeleteElementMap()
+    elements_str = service.get_elements_from_map(map_id)
+    # Convierte la cadena de texto en un diccionario
+    elements_dict = ast.literal_eval(elements_str)
+    # Obtiene las claves del diccionario
+    keys = elements_dict.keys()
+    aux = list(keys)
+
+    return render_template('maps/delete_element.html', form=form, aux=aux)
+
+@creation_bp.route('/maps/<map_id>/delete_element', methods=['POST'])
+def delete_element_map_post(map_id):
+    form = DeleteElementMap()
+    map_ = service.get_map(map_id)
+    if form.key.data != None or form.key.data != "":
+        valor = service.get_element_from_map(element=form.key.data, map_id=map_id)
+        response = api.delete_element_from_map_request(map_family=map_.family, key=form.key.data , value=valor, map_name=map_.name, map_table=map_.table_id)
+        if response == "Success":
+            service.delete_element_from_map(element=form.key.data, map_id=map_id)
+            flash('Element deleted successfully.')
+        else:
+            flash('Error deleting element.')
+        return redirect('/maps/' + map_id)
+    else:
+        flash('Error deleting element.')
+        elements_str = service.get_elements_from_map(map_id)
+        elements_dict = ast.literal_eval(elements_str)
+        keys = elements_dict.keys()
+        aux = list(keys)
+        return render_template('maps/delete_element.html', form=form, aux=aux)
