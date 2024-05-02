@@ -444,15 +444,8 @@ def delete_set(set_id):
 def delete_element_set(set_id):
     form = DeleteElementSet()
     elements = service.get_elements_from_set(set_id)
-    aux = []
-    elements = elements.replace("]", "").replace("'", "")
-    for element in elements.split("["):
-        if "," in element:
-            for i in element.split(","):
-                aux.append(str(i))
-        else:
-            aux.append(str(element))
-    return render_template('sets/delete_element.html', form=form, aux=aux)
+    elements = ast.literal_eval(elements)
+    return render_template('sets/delete_element.html', form=form, aux=elements)
 
 @creation_bp.route('/sets/<set_id>/delete_element', methods=['POST'])
 def delete_element_set_post(set_id):
@@ -468,15 +461,8 @@ def delete_element_set_post(set_id):
     else:
         flash('Error deleting element.')
         elements = service.get_elements_from_set(set_id)
-        aux = []
-        elements = elements.replace("]", "").replace("'", "")
-        for element in elements.split("["):
-            if "," in element:
-                for i in element.split(","):
-                    aux.append(str(i))
-            else:
-                aux.append(str(element))
-        return render_template('sets/delete_element.html', form=form,aux=aux)
+        elements = ast.literal_eval(elements)
+        return render_template('sets/delete_element.html', form=form,aux=elements)
     
 @visualization_bp.route('/maps')
 def get_maps():
@@ -489,7 +475,6 @@ def get_map(map_id):
     map_ = service.get_map(map_id)
     result = api.list_elements_in_map(map_.name, map_.family, map_.table_id)
     elements = ""
-    print(result)
     for i, item in enumerate(result[1]["nftables"]):
         if("map" in item) and item["map"]["name"] == map_.name and item["map"]["family"] == map_.family and item["map"]["table"] == map_.table_id:
             if item.get("map").get("elem", None) != None:
@@ -506,7 +491,6 @@ def add_map():
 @creation_bp.route('/maps/new', methods=['POST'])
 def add_map_post():
     form = MapForm()
-    print(form.table.data)
     form.family.data = form.table.data.split("&&")[1]
     form.table.data = form.table.data.split("&&")[0]
     if form.validate_on_submit():

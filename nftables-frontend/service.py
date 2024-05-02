@@ -617,7 +617,6 @@ def get_elements_from_set(set_id):
 
 def insert_maps():
     result = api.list_maps_request()
-    print(result)
     for i, item in enumerate(result):
         if("map" in item):
             table = get_table(item["map"]["table"], item["map"]["family"])

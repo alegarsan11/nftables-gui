@@ -340,7 +340,6 @@ def add_element_to_map_request(map_name, map_family, map_table, key, value):
 def delete_element_from_map_request(map_name, map_family, map_table, key, value):
     json_data = {"json_data": {"nftables": [{"delete": {"element": {"family": map_family,  "table": map_table, "name": map_name,  "elem": [[key, {"concat": [value]}]]}}}]}}
     response = requests.post('http://localhost:8000/maps/delete_element_from_map', json=json_data)
-    print(response.json())
     if(response.json()[0] == 0):
         return "Success"
     else:
