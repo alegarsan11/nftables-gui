@@ -32,15 +32,6 @@ def create_base_chain(json_data: hug.types.json):
 def get_rule_chain(json_data: hug.types.json):
     nft = Nftables()
     result = nft.json_cmd(json_data)
-    name = (json_data["nftables"][0]["list"]["chain"]["name"])
-    table = (json_data["nftables"][0]["list"]["chain"]["table"])
-    family = (json_data["nftables"][0]["list"]["chain"]["family"])
-    name = name.replace("\n", "").replace("\r", "")    
-    masquerade = nft.cmd("list chain " + family + " " + table + " " + name )
-    aux = None
-    if "masquerade" in masquerade:
-        aux = True
-    print(result)
     return {"rules": result[1]}
 
 @hug.post('/delete_chain')

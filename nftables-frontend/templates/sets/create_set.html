@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block head %}
+{{ super() }}
+{% endblock %}
+{% block content %}
+<div class="container">
+  <h1>Create set</h1>
+  <form method="POST">
+    {{ form.csrf_token }}
+    <div class="form-group">
+      <label for="name">Name</label>
+      <input type="text" class="form-control" id="name" name="name" required>
+    </div>
+    <div class="form-group">
+      <label for="table">Table</label>
+      <select class="form-control" id="table" name="table" required>
+        {% for table in tables %}
+        <option value="{{ table.name }}&&{{table.family}}">{{ table.name }} - {{table.family}}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="form-group">
+        <label for="type">Type</label>
+        <select class="form-control" id="type" name="type" required>
+            <option value="ipv4_addr">IPv4 address</option>
+            <option value="ipv6_addr">IPv6 address</option>
+            <option value="inet_service">Service</option>
+            <option value="ether_addr">MAC address</option>
+            <option value="inet_proto">Protocol</option>
+            <option value="mark">Mark</option>
+        </select>
+    </div>
+    <div class="form-group">
+        <label for="description">Description</label>
+        <input type="text" class="form-control" id="description" name="description">
+    </div>
+
+    <button type="submit" class="btn btn-primary">Create</button>
+    </form>
+</div>
+{% endblock %}

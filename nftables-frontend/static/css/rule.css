@@ -30,3 +30,9 @@
     background-color: #e0e0e0; /* Color de fondo gris claro para filas al pasar el cursor */
   }
   
+  .espaciado {
+    margin-top: 20px; /* Añadir espacio en la parte superior */
+    margin-bottom: 20px; /* Añadir espacio en la parte inferior */
+    margin-right: 20px;
+    margin-left: 20px;
+  }

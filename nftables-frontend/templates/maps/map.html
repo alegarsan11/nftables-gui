@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block head %}
+{{ super() }}
+{% endblock %}
+{% block content %}
+<div class="container">
+  <h1>Map</h1>
+  <button class="btn btn-primary" onclick="location.href='/maps/{{ map.id }}/add_element'">Add element</button>
+    <button class="btn btn-danger" onclick="location.href='/maps/{{ map.id }}/delete_element'">Delete element</button>
+    <br><br>
+  <table class="table personal-table">
+    <tbody>
+      <tr>
+        <th>Map</th>
+        <td>{{ map.name }}</td>
+      </tr>
+      <tr>
+        <th>Family</th>
+        <td>{{ map.family }}</td>
+      </tr>
+      <tr>
+        <th>Table</th>
+        <td>{{ map.table_id }}</td>
+      </tr>
+      <tr>
+        <th>Type</th>
+        <td>{{ map.type }}</td>
+      </tr>
+      <tr>
+        <th>Mapper</th>
+        <td>{{ map.map }}</td>
+      </tr>
+      <tr>
+        <th>Elements</th>
+        <td>{{ map.elements or "No elements yet"}}</td>
+    </tbody>
+  </table>
+  <a href="/maps/{{ map.id }}/delete" class="btn btn-danger">Delete</a>
+</div>
+{% endblock %}

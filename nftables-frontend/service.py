@@ -1,7 +1,11 @@
 import json
-from models import Chain, NotTerminalStatement, Rule, Statement, Table, BaseChain, TerminalStatement, db, User
+import re
+from models import Chain, Map, NotTerminalStatement, Rule, Statement, Table, BaseChain, TerminalStatement, db, User, Set
 from flask_login import LoginManager
 import api
+import ipaddress
+import ast
+
 
 login_manager = LoginManager()
 
@@ -144,6 +148,8 @@ def get_chain_id(chain_id, family, table):
 
 def insert_rule_with_table(chain_id, family, expr, table_id, description=None):
     chain = get_chain_id(chain_id, family, table_id)
+    if description == "":
+        description = None
     rule = Rule(chain_id=chain.id, family=family, expr=expr, description=description)
     db.session.add(rule)
     db.session.commit()
@@ -465,6 +471,8 @@ def load_data(condicion):
         names[i] = names[i].replace("\n", "")
         if(i != 0) and check_existing_table(names[i], family[i]) == False:
             insert_in_table(names[i], family[i])
+    insert_sets()
+    insert_maps()
     for item in result_chains["chains"]["nftables"]:
         if("chain" in item):
             if(check_existing_chain(item["chain"]["name"], item["chain"]["table"], item["chain"]["family"]) == True):
@@ -514,3 +522,258 @@ def get_rule_by_chain_and_table(chain_id, family, table):
 def get_rule_by_chain_and_handle(chain_id, family, handle):
     rule = Rule.query.filter_by(chain_id=chain_id, family=family, handle=handle).first()
     return rule
+
+def insert_sets():
+    result = api.list_sets_request()
+    for i, item in enumerate(result):
+        if("set" in item):
+            table = get_table(item["set"]["table"], item["set"]["family"])
+            if(check_existing_set(item["set"]["name"], table.name, item["set"]["family"]) == True):
+                
+                insert_set(item["set"]["name"], item["set"]["family"], item["set"]["table"], item["set"]["type"])
+    return "Success"
+
+def check_existing_set(name, table, family):
+    _set = Set.query.filter_by(name=name, table_id=table, family=family).first()
+    if _set:
+        return False
+    return True
+
+def insert_set(name, family, table_id, type):
+    _set = Set(name=name, family=family, table_id=table_id, type=type)
+    db.session.add(_set)
+    db.session.commit()
+    
+def get_sets():
+    return Set.query.all()
+
+def get_set(set_id):
+    _set = Set.query.get(set_id)
+    return _set
+
+def insert_elements_in_set(set_id, elements):
+    _set = get_set(set_id)
+    _set.elements = elements
+    db.session.commit()
+    
+def validate_element(element, set_id):
+    _set = get_set(set_id)
+    
+    if element in _set.elements:
+        return False
+    if _set.type == 'ipv4_addr':
+        try:
+            ipaddress.IPv4Address(element)
+        except ipaddress.AddressValueError:
+            return False
+    elif _set.type == 'ipv6_addr':
+        try:
+            ipaddress.IPv6Address(element)
+        except ipaddress.AddressValueError:
+            return False
+    elif _set.type == 'inet_service':
+        try:
+            if not isinstance(int(element), int) or not (0 <= int(element) <= 65535):
+                return False
+        except ValueError:
+            return False
+    elif _set.type == 'inet_proto':
+        try:
+            if not isinstance(int(element), int) or not (0 <= int(element) <= 255):
+                return False
+        except ValueError: 
+            return False
+    elif _set.type == 'mark':
+        try:
+            if not isinstance(int(element), int):
+                return False
+        except ValueError:
+            return False
+    elif _set.type == 'ether_addr':
+        if not isinstance(element, str) or not validate_mac_address(element):
+            return False
+    return True
+
+def validate_mac_address(mac):
+    return bool(re.match("^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$", mac))
+
+def insert_set_form(set_name, family, table, type, description=None):
+    if description == "":
+        description = None
+    if check_existing_set(set_name, table, family) == False:
+        return "Set already exists"
+    _set = Set(name=set_name, family=family, table_id=table, type=type, description=description)
+    db.session.add(_set)
+    db.session.commit()
+
+    return "Success"
+ 
+def delete_set(set_id):
+    _set = get_set(set_id)
+    db.session.delete(_set)
+    db.session.commit()
+    
+def get_elements_from_set(set_id):
+    _set = get_set(set_id)
+    return _set.elements
+
+def insert_maps():
+    result = api.list_maps_request()
+    for i, item in enumerate(result):
+        if("map" in item):
+            table = get_table(item["map"]["table"], item["map"]["family"])
+            if(check_existing_map(item["map"]["name"], table.name, item["map"]["family"]) == True):
+                insert_map(name=item["map"]["name"], family=item["map"]["family"], table_id=item["map"]["table"], type=item["map"]["type"], map=item["map"]["map"])
+    return "Success"
+
+def check_existing_map(name, table, family):
+    _map = Map.query.filter_by(name=name, table_id=table, family=family).first()
+    if _map:
+        return False
+    return True
+
+def insert_map(name, family, table_id, type, map):
+    _map = Map(name=name, family=family, table_id=table_id, type=type, map=map)
+    db.session.add(_map)
+    db.session.commit()
+    
+def get_maps():
+    return Map.query.all()
+
+def insert_elements_in_map(map_id, elements):
+    _map = get_map(map_id)
+    if(elements != ""):
+        list_elements = ast.literal_eval(elements)
+        dict_elements = {item[0]: item[1] for item in list_elements}
+        _map.elements = str(dict_elements)
+    db.session.commit()
+    
+def get_map(map_id):
+    _map = Map.query.get(map_id)
+    return _map
+
+def insert_map_form(map_name, family, table, type, map_type, description=None):
+    if description == "":
+        description = None
+    if check_existing_map(map_name, table, family) == False:
+        return "Map already exists"
+    _map = Map(name=map_name, family=family, table_id=table, type=type, description=description, map=map_type)
+    db.session.add(_map)
+    db.session.commit()
+
+    return "Success"
+
+def delete_map(map_id):
+    _map = get_map(map_id)
+    db.session.delete(_map)
+    db.session.commit()
+    
+def validate_element_map(element , element_map, map_id):
+    _map = get_map(map_id)
+    if _map.type == 'ipv4_addr':
+        try:
+            ipaddress.IPv4Address(element)
+        except ipaddress.AddressValueError:
+            return False
+    elif _map.type == 'ipv6_addr':
+        try:
+            ipaddress.IPv6Address(element)
+        except ipaddress.AddressValueError:
+            return False
+    elif _map.type == 'inet_service':
+        try:
+            if not isinstance(int(element), int) or not (0 <= int(element) <= 65535):
+                return False
+        except ValueError:
+            return False
+    elif _map.type == 'inet_proto':
+        try:
+            if not isinstance(int(element), int) or not (0 <= int(element) <= 255):
+                return False
+        except ValueError: 
+            return False
+    elif _map.type == 'mark':
+        try:
+            if not isinstance(int(element), int):
+                return False
+        except ValueError:
+            return False
+    elif _map.type == 'ether_addr':
+        if not isinstance(element, str) or not validate_mac_address(element):
+            return False
+    elif _map.map == 'ipv4_addr':
+        try:
+            ipaddress.IPv4Address(element_map)
+        except ipaddress.AddressValueError:
+            return False
+    elif _map.map == 'ipv6_addr':
+        try:
+            ipaddress.IPv6Address(element_map)
+        except ipaddress.AddressValueError:
+            return False
+    elif _map.map == 'inet_service':
+        try:
+            if not isinstance(int(element_map), int) or not (0 <= int(element_map) <= 65535):
+                return False
+        except ValueError:
+            return False
+    elif _map.map == 'inet_proto':
+        try:
+            if not isinstance(int(element_map), int) or not (0 <= int(element_map) <= 255):
+                return False
+        except ValueError: 
+            return False
+    elif _map.map == 'mark':
+        try:
+            if not isinstance(int(element_map), int):
+                return False
+        except ValueError:
+            return False
+    elif _map.map == 'ether_addr':
+        if not isinstance(element_map, str) or not validate_mac_address(element_map):
+            return False
+    return True
+
+def get_elements_from_map(map_id):
+    _map = get_map(map_id)
+    return _map.elements
+
+def  delete_element_from_map(map_id, element):
+    _map = get_map(map_id)
+    elements = _map.elements
+    elements = ast.literal_eval(elements)
+    elements.pop(element)
+    _map.elements = str(elements)
+    db.session.commit()
+    
+def get_element_from_map(map_id, element):
+    _map = get_map(map_id)
+    elements = _map.elements
+    elements = ast.literal_eval(elements)
+    return elements[element]
+
+def delete_all_data():
+    meta = db.metadata
+    for table in reversed(meta.sorted_tables):
+        if table.name != 'user':
+            db.session.execute(table.delete())
+    db.session.commit()
+    
+def get_objects():
+    names = [] 
+    set_ = Set.query.all()
+    map_ = Map.query.all()
+    for item in set_:
+        names.append(item)
+    for item in map_:
+        names.append(item)
+    return names
+        
+def check_set_or_map(name):
+    _set = Set.query.filter_by(name=name).first()
+    _map = Map.query.filter_by(name=name).first()
+    if _set:
+        return _set.type
+    if _map:
+        return _map.type
+    return None

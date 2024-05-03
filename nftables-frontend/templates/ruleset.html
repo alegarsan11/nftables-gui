@@ -2,6 +2,11 @@
 {% block content %}
 <div class="container">
     <h1>Complete configuration of nftables</h1>
+    <form action="/list_ruleset" method="post">
+        <div class="form-group">
+            <button type="submit" class="btn btn-primary">Load ruleset</button>
+        </div>
+    </form>
     <pre>{{ ruleset }}</pre>
 </div>
 {% endblock %}

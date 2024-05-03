@@ -1,7 +1,8 @@
+import ast
 from flask import Blueprint, render_template, flash, redirect, url_for
 from flask_login import login_user, logout_user, login_required, current_user
 from models import BaseChain, Chain, Rule, Statement, Table, User, db
-from forms.forms import BaseChainForm, ChainForm, LoginForm, CreateUserForm, RuleForm, TableForm, UpdateUserForm
+from forms.forms import AddElementMap, AddElementSetForm, BaseChainForm, ChainForm, DeleteElementMap, DeleteElementSet, LoginForm, CreateUserForm, MapForm, RuleForm, SetForm, TableForm, UpdateUserForm
 import service, api, os, matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
@@ -13,6 +14,15 @@ creation_bp = Blueprint('creation', __name__)
 @login_required
 def list_ruleset():
     result = api.list_ruleset_request()    
+    
+    return render_template('ruleset.html', ruleset=result)
+
+@creation_bp.route('/list_ruleset', methods=['POST'])
+@login_required
+def list_ruleset_post():
+    result = api.list_ruleset_request()
+    service.delete_all_data()
+    service.load_data(True)
     return render_template('ruleset.html', ruleset=result)
 
 @visualization_bp.route('/')
@@ -321,7 +331,8 @@ def get_rule(rule_id):
 def create_rule():
     form = RuleForm()
     chains = service.get_chains()
-    return render_template('rules/create_rule.html', form=form, chains=chains)
+    objects = service.get_objects()
+    return render_template('rules/create_rule.html', form=form, chains=chains, objects=objects)
 
 @visualization_bp.route('/rules/<rule_id>/delete')
 def delete_rule(rule_id):
@@ -341,21 +352,26 @@ def create_rule_post():
     form.family.data = str(family)
     chains = service.get_chains()
     if form.validate_on_submit():
+        if (not (form.statements.limit.data or form.statements.log.data or form.statements.counter.data or form.statements.masquerade.data or form.statements.redirect.data or form.statements.src_nat.data or form.statements.dst_nat.data or form.statements.limit_per.data or form.statements_term.accept.data or form.statements_term.reject.data or form.statements_term.drop.data or form.statements_term.queue.data or form.statements_term.jump.data or form.statements_term.go_to.data or form.statements_term.return_.data) 
+            or (form.statements.data == None and form.statements_term.data == None)):
+            flash('Error creating rule.')
+            objects = service.get_objects()
+            return render_template('rules/create_rule.html', form=form, chains=chains, objects=objects)
         if form.statements_term.jump.data != "--Selects--":
             if service.get_chain(chain_id=form.statements_term.jump.data ,table=table_name, family=family) == None:
                 flash('Error creating rule.')
-                return render_template('rules/create_rule.html', form=form, chains=chains)
+                objects = service.get_objects()
+                return render_template('rules/create_rule.html', form=form, chains=chains, objects=objects)
         if  form.statements_term.go_to.data != "--Selects--":
             if service.get_chain(chain_id=form.statements_term.go_to.data ,table=table_name, family=family) == None:
                 flash('Error creating rule.')
-                return render_template('rules/create_rule.html', form=form, chains=chains)
+                objects = service.get_objects()
+                return render_template('rules/create_rule.html', form=form, chains=chains, objects=objects)
         if service.get_rules() != []:
             id_ = service.get_rules()[-1].id + 1
         else:
             id_ = 1
         expr = str(form.statements.data) + str(form.statements_term.data)
-        #if (form.statements.data != None or form.statements_term.data != None):
-            #service.from_form_to_statement(form.statements.data, form.statements_term.data, id_, form.statement_select.data)
         service.insert_rule_with_table(chain_id=form.chain.data, expr=expr, family=form.family.data, description=form.description.data, table_id=table_name)    
         result = api.create_rule_request(rule_id=id_, chain_name=chain_name, family=family, chain_table=table_name, statement=form.statements.data, statement_term=form.statements_term.data, statement_type=form.statement_select.data)
         if(result == "Success"):
@@ -363,9 +379,203 @@ def create_rule_post():
         else:
             flash('Error creating rule.')
             
-            return render_template('rules/create_rule.html', form=form, chains=chains)
+            objects = service.get_objects()
+            return render_template('rules/create_rule.html', form=form, chains=chains, objects=objects)
         return redirect('/rules/' + str(id_))
     else:
         flash('Error creating rule.')
 
     return render_template('rules/create_rule.html', form=form, chains=chains)
+
+@visualization_bp.route('/sets')
+def get_sets():
+    service.insert_sets()
+    return render_template('sets/sets.html', sets=service.get_sets())
+
+@visualization_bp.route('/sets/<set_id>')
+def get_set(set_id):
+    set_ = service.get_set(set_id)
+    result = api.list_elements_in_set(set_.name, set_.family, set_.table_id)
+    elements = ""
+    for i, item in enumerate(result[1]["nftables"]):
+        if("set" in item) and item["set"]["name"] == set_.name and item["set"]["family"] == set_.family and item["set"]["table"] == set_.table_id:
+            if item.get("set").get("elem", None) != None:
+                elements = str(item["set"]["elem"])
+    service.insert_elements_in_set(set_id, elements)
+    return render_template('sets/set.html', set=set_)
+
+@visualization_bp.route('/sets/<set_id>/add_element')
+def add_element(set_id):
+    form = AddElementSetForm()
+    return render_template('sets/add_element.html', form=form)
+
+@creation_bp.route('/sets/<set_id>/add_element', methods=['POST'])
+def add_element_post(set_id):
+    form = AddElementSetForm()
+    set_ = service.get_set(set_id)
+    if service.validate_element(form.element.data, set_id) and (form.element.data != None or form.element.data != ""):
+        response = api.add_element_to_set_request(set_family=set_.family, element=form.element.data, set_name=set_.name, set_table=set_.table_id)
+        if response == "Success":
+            flash('Element added successfully.')
+        else:
+            flash('Error adding element.')
+        return redirect('/sets/' + set_id)
+    else:
+        flash('Error adding element.')
+        return render_template('sets/add_element.html', form=form)
+    
+@visualization_bp.route('/sets/new')
+def add_set():
+    form = SetForm()
+    tables = service.get_tables()
+    return render_template('sets/create_set.html', form=form, tables=tables)
+
+@creation_bp.route('/sets/new', methods=['POST'])
+def add_set_post():
+    form = SetForm()
+    form.family.data = form.table.data.split("&&")[1]
+    form.table.data = form.table.data.split("&&")[0]
+    if form.validate_on_submit():
+        service.insert_set_form(form.name.data, form.family.data, form.table.data, form.type.data, form.description.data)
+        response = api.create_set_request(set_name=form.name.data, set_family=form.family.data, set_table=form.table.data, set_type=form.type.data)
+        if response == "Success":
+            flash('Set created successfully.')
+        else:
+            flash('Error creating set.')
+        return redirect('/sets')
+    else:
+        flash('Error creating set.')
+        return render_template('sets/create_set.html', form=form)
+    
+@visualization_bp.route('/sets/<set_id>/delete')
+def delete_set(set_id):
+    set_ = service.get_set(set_id)
+    response = api.delete_set_request(set_name=set_.name, set_family=set_.family, set_table=set_.table_id)
+    service.delete_set(set_id)
+    return redirect('/sets')
+
+@visualization_bp.route('/sets/<set_id>/delete_element')
+def delete_element_set(set_id):
+    form = DeleteElementSet()
+    elements = service.get_elements_from_set(set_id)
+    elements = ast.literal_eval(elements)
+    return render_template('sets/delete_element.html', form=form, aux=elements)
+
+@creation_bp.route('/sets/<set_id>/delete_element', methods=['POST'])
+def delete_element_set_post(set_id):
+    form = DeleteElementSet()
+    set_ = service.get_set(set_id)
+    if form.element.data != None or form.element.data != "":
+        response = api.delete_element_from_set_request(set_family=set_.family, element=form.element.data, set_name=set_.name, set_table=set_.table_id)
+        if response == "Success":
+            flash('Element deleted successfully.')
+        else:
+            flash('Error deleting element.')
+        return redirect('/sets/' + set_id)
+    else:
+        flash('Error deleting element.')
+        elements = service.get_elements_from_set(set_id)
+        elements = ast.literal_eval(elements)
+        return render_template('sets/delete_element.html', form=form,aux=elements)
+    
+@visualization_bp.route('/maps')
+def get_maps():
+    service.insert_maps()
+    maps = service.get_maps()
+    return render_template('maps/maps.html', maps=maps)
+
+@visualization_bp.route('/maps/<map_id>')
+def get_map(map_id):
+    map_ = service.get_map(map_id)
+    result = api.list_elements_in_map(map_.name, map_.family, map_.table_id)
+    elements = ""
+    for i, item in enumerate(result[1]["nftables"]):
+        if("map" in item) and item["map"]["name"] == map_.name and item["map"]["family"] == map_.family and item["map"]["table"] == map_.table_id:
+            if item.get("map").get("elem", None) != None:
+                elements = str(item["map"]["elem"])
+    service.insert_elements_in_map(map_id, elements)
+    return render_template('maps/map.html', map=map_)
+
+@visualization_bp.route('/maps/new')
+def add_map():
+    form = MapForm()
+    tables = service.get_tables()
+    return render_template('maps/create_map.html', form=form, tables=tables)
+
+@creation_bp.route('/maps/new', methods=['POST'])
+def add_map_post():
+    form = MapForm()
+    form.family.data = form.table.data.split("&&")[1]
+    form.table.data = form.table.data.split("&&")[0]
+    if form.validate_on_submit():
+        service.insert_map_form(form.name.data, form.family.data, form.table.data, form.type.data, form.map_type.data, form.description.data)
+        response = api.create_map_request(map_name=form.name.data, map_family=form.family.data, map_table=form.table.data, map_type=form.map_type.data, type=form.type.data)
+        if response == "Success":
+            flash('Map created successfully.')
+        else:
+            flash('Error creating map.')
+        return redirect('/maps')
+    else:
+        flash('Error creating map.')
+        return render_template('maps/create_map.html', form=form)
+    
+@visualization_bp.route('/maps/<map_id>/delete')
+def delete_map(map_id):
+    map_ = service.get_map(map_id)
+    response = api.delete_map_request(map_name=map_.name, map_family=map_.family, map_table=map_.table_id)
+    service.delete_map(map_id)
+    return redirect('/maps')
+
+@visualization_bp.route('/maps/<map_id>/add_element')
+def add_element_map(map_id):
+    form = AddElementMap()
+    map_ = service.get_map(map_id)
+    return render_template('maps/add_element.html', form=form, map=map_)
+
+@creation_bp.route('/maps/<map_id>/add_element', methods=['POST'])
+def add_element_map_post(map_id):
+    form = AddElementMap()
+    map_ = service.get_map(map_id)
+    if service.validate_element_map(form.key.data, form.value.data, map_id) and (form.key.data != None or form.key.data != "") and (form.value.data != None or form.value.data != ""):
+        response = api.add_element_to_map_request(map_family=map_.family, key=form.key.data, value=form.value.data, map_name=map_.name, map_table=map_.table_id)
+        if response == "Success":
+            flash('Element added successfully.')
+        else:
+            flash('Error adding element.')
+        return redirect('/maps/' + map_id)
+    else:
+        flash('Error adding element.')
+        return render_template('maps/add_element.html', form=form)
+    
+@visualization_bp.route('/maps/<map_id>/delete_element')
+def delete_element_map(map_id):
+    form = DeleteElementMap()
+    elements_str = service.get_elements_from_map(map_id)
+    # Convierte la cadena de texto en un diccionario
+    elements_dict = ast.literal_eval(elements_str)
+    # Obtiene las claves del diccionario
+    keys = elements_dict.keys()
+    aux = list(keys)
+
+    return render_template('maps/delete_element.html', form=form, aux=aux)
+
+@creation_bp.route('/maps/<map_id>/delete_element', methods=['POST'])
+def delete_element_map_post(map_id):
+    form = DeleteElementMap()
+    map_ = service.get_map(map_id)
+    if form.key.data != None or form.key.data != "":
+        valor = service.get_element_from_map(element=form.key.data, map_id=map_id)
+        response = api.delete_element_from_map_request(map_family=map_.family, key=form.key.data , value=valor, map_name=map_.name, map_table=map_.table_id)
+        if response == "Success":
+            service.delete_element_from_map(element=form.key.data, map_id=map_id)
+            flash('Element deleted successfully.')
+        else:
+            flash('Error deleting element.')
+        return redirect('/maps/' + map_id)
+    else:
+        flash('Error deleting element.')
+        elements_str = service.get_elements_from_map(map_id)
+        elements_dict = ast.literal_eval(elements_str)
+        keys = elements_dict.keys()
+        aux = list(keys)
+        return render_template('maps/delete_element.html', form=form, aux=aux)

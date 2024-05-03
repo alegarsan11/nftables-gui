@@ -109,8 +109,12 @@ def create_rule_request(rule_id, chain_name, chain_table, family, statement, sta
     rule = service.get_rule(rule_id)
     saddr = None
     daddr = None
+    saddr_object = None
+    daddr_object = None
     sport = None
     dport = None
+    sport_object = None
+    dport_object = None
     accept = None
     drop = None
     reject = None
@@ -133,6 +137,14 @@ def create_rule_request(rule_id, chain_name, chain_table, family, statement, sta
         daddr = statement_term["dst_ip"]
         sport = statement_term["src_port"]
         dport = statement_term["dst_port"]
+        if statement_term.get("src_ip_objects") != '--Selects--':
+            saddr_object = statement_term.get("src_ip_objects")
+        if statement_term.get("dst_ip_objects") != '--Selects--':
+            daddr_object = statement_term.get("dst_ip_objects")
+        if statement_term.get("src_port_objects") != '--Selects--':
+            sport_object = statement_term.get("src_port_objects")
+        if statement_term.get("dst_port_objects") != '--Selects--':
+            dport_object = statement_term.get("dst_port_objects")
         input_interface = statement_term.get("input_interface")
         output_interface = statement_term.get("output_interface")
         accept = statement_term["accept"]
@@ -150,6 +162,14 @@ def create_rule_request(rule_id, chain_name, chain_table, family, statement, sta
         daddr = statement.get("dst_ip")
         sport = statement.get('src_port')
         dport = statement.get('dst_port')
+        if statement.get('src_ip_objects') != '--Selects--':
+            saddr_object = statement.get('src_ip_objects')
+        if statement.get('dst_ip_objects') != '--Selects--':
+            daddr_object = statement.get('dst_ip_object')
+        if statement.get('src_port_objects') != '--Selects--':
+            sport_object = statement.get('src_port_objects')
+        if statement.get('dst_port_objects') != '--Selects--':
+            dport_object = statement.get('dst_port_objects')
         input_interface = statement.get('input_interface')
         output_interface = statement.get('output_interface')
         log = statement.get("log")
@@ -168,16 +188,16 @@ def create_rule_request(rule_id, chain_name, chain_table, family, statement, sta
                 expr.append({"match":{"op":"==","left":{"payload":{"field":"saddr", "protocol":"ip6"}}, "right": saddr}})
             elif "." in saddr:
                 expr.append({"match":{"op":"==","left":{"payload":{"field":"saddr", "protocol":"ip"}}, "right": saddr}})
-        else:
-            expr.append({"match":{"op":"==","left":{"payload":{"field":"saddr", "protocol":"ip"}}, "right": saddr}})
+        elif family == "bridge":
+            expr.append({"match":{"op":"==","left":{"payload":{"field":"saddr", "protocol":"ether"}}, "right": daddr}})
     if daddr:
         if family == "inet":
             if ":" in daddr:
                 expr.append({"match":{"op":"==","left":{"payload":{"field":"daddr", "protocol":"ip6"}}, "right": daddr}})
             elif "." in daddr:
                 expr.append({"match":{"op":"==","left":{"payload":{"field":"daddr", "protocol":"ip"}}, "right": daddr}})
-        else:
-            expr.append({"match":{"op":"==","left":{"payload":{"field":"daddr", "protocol":"ip"}}, "right": daddr}})
+        elif family == "bridge":
+            expr.append({"match":{"op":"==","left":{"payload":{"field":"daddr", "protocol":"ether"}}, "right": daddr}})
     if sport:
         expr.append({"match":{"op":"==","left":{"payload":{"field":"sport", "protocol":"tcp"}}, "right": sport}})
     if dport:
@@ -188,7 +208,24 @@ def create_rule_request(rule_id, chain_name, chain_table, family, statement, sta
         expr.append({"output_interface": output_interface})
     if counter:
         expr.append({"counter": None})
-
+    if saddr_object:
+        if service.check_set_or_map == "ipv4_addr":
+            expr.append({"match":{"op":"in","left":{"payload":{"field":"saddr", "protocol": "ip"}}, "right": "@"+saddr_object}})
+        if service.check_set_or_map == "ipv6_addr":
+            expr.append({"match":{"op":"in","left":{"payload":{"field":"saddr", "protocol": "ip6"}}, "right": "@"+saddr_object}})
+        if service.check_set_or_map == "ether_addr":
+            expr.append({"match":{"op":"in","left":{"payload":{"field":"saddr", "protocol": "ether"}}, "right": "@"+saddr_object}})
+    if daddr_object:
+        if service.check_set_or_map == "ipv4_addr":
+            expr.append({"match":{"op":"in","left":{"payload":{"field":"daddr", "protocol": "ip"}}, "right": "@"+daddr_object}})
+        if service.check_set_or_map == "ipv6_addr":
+            expr.append({"match":{"op":"in","left":{"payload":{"field":"daddr", "protocol": "ip6"}}, "right": "@"+daddr_object}})
+        if service.check_set_or_map == "ether_addr":
+            expr.append({"match":{"op":"in","left":{"payload":{"field":"daddr", "protocol": "ether"}}, "right": "@"+daddr_object}})
+    if sport_object:
+        expr.append({"match":{"op":"in","left":{"payload":{"field":"sport", "protocol":"tcp"}}, "right": "@"+sport_object}})
+    if dport_object:
+        expr.append({"match":{"op":"in","left":{"payload":{"field":"dport", "protocol":"tcp"}}, "right": "@"+sport_object}})
     if accept:
         expr.append({"accept": None})
     if drop:
@@ -220,7 +257,6 @@ def create_rule_request(rule_id, chain_name, chain_table, family, statement, sta
     if dnat:
         if(family == "inet"):
             if ":" in dnat:
-                
                 expr.append({"dnat": {"family": "ip6","addr": dnat}})
             elif "." in dnat:
                 expr.append({"dnat": {"family": "ip","addr": dnat}})
@@ -261,3 +297,86 @@ def delete_rule_request(rule_id):
         return "Success"
     else:
         return "Error deleting rule."
+
+def list_sets_request():
+    response = requests.get('http://localhost:8000/sets/list_sets')
+    return response.json()[1]["nftables"]
+
+def list_elements_in_set(set_name, set_family, set_table):
+    json_data = {"json_data": {"nftables": [{"list": {"set": {"name": set_name, "family": set_family, "table": set_table}}}]}}
+    response = requests.get('http://localhost:8000/sets/list_elements_in_set', json=json_data)
+    return response.json()
+
+def add_element_to_set_request(set_name, set_family, set_table, element):
+    json_data = {"json_data": {"nftables": [{"add": {"element": {"family": set_family,  "table": set_table, "name": set_name,  "elem": element}}}]}}
+    response = requests.post('http://localhost:8000/sets/add_element_to_set', json=json_data)
+    if(response.json()[0] == 0):
+        return "Success"
+    else:
+        return "Error adding element to set."
+    
+def create_set_request(set_name, set_family, set_table, set_type):
+    json_data = {"json_data": {"nftables": [{"add": {"set": {"name": set_name, "family": set_family, "table": set_table, "type": set_type}}}]}}
+    response = requests.post('http://localhost:8000/sets/create_set', json=json_data)
+    if(response.json()[0] == 0):
+        return "Success"
+    else:
+        return "Error creating set."
+    
+def delete_set_request(set_name, set_family, set_table):
+    json_data = {"json_data": {"nftables": [{"delete": {"set": {"name": set_name, "family": set_family, "table": set_table}}}]}}
+    response = requests.post('http://localhost:8000/sets/delete_set', json=json_data)
+    if(response.json()[0] == 0):
+        return "Success"
+    else:
+        return "Error deleting set."
+def delete_element_from_set_request(set_name, set_family, set_table, element):
+    json_data = {"json_data": {"nftables": [{"delete": {"element": {"family": set_family,  "table": set_table, "name": set_name,  "elem": element}}}]}}
+    response = requests.post('http://localhost:8000/sets/delete_element_from_set', json=json_data)
+    if(response.json()[0] == 0):
+        return "Success"
+    else:
+        return "Error deleting element from set."
+    
+def list_maps_request():
+    json_data = {"json_data": {"nftables": [{"list": {"maps": {}}}]}}
+    response = requests.get('http://localhost:8000/maps/list_maps', json=json_data)
+    return response.json()[1]["nftables"]
+
+def list_elements_in_map(map_name, map_family, map_table):
+    json_data = {"json_data": {"nftables": [{"list": {"map": { "family": map_family, "table": map_table, "name": map_name}}}]}}
+    response = requests.get('http://localhost:8000/maps/list_elements_in_map', json=json_data)
+    return response.json()
+
+def create_map_request(map_name,type, map_family, map_table, map_type):
+    json_data = {"json_data": {"nftables": [{"add": {"map": {"name": map_name, "family": map_family, "table": map_table, "type": type, "map": map_type}}}]}}
+    response = requests.post('http://localhost:8000/maps/create_map', json=json_data)
+    if(response.json()[0] == 0):
+        return "Success"
+    else:
+        return "Error creating map."
+    
+def delete_map_request(map_name, map_family, map_table):
+    json_data = {"json_data": {"nftables": [{"delete": {"map": {"name": map_name, "family": map_family, "table": map_table}}}]}}
+    response = requests.post('http://localhost:8000/maps/delete_map', json=json_data)
+    if(response.json()[0] == 0):
+        return "Success"
+    else:
+        return "Error deleting map."
+    
+def add_element_to_map_request(map_name, map_family, map_table, key, value):
+    json_data = {"json_data": {"nftables": [{"add": {"element": {"family": map_family,  "table": map_table, "name": map_name,  "elem": [[key, {"concat": [value]}]]
+                                                                 }}}]}}    
+    response = requests.post('http://localhost:8000/maps/add_element_to_map', json=json_data)
+    if(response.json()[0] == 0):
+        return "Success"
+    else:
+        return "Error adding element to map."
+    
+def delete_element_from_map_request(map_name, map_family, map_table, key, value):
+    json_data = {"json_data": {"nftables": [{"delete": {"element": {"family": map_family,  "table": map_table, "name": map_name,  "elem": [[key, {"concat": [value]}]]}}}]}}
+    response = requests.post('http://localhost:8000/maps/delete_element_from_map', json=json_data)
+    if(response.json()[0] == 0):
+        return "Success"
+    else:
+        return "Error deleting element from map."

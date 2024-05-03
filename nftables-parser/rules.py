@@ -6,8 +6,6 @@ import hug
 def create_rule(json_data: hug.types.json):
     nft = Nftables()
     result = nft.json_cmd(json_data)
-    print(json_data)
-    print(result)
     if(result[0] == 0):
         return {"status": "success"}
     else:
