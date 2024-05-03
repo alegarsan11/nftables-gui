@@ -471,6 +471,8 @@ def load_data(condicion):
         names[i] = names[i].replace("\n", "")
         if(i != 0) and check_existing_table(names[i], family[i]) == False:
             insert_in_table(names[i], family[i])
+    insert_sets()
+    insert_maps()
     for item in result_chains["chains"]["nftables"]:
         if("chain" in item):
             if(check_existing_chain(item["chain"]["name"], item["chain"]["table"], item["chain"]["family"]) == True):
@@ -749,3 +751,29 @@ def get_element_from_map(map_id, element):
     elements = _map.elements
     elements = ast.literal_eval(elements)
     return elements[element]
+
+def delete_all_data():
+    meta = db.metadata
+    for table in reversed(meta.sorted_tables):
+        if table.name != 'user':
+            db.session.execute(table.delete())
+    db.session.commit()
+    
+def get_objects():
+    names = [] 
+    set_ = Set.query.all()
+    map_ = Map.query.all()
+    for item in set_:
+        names.append(item)
+    for item in map_:
+        names.append(item)
+    return names
+        
+def check_set_or_map(name):
+    _set = Set.query.filter_by(name=name).first()
+    _map = Map.query.filter_by(name=name).first()
+    if _set:
+        return _set.type
+    if _map:
+        return _map.type
+    return None

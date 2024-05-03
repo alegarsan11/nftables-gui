@@ -89,6 +89,82 @@ function updateHiddenInput() {
                         </ul>
                         {% endif %}
                     </div>
+                    {% elif field.name == 'statements-src_ip_objects' %}
+                    <div class="form-group">
+                        {{ field.label(class="form-control-label") }}
+                        <p>Insert the name of the source object</p>
+                        <select id="statements-src_ip_objects" name="statements-src_ip_objects" class="form-control">
+                            <option>--Selects--</option>
+                            {% for object in objects %}
+                            <option value="{{ object.name }}">{{ object.name }}</option>
+                            {% endfor %}
+                        </select>
+                        <input type="hidden" id="src_ip_objects" name="src_ip_objects" value=""></input>
+                        {% if field.errors %}
+                        <ul class="errors">
+                            {% for error in field.errors %}
+                            <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                        {% endif %}
+                    </div>
+                    {% elif field.name == 'statements-dst_ip_objects' %}
+                    <div class="form-group">
+                        {{ field.label(class="form-control-label") }}
+                        <p>Insert the name of the destination object</p>
+                        <select id="statements-dst_ip_objects" name="statements-dst_ip_objects" class="form-control">
+                            <option>--Selects--</option>
+                            {% for object in objects %}
+                            <option value="{{ object.name }}">{{ object.name }}</option>
+                            {% endfor %}
+                        </select>
+                        <input type="hidden" id="dst_ip_objects" name="dst_ip_objects" value=""></input>
+                        {% if field.errors %}
+                        <ul class="errors">
+                            {% for error in field.errors %}
+                            <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                        {% endif %}
+                    </div>
+                    {% elif field.name == 'statements-src_port_objects' %}
+                    <div class="form-group">
+                        {{ field.label(class="form-control-label") }}
+                        <p>Insert the name of the source port object</p>
+                        <select id="statements-src_port_objects" name="statements-src_port_objects" class="form-control">
+                            <option>--Selects--</option>
+                            {% for object in objects %}
+                            <option value="{{ object.name }}">{{ object.name }}</option>
+                            {% endfor %}
+                        </select>
+                        <input type="hidden" id="src_port_objects" name="src_port_objects" value=""></input>
+                        {% if field.errors %}
+                        <ul class="errors">
+                            {% for error in field.errors %}
+                            <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                        {% endif %}
+                    </div>
+                    {% elif field.name == 'statements-dst_port_objects' %}
+                    <div class="form-group">
+                        {{ field.label(class="form-control-label") }}
+                        <p>Insert the name of the destination port object</p>
+                        <select id="statements-dst_port_objects" name="statements-dst_port_objects" class="form-control">
+                            <option>--Selects--</option>
+                            {% for object in objects %}
+                            <option value="{{ object.name }}">{{ object.name }}</option>
+                            {% endfor %}
+                        </select>
+                        <input type="hidden" id="dst_port_objects" name="dst_port_objects" value=""></input>
+                        {% if field.errors %}
+                        <ul class="errors">
+                            {% for error in field.errors %}
+                            <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                        {% endif %}
+                    </div>
                     {% else %}
                     <div class="form-group">
                         {{ field.label(class="form-control-label") }}
@@ -142,6 +218,82 @@ function updateHiddenInput() {
                             </select>
                             <input type="hidden" id="go_to" name="go_to" value=""></input>
 
+                        {% if field.errors %}
+                        <ul class="errors">
+                            {% for error in field.errors %}
+                            <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                        {% endif %}
+                    </div>
+                    {% elif field.name == 'statements_term-src_ip_objects' %}
+                    <div class="form-group">
+                        {{ field.label(class="form-control-label") }}
+                        <p>Insert the name of the source object</p>
+                        <select id="statements_term-src_ip_objects" name="statements_term-src_ip_objects" class="form-control">
+                            <option>--Selects--</option>
+                            {% for object in objects %}
+                            <option value="{{ object.name }}">{{ object.name }}</option>
+                            {% endfor %}
+                        </select>
+                        <input type="hidden" id="src_ip_objects" name="src_ip_objects" value=""></input>
+                        {% if field.errors %}
+                        <ul class="errors">
+                            {% for error in field.errors %}
+                            <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                        {% endif %}
+                    </div>
+                    {% elif field.name == 'statements_term-dst_ip_objects' %}
+                    <div class="form-group">
+                        {{ field.label(class="form-control-label") }}
+                        <p>Insert the name of the destination object</p>
+                        <select id="statements_term-dst_ip_objects" name="statements_term-dst_ip_objects" class="form-control">
+                            <option>--Selects--</option>
+                            {% for object in objects %}
+                            <option value="{{ object.name }}">{{ object.name }}</option>
+                            {% endfor %}
+                        </select>
+                        <input type="hidden" id="dst_ip_objects" name="dst_ip_objects" value=""></input>
+                        {% if field.errors %}
+                        <ul class="errors">
+                            {% for error in field.errors %}
+                            <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                        {% endif %}
+                    </div>
+                    {% elif field.name == 'statements_term-src_port_objects' %}
+                    <div class="form-group">
+                        {{ field.label(class="form-control-label") }}
+                        <p>Insert the name of the source port object</p>
+                        <select id="statements_term-src_port_objects" name="statements_term-src_port_objects" class="form-control">
+                            <option>--Selects--</option>
+                            {% for object in objects %}
+                            <option value="{{ object.name }}">{{ object.name }}</option>
+                            {% endfor %}
+                        </select>
+                        <input type="hidden" id="src_port_objects" name="src_port_objects" value=""></input>
+                        {% if field.errors %}
+                        <ul class="errors">
+                            {% for error in field.errors %}
+                            <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                        {% endif %}
+                    </div>
+                    {% elif field.name == 'statements_term-dst_port_objects' %}
+                    <div class="form-group">
+                        {{ field.label(class="form-control-label") }}
+                        <p>Insert the name of the destination port object</p>
+                        <select id="statements_term-dst_port_objects" name="statements_term-dst_port_objects" class="form-control">
+                            <option>--Selects--</option>
+                            {% for object in objects %}
+                            <option value="{{ object.name }}">{{ object.name }}</option>
+                            {% endfor %}
+                        </select>
+                        <input type="hidden" id="dst_port_objects" name="dst_port_objects" value=""></input>
                         {% if field.errors %}
                         <ul class="errors">
                             {% for error in field.errors %}

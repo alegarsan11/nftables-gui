@@ -120,8 +120,12 @@ class BaseChainForm(ChainForm):
 class StatementForm(FlaskForm):
     src_ip = StringField('Source IP', validators=[Optional()])
     dst_ip = StringField('Destination IP', validators=[Optional()])
+    src_ip_objects = StringField('Source Sets or Maps', validators=[Optional()])
+    dst_ip_objects = StringField('Destination Sets or Maps', validators=[Optional()])
     src_port = StringField('Source Port', validators=[Optional()])
     dst_port = StringField('Destination Port', validators=[Optional()])
+    src_port_objects = StringField('Source Port Sets or Maps', validators=[Optional()])
+    dst_port_objects = StringField('Destination Port Sets or Maps', validators=[Optional()])
     submit = SubmitField('Add Statement', validators=[Optional()])
     
     def validate_src_ip(self, src_ip):
@@ -136,6 +140,22 @@ class StatementForm(FlaskForm):
         except ValueError:
             raise ValidationError('Destination IP must be a valid IP address with a network mask.')
                 
+    def validate_src_ip_objects(self, src_ip_objects):
+        if src_ip_objects.data and self.src_ip.data:
+            raise ValidationError('Source IP and Source IP Sets or Maps cannot be used together.')
+                
+    def validate_dst_ip_objects(self, dst_ip_objects):
+        if dst_ip_objects.data and self.dst_ip.data:
+            raise ValidationError('Destination IP and Destination IP Sets or Maps cannot be used together.')
+    
+    def validate_src_port_objects(self, src_port_objects):
+        if src_port_objects.data and self.src_port.data:
+            raise ValidationError('Source Port and Source Port Sets or Maps cannot be used together.')
+        
+    def validate_dst_port_objects(self, dst_port_objects):
+        if dst_port_objects.data and self.dst_port.data:
+            raise ValidationError('Destination Port and Destination Port Sets or Maps cannot be used together.')
+        
     def validate_src_port(self, src_port):
         if src_port.data and (not src_port.data.isdigit() or not 0 <= int(src_port.data) <= 65535):
             raise ValidationError('Source Port must be a valid port number between 0 and 65535.')

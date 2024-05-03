@@ -14,6 +14,15 @@ creation_bp = Blueprint('creation', __name__)
 @login_required
 def list_ruleset():
     result = api.list_ruleset_request()    
+    
+    return render_template('ruleset.html', ruleset=result)
+
+@creation_bp.route('/list_ruleset', methods=['POST'])
+@login_required
+def list_ruleset_post():
+    result = api.list_ruleset_request()
+    service.delete_all_data()
+    service.load_data(True)
     return render_template('ruleset.html', ruleset=result)
 
 @visualization_bp.route('/')
@@ -322,7 +331,8 @@ def get_rule(rule_id):
 def create_rule():
     form = RuleForm()
     chains = service.get_chains()
-    return render_template('rules/create_rule.html', form=form, chains=chains)
+    objects = service.get_objects()
+    return render_template('rules/create_rule.html', form=form, chains=chains, objects=objects)
 
 @visualization_bp.route('/rules/<rule_id>/delete')
 def delete_rule(rule_id):
@@ -345,15 +355,18 @@ def create_rule_post():
         if (not (form.statements.limit.data or form.statements.log.data or form.statements.counter.data or form.statements.masquerade.data or form.statements.redirect.data or form.statements.src_nat.data or form.statements.dst_nat.data or form.statements.limit_per.data or form.statements_term.accept.data or form.statements_term.reject.data or form.statements_term.drop.data or form.statements_term.queue.data or form.statements_term.jump.data or form.statements_term.go_to.data or form.statements_term.return_.data) 
             or (form.statements.data == None and form.statements_term.data == None)):
             flash('Error creating rule.')
-            return render_template('rules/create_rule.html', form=form, chains=chains)
+            objects = service.get_objects()
+            return render_template('rules/create_rule.html', form=form, chains=chains, objects=objects)
         if form.statements_term.jump.data != "--Selects--":
             if service.get_chain(chain_id=form.statements_term.jump.data ,table=table_name, family=family) == None:
                 flash('Error creating rule.')
-                return render_template('rules/create_rule.html', form=form, chains=chains)
+                objects = service.get_objects()
+                return render_template('rules/create_rule.html', form=form, chains=chains, objects=objects)
         if  form.statements_term.go_to.data != "--Selects--":
             if service.get_chain(chain_id=form.statements_term.go_to.data ,table=table_name, family=family) == None:
                 flash('Error creating rule.')
-                return render_template('rules/create_rule.html', form=form, chains=chains)
+                objects = service.get_objects()
+                return render_template('rules/create_rule.html', form=form, chains=chains, objects=objects)
         if service.get_rules() != []:
             id_ = service.get_rules()[-1].id + 1
         else:
@@ -366,7 +379,8 @@ def create_rule_post():
         else:
             flash('Error creating rule.')
             
-            return render_template('rules/create_rule.html', form=form, chains=chains)
+            objects = service.get_objects()
+            return render_template('rules/create_rule.html', form=form, chains=chains, objects=objects)
         return redirect('/rules/' + str(id_))
     else:
         flash('Error creating rule.')
