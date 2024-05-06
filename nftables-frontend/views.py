@@ -1,5 +1,5 @@
 import ast
-from flask import Blueprint, render_template, flash, redirect, url_for
+from flask import Blueprint, render_template, flash, redirect, url_for, request
 from flask_login import login_user, logout_user, login_required, current_user
 from models import BaseChain, Chain, Rule, Statement, Table, User, db
 from forms.forms import AddElementMap, AddElementSetForm, BaseChainForm, ChainForm, DeleteElementMap, DeleteElementSet, LoginForm, CreateUserForm, MapForm, RuleForm, SetForm, TableForm, UpdateUserForm
@@ -250,7 +250,7 @@ def create_user():
 def create_user_post():
     form = CreateUserForm()
     if form.validate_on_submit():
-        service.create_user(form.username.data, form.email.data, form.password.data, form.role.data, True)
+        service.create_user(form.username.data, form.password.data, form.role.data, True)
         flash('User created successfully.')
         return redirect('/users')
     else:
@@ -579,3 +579,22 @@ def delete_element_map_post(map_id):
         keys = elements_dict.keys()
         aux = list(keys)
         return render_template('maps/delete_element.html', form=form, aux=aux)
+    
+@visualization_bp.route('/save-changes')
+def save_changes():
+    return render_template('save-changes.html')
+
+@creation_bp.route('/save-changes', methods=['POST'])
+def save_changes_post():
+    type_ = request.form.get('save')
+    print("TYPE")
+    print(type_)
+    if type_ != "" or type_ != None:
+        if type_ == 'config':
+            service.save_changes_permanent()
+            flash('Changes saved successfully.')
+        elif type_ == 'file':
+            service.save_changes_on_file()
+            flash('Changes discarded successfully.')
+        
+    return redirect('/')

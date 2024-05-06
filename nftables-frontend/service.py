@@ -1,8 +1,9 @@
+import glob
 import json
 import re
 from models import Chain, Map, NotTerminalStatement, Rule, Statement, Table, BaseChain, TerminalStatement, db, User, Set
 from flask_login import LoginManager
-import api
+import api, os
 import ipaddress
 import ast
 
@@ -29,8 +30,8 @@ def clean_table(table_id, family):
         db.session.delete(chain)
     db.session.commit()
         
-def create_user(username, email, password, role, is_active):
-    user = User(username=username, email=email, password=password, role=role, is_active=is_active)
+def create_user(username, password, role, is_active):
+    user = User(username=username, password=password, role=role, is_active=is_active)
     db.session.add(user)
     db.session.commit()
     
@@ -492,13 +493,14 @@ def load_data(condicion):
     chains = get_chains()
     for chain in chains:
         result_rules = api.list_chain_request(chain.name, chain.family, chain.table.name)
-        result_rules = result_rules["rules"]["nftables"]
-        for i, rule in enumerate(result_rules):
-            if i ==0 or i ==1:
-                continue
-            else:
-                if check_existing_rule(handle=str(rule["rule"]["handle"]), chain_id=chain.id, family=chain.family) == False:
-                    insert_rule(handle=str(rule["rule"]["handle"]), chain_id=chain.id, family=rule["rule"]["family"], expr=str(rule["rule"]["expr"]))
+        if(result_rules["rules"] != ""):
+            result_rules = result_rules["rules"]["nftables"]
+            for i, rule in enumerate(result_rules):
+                if i ==0 or i ==1:
+                    continue
+                else:
+                    if check_existing_rule(handle=str(rule["rule"]["handle"]), chain_id=chain.id, family=chain.family) == False:
+                        insert_rule(handle=str(rule["rule"]["handle"]), chain_id=chain.id, family=rule["rule"]["family"], expr=str(rule["rule"]["expr"]))
 
     return  [Rule.query.count(), Chain.query.count(), Table.query.count()]
     
@@ -777,3 +779,24 @@ def check_set_or_map(name):
     if _map:
         return _map.type
     return None
+
+def save_changes_permanent():
+    os.system("sudo su")
+    os.system("sudo rm -f /etc/nftables.conf")
+    os.system("sudo nft list ruleset > /etc/nftables.conf")
+    os.system("sudo systemctl restart nftables")
+    delete_all_data_except_users()
+    
+def save_changes_on_file():
+    files = glob.glob("./temp_config/nftables_temp*.conf")
+    numbers = [int(f.replace("./temp_config/nftables_temp", "").replace(".conf", "")) for f in files]
+    highest_number = max(numbers) if numbers else 0
+    print(highest_number)
+    os.system(f"sudo nft list ruleset > ./temp_config/nftables_temp{highest_number + 1}.conf")
+    
+def delete_all_data_except_users():
+    meta = db.metadata
+    for table in reversed(meta.sorted_tables):
+        if table.name != 'user':
+            db.session.execute(table.delete())
+    db.session.commit()

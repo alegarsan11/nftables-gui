@@ -11,4 +11,4 @@ To run the project:
 - Grant permissions:
 `sudo chmod +x run.sh`
 - Execute the file:
-`./run.sh`
+`sudo ./run.sh`

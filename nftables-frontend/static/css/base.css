@@ -88,3 +88,18 @@
     justify-content: center;
     align-items: center;
 }
+
+.button-save {
+    background-color: #28a745;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 10px 20px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 4px 2px;
+    margin-right: 10px;
+    cursor: pointer;
+}
