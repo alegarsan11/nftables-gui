@@ -6,6 +6,7 @@ from flask_login import LoginManager
 import api, os
 import ipaddress
 import ast
+from Levenshtein import ratio
 
 
 login_manager = LoginManager()
@@ -135,10 +136,15 @@ def get_chain_by_id(chain_id):
     return chain
 
 
-def check_existing_rule(chain_id, handle, family):
-    rule = Rule.query.filter_by(chain_id=chain_id, handle=handle, family=family).first()
-    if rule:
-        return True
+def check_existing_rule(chain_id, handle=None, family=None, expr=None):
+    rules = Rule.query.filter_by(chain_id=chain_id, family=family).all()
+    if handle:
+        rule = Rule.query.filter_by(handle=handle, chain_id=chain_id, family=family).first()
+        if rule:
+            return True
+    for rule in rules:
+        if ratio(str(rule.expr), str(expr)) > 0.95:  # Ajusta el umbral según tus necesidades
+            return True
     return False
 def get_chain_id(chain_id, family, table):
     chain = Chain.query.filter_by(id=chain_id, family=family, table_id=table).first()
@@ -340,9 +346,9 @@ def iteration_on_chains(rule, chain_id, family, handle=None, rule_id=None):
         rule_ = Rule.query.filter_by(id=rule_id).first()
         rule_.expr = str(rule["rule"]["expr"])
         db.session.commit()
-    elif check_existing_rule(handle=handle, chain_id=chain_id, family=family) == False :   
+    elif check_existing_rule(handle=handle, chain_id=chain_id, family=family, expr=rule["rule"]["expr"]) == False :   
         rule_id = insert_rule(handle=str(rule["rule"]["handle"]), chain_id=rule["rule"]["chain"], family=rule["rule"]["family"], expr=str(rule["rule"]["expr"]))
-    elif check_existing_rule(handle=handle, chain_id=chain_id, family=family) == True: 
+    elif check_existing_rule(handle=handle, chain_id=chain_id, family=family, expr=rule["rule"]["expr"]) == True: 
         rule_ = Rule.query.filter_by(handle=str(rule["rule"]["handle"]), chain_id=chain_id, family=family).first()
         rule_id = rule_.id
         rule_.expr = str(rule["rule"]["expr"])
@@ -499,7 +505,7 @@ def load_data(condicion):
                 if i ==0 or i ==1:
                     continue
                 else:
-                    if check_existing_rule(handle=str(rule["rule"]["handle"]), chain_id=chain.id, family=chain.family) == False:
+                    if check_existing_rule(handle=str(rule["rule"]["handle"]), expr=rule["rule"]["expr"], chain_id=chain.id, family=chain.family) == False:
                         insert_rule(handle=str(rule["rule"]["handle"]), chain_id=chain.id, family=rule["rule"]["family"], expr=str(rule["rule"]["expr"]))
 
     return  [Rule.query.count(), Chain.query.count(), Table.query.count()]

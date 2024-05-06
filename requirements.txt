@@ -7,3 +7,4 @@ flask-wtf==1.2.1
 hug
 email_validator
 matplotlib
+python-Levenshtein
