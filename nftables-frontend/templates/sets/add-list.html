@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block head %}
+{{ super() }}
+{% endblock %}
+{% block content %}
+<div class="container">
+  <h1>Add black/white list</h1>
+  <form method="POST" enctype="multipart/form-data">
+    {{ form.csrf_token }}
+    <div class="form-group">
+      <label for="name">Name</label>
+      <input type="text" class="form-control" id="name" name="name" required>
+      {% for error in form.name.errors %}
+        <div class="alert alert-danger" role="alert">
+            {{ error }}
+            </div>
+        {% endfor %}
+    </div>
+    <div class="form-group">
+      <label for="table">Table</label>
+      <select class="form-control" id="table" name="table">
+        {% for table in tables %}
+        <option value="{{ table.name }}&&{{table.family}}">{{ table.name }} - {{table.family}}</option>
+        {% endfor %}
+      </select>
+    <div class="form-group">
+    <input type="hidden" name="type" value="ipv4_addr">        
+    </div>
+    <div class="form-group">
+      <label for="list">List</label>
+      <input type="file" class="form-control" id="list" name="list"></input>
+      {{ mssg }}
+    </div>
+    <div>
+        <label for="description">Description</label>
+        <textarea class="form-control" id="description" name="description" rows="3"></textarea>
+        {% for error in form.description.errors %}
+        <div class="alert alert-danger" role="alert">
+            {{ error }}
+            </div>
+        {% endfor %}
+    </div>
+    <br></br>
+    <button type="submit" class="btn btn-primary">Submit</button>
+  </form>
+</div>
+{% endblock %}

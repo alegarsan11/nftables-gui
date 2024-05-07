@@ -2,7 +2,7 @@ import ast
 from flask import Blueprint, render_template, flash, redirect, url_for, request
 from flask_login import login_user, logout_user, login_required, current_user
 from models import BaseChain, Chain, Rule, Statement, Table, User, db
-from forms.forms import AddElementMap, AddElementSetForm, BaseChainForm, ChainForm, DeleteElementMap, DeleteElementSet, LoginForm, CreateUserForm, MapForm, RuleForm, SetForm, TableForm, UpdateUserForm
+from forms.forms import AddElementMap, AddElementSetForm, AddListForm, BaseChainForm, ChainForm, DeleteElementMap, DeleteElementSet, LoginForm, CreateUserForm, MapForm, RuleForm, SetForm, TableForm, UpdateUserForm
 import service, api, os, matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
@@ -580,3 +580,36 @@ def save_changes_post():
             flash('Changes discarded successfully.')
         
     return redirect('/')
+
+@visualization_bp.route('/add-list')
+def add_list():
+    form = AddListForm()
+    tables = service.get_tables()
+    return render_template('sets/add-list.html', form=form, tables=tables)
+
+@creation_bp.route('/add-list', methods=['POST'])
+def add_list_post():
+    form = AddListForm()
+    lista = request.files['list'].read().decode('utf-8').split("\n")
+    form.element.data = lista
+    if 'txt' not in request.files['list'].filename:
+
+        flash('Error adding list.')
+        tables = service.get_tables()
+        return render_template('sets/add-list.html', form=form, tables=tables, mssg="The file must be a txt file.")
+    form.family.data = form.table.data.split("&&")[1]
+    form.table.data = form.table.data.split("&&")[0]
+    if form.validate_on_submit():
+        service.create_list(form.name.data, form.family.data, form.table.data, form.type.data, lista)
+        print("biuen")
+        api.create_set_request(set_name=form.name.data, set_family=form.family.data, set_table=form.table.data, set_type=form.type.data)
+        print("mejor")
+        for item in lista:
+            api.add_element_to_set_request(set_family=form.family.data, element=item, set_name=form.name.data, set_table=form.table.data)
+        flash('List added successfully.')
+    else:
+        print("mal")
+        flash('Error adding list.')
+        tables = service.get_tables()
+        return render_template('sets/add-list.html', form=form, tables=tables)
+    return redirect('/sets')

@@ -320,3 +320,24 @@ class AddElementMap(FlaskForm):
 class DeleteElementMap(FlaskForm):
     key = StringField('Key', validators=[DataRequired()])
     
+class AddListForm(FlaskForm):
+    name = StringField('Name', validators=[DataRequired()])
+    family = StringField('Family', validators=[DataRequired()])
+    element = StringField('Element', validators=[DataRequired()])
+    table = StringField('Table Name', validators=[DataRequired()])
+    type = SelectField('Type', choices=[('ipv4_addr', 'ipv4_addr')], validators=[DataRequired()])
+    description = StringField('Description', validators=[Optional()])
+
+    def validate_family(self, family):
+        if family.data not in ['ip', 'inet', 'arp', 'bridge', 'netdev']:
+            raise ValidationError('Family must be one of: ip, inet, arp, bridge, netdev.')
+    def validate_name(self, name):
+        if " " in name.data or "-" in name.data or "/" in name.data or "." in name.data or "," in name.data or ";" in name.data or ":" in name.data or "@" in name.data or "#" in name.data or "$" in name.data or "%" in name.data or "^" in name.data or "&" in name.data or "*" in name.data or "(" in name.data or ")" in name.data or "+" in name.data or "=" in name.data or "[" in name.data or "]" in name.data or "{" in name.data or "}" in name.data or "|" in name.data or "<" in name.data or ">" in name.data or "?" in name.data or "!" in name.data or "'" in name.data or '"' in name.data or "\\" in name.data or "`" in name.data or "~" in name.data:
+            raise ValidationError('Set name invalid. (Must not contain special characters or spaces.)')
+    def validate_type(self, type):
+        if type.data not in ['ipv4_addr']:
+            raise ValidationError('Type must be one of: ipv4_addr.')
+    def validate_table(self, table):
+        table = Table.query.filter_by(name=table.data).first()
+        if not table:
+            raise ValidationError('Table does not exist.')

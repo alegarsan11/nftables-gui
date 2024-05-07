@@ -804,3 +804,14 @@ def delete_all_data_except_users():
         if table.name != 'user':
             db.session.execute(table.delete())
     db.session.commit()
+    
+def create_list(name, family, table_name, type, elements):
+    if check_existing_set(name, table_name, family) == False:
+        return "Set already exists"
+    _set = Set(name=name, family=family, table_id=table_name, type=type)
+    if elements != "" or elements != None:
+        elements = str(elements)
+        _set.elements = elements
+    db.session.add(_set)
+    db.session.commit()
+    return "Success"
