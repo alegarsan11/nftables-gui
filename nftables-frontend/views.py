@@ -30,15 +30,15 @@ def main_view():
     if current_user.is_authenticated:
         host = os.uname().nodename
         ip_address = os.popen('hostname -I').read().split(" ")[0] 
-        categories = ['Reglas', 'Cadenas', 'Tablas']
+        categories = ['Rules', 'Chains', 'Tables']
         # Get the number of rules, chains and tables
         values = service.load_data(False)
         image_path = 'static/img/nftables_info.png'
         plt.figure(figsize=(8, 6))
         plt.bar(categories, values, color=['blue', 'green', 'orange'])
-        plt.xlabel('Elemento nftables')
-        plt.ylabel('Número')
-        plt.title('Número de elementos nftables')
+        plt.xlabel('nftables elements')
+        plt.ylabel('Number')
+        plt.title('Number of nftables elements')
         plt.grid(axis='y')
         if os.path.exists(image_path):
             os.remove(image_path)
@@ -54,12 +54,6 @@ def main_view():
 def users():
     users = User.query.all()
     return render_template('users/users.html', users=users)
-
-@visualization_bp.route('/edit_user/<user_id>')
-def edit_user(user_id):
-    user = service.get_user(user_id)
-    form = UpdateUserForm(object=user)
-    return render_template('users/edit_user.html',user=user, form=form)
 
 @visualization_bp.route('/table/<table_id>/<family>')
 def get_table(table_id, family):
@@ -89,18 +83,6 @@ def flush_table(table_id, family):
     service.clean_table(table_id, family)
     return redirect('/tables')
 
-
-@creation_bp.route('/edit_user/<user_id>', methods=['POST'])
-def edit_user_post(user_id):
-    form = UpdateUserForm()
-    if form.validate_on_submit():
-        service.edit_user(user_id, form.username.data, form.email.data, form.password.data, form.role.data, form.is_active.data)
-        flash('User edited successfully.')
-        return redirect('/users')
-    else:
-        flash('Error editing user.')
-        user = service.get_user(user_id)
-        return render_template('users/edit_user.html', user=user ,form=form)
 
 @visualization_bp.route('/delete_user/<user_id>')
 def delete_user(user_id):

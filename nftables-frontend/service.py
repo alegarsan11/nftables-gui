@@ -50,12 +50,10 @@ def load_user(user_id):
 def load_user(user_id):
     return User.query.get(int(user_id))
 
-def edit_user(user_id, username, email, role, is_active):
-    user = User.query.get(user_id)
+def edit_user(user_id, username, role):
+    user = User.query.filter_by(id=user_id).first()
     user.username = username
-    user.email = email
     user.role = role
-    user.is_active = is_active
     db.session.commit()
     
 def get_table(table_id):

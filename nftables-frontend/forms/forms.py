@@ -44,16 +44,12 @@ class CreateUserForm(FlaskForm):
 class UpdateUserForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired()])
     role = StringField('Role', validators=[DataRequired()])
-    is_active = SelectField('Active', choices=[('True', 'True'), ('False', 'False')], validators=[DataRequired()])
     submit = SubmitField('Update User')
     
     def validate_role(self, role):
         if role.data not in ['administrator', 'user', 'guest']:
             raise ValidationError('Role must be one of: administrator, user, guest.')
         
-    def validate_is_active(self, is_active):
-        if is_active.data not in ['True', 'False']:
-            raise ValidationError('Active must be one of: True, False.')
         
 class TableForm(FlaskForm):
     name = StringField('Name', validators=[DataRequired()])
