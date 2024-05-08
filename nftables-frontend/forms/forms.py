@@ -137,19 +137,19 @@ class StatementForm(FlaskForm):
             raise ValidationError('Destination IP must be a valid IP address with a network mask.')
                 
     def validate_src_ip_objects(self, src_ip_objects):
-        if src_ip_objects.data and self.src_ip.data:
+        if src_ip_objects.data != "--Selects--" and self.src_ip.data:
             raise ValidationError('Source IP and Source IP Sets or Maps cannot be used together.')
                 
     def validate_dst_ip_objects(self, dst_ip_objects):
-        if dst_ip_objects.data and self.dst_ip.data:
+        if dst_ip_objects.data != "--Selects--" and self.dst_ip.data:
             raise ValidationError('Destination IP and Destination IP Sets or Maps cannot be used together.')
     
     def validate_src_port_objects(self, src_port_objects):
-        if src_port_objects.data and self.src_port.data:
+        if src_port_objects.data != "--Selects--" and self.src_port.data:
             raise ValidationError('Source Port and Source Port Sets or Maps cannot be used together.')
         
     def validate_dst_port_objects(self, dst_port_objects):
-        if dst_port_objects.data and self.dst_port.data:
+        if dst_port_objects.data != "--Selects--" and self.dst_port.data:
             raise ValidationError('Destination Port and Destination Port Sets or Maps cannot be used together.')
         
     def validate_src_port(self, src_port):
@@ -237,7 +237,7 @@ class NotTerminalStatementForm(StatementForm):
             elif not isinstance(int(redirect.data), int) or not 0 <= int(redirect.data) <= 65535:
                 raise ValidationError('Redirect must be a port number between 0 and 65535.')
         except ValueError:
-            raise ValidationError('Redirect must be a valid IP address')
+            raise ValidationError('Condition on dst or src port must be especified to create redirect and must be a valid port number between 0 and 65535.')
 
 class RuleForm(FlaskForm):
     chain = StringField('Chain', validators=[DataRequired()])

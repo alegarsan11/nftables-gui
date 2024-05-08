@@ -6,6 +6,8 @@ from forms.forms import AddElementMap, AddElementSetForm, AddListForm, BaseChain
 import service, api, os, matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
+from Levenshtein import ratio
+
 
 visualization_bp = Blueprint('visualization', __name__)
 creation_bp = Blueprint('creation', __name__)
@@ -289,10 +291,9 @@ def get_rule(rule_id):
         if i == 0 or i == 1:
             continue
         else:
-            rule_ = service.get_rule_by_chain_and_handle(rule.chain.id,rule.family ,rule_aux["rule"]["handle"])
-            
-            if(rule_ == None):
-                service.insert_rule(rule.chain_id, rule.family, str(rule_aux["rule"]["expr"]), rule_aux["rule"]["handle"], None)
+            if service.get_rule(rule_id).handle == None and ratio(str(rule_aux["rule"]["expr"]), rule.expr) > 0.9:
+                service.get_rule(rule_id).handle = rule_aux["rule"]["handle"]
+                
             if str(rule.handle) == str(rule_aux["rule"]["handle"]):    
                 service.iteration_on_chains(rule=rule_aux, chain_id=rule.chain.name, family=rule.family, handle=rule_aux["rule"]["handle"], rule_id=rule_id)
 
@@ -345,10 +346,10 @@ def create_rule_post():
             id_ = service.get_rules()[-1].id + 1
         else:
             id_ = 1
-        expr = str(form.statements.data) + str(form.statements_term.data)
-        service.insert_rule_with_table(chain_id=form.chain.data, expr=expr, family=form.family.data, description=form.description.data, table_id=table_name)    
         result = api.create_rule_request(rule_id=id_, chain_name=chain_name, family=family, chain_table=table_name, statement=form.statements.data, statement_term=form.statements_term.data, statement_type=form.statement_select.data)
-        if(result == "Success"):
+        service.insert_rule_with_table(chain_id=form.chain.data, expr=str(result[0]), family=form.family.data, description=form.description.data, table_id=table_name)    
+
+        if(result[1] == "Success"):
             flash('Rule created successfully.')
         else:
             flash('Error creating rule.')

@@ -185,23 +185,23 @@ def create_rule_request(rule_id, chain_name, chain_table, family, statement, sta
     if saddr:
         if family == "inet":
             if ":" in saddr:
-                expr.append({"match":{"op":"==","left":{"payload":{"field":"saddr", "protocol":"ip6"}}, "right": saddr}})
+                expr.append({"match":{"op":"==","left":{"payload":{"protocol":"ip6", "field":"saddr"}}, "right": saddr}})
             elif "." in saddr:
-                expr.append({"match":{"op":"==","left":{"payload":{"field":"saddr", "protocol":"ip"}}, "right": saddr}})
+                expr.append({"match":{"op":"==","left":{"payload":{"protocol":"ip","field":"saddr" }}, "right": saddr}})
         elif family == "bridge":
-            expr.append({"match":{"op":"==","left":{"payload":{"field":"saddr", "protocol":"ether"}}, "right": daddr}})
+            expr.append({"match":{"op":"==","left":{"payload":{"protocol":"ether", "field":"saddr"}}, "right": daddr}})
     if daddr:
         if family == "inet":
             if ":" in daddr:
-                expr.append({"match":{"op":"==","left":{"payload":{"field":"daddr", "protocol":"ip6"}}, "right": daddr}})
+                expr.append({"match":{"op":"==","left":{"payload":{"protocol":"ip6" ,"field":"daddr"}}, "right": daddr}})
             elif "." in daddr:
-                expr.append({"match":{"op":"==","left":{"payload":{"field":"daddr", "protocol":"ip"}}, "right": daddr}})
+                expr.append({"match":{"op":"==","left":{"payload":{ "protocol":"ip", "field":"daddr"}}, "right": daddr}})
         elif family == "bridge":
-            expr.append({"match":{"op":"==","left":{"payload":{"field":"daddr", "protocol":"ether"}}, "right": daddr}})
+            expr.append({"match":{"op":"==","left":{"payload":{"protocol":"ether", "field":"daddr" }}, "right": daddr}})
     if sport:
-        expr.append({"match":{"op":"==","left":{"payload":{"field":"sport", "protocol":"tcp"}}, "right": sport}})
+        expr.append({"match":{"op":"==","left":{"payload":{"protocol":"tcp", "field":"sport"}}, "right": sport}})
     if dport:
-        expr.append({"match":{"op":"==","left":{"payload":{"field":"dport", "protocol":"tcp"}}, "right": dport}})
+        expr.append({"match":{"op":"==","left":{"payload":{"protocol":"tcp","field":"dport"}}, "right": dport}})
     if input_interface:
         expr.append({"input_interface": input_interface})
     if output_interface:
@@ -210,28 +210,28 @@ def create_rule_request(rule_id, chain_name, chain_table, family, statement, sta
         expr.append({"counter": None})
     if saddr_object:
         if service.check_set_or_map == "ipv4_addr":
-            expr.append({"match":{"op":"in","left":{"payload":{"field":"saddr", "protocol": "ip"}}, "right": "@"+saddr_object}})
+            expr.append({"match":{"op":"in","left":{"payload":{"protocol": "ip","field":"saddr" }}, "right": "@"+saddr_object}})
         if service.check_set_or_map == "ipv6_addr":
-            expr.append({"match":{"op":"in","left":{"payload":{"field":"saddr", "protocol": "ip6"}}, "right": "@"+saddr_object}})
+            expr.append({"match":{"op":"in","left":{"payload":{ "protocol": "ip6", "field":"saddr"}}, "right": "@"+saddr_object}})
         if service.check_set_or_map == "ether_addr":
-            expr.append({"match":{"op":"in","left":{"payload":{"field":"saddr", "protocol": "ether"}}, "right": "@"+saddr_object}})
+            expr.append({"match":{"op":"in","left":{"payload":{ "protocol": "ether", "field":"saddr"}}, "right": "@"+saddr_object}})
     if daddr_object:
         if service.check_set_or_map == "ipv4_addr":
-            expr.append({"match":{"op":"in","left":{"payload":{"field":"daddr", "protocol": "ip"}}, "right": "@"+daddr_object}})
+            expr.append({"match":{"op":"in","left":{"payload":{"protocol": "ip","field":"daddr"}}, "right": "@"+daddr_object}})
         if service.check_set_or_map == "ipv6_addr":
-            expr.append({"match":{"op":"in","left":{"payload":{"field":"daddr", "protocol": "ip6"}}, "right": "@"+daddr_object}})
+            expr.append({"match":{"op":"in","left":{"payload":{"protocol": "ip6", "field":"daddr" }}, "right": "@"+daddr_object}})
         if service.check_set_or_map == "ether_addr":
-            expr.append({"match":{"op":"in","left":{"payload":{"field":"daddr", "protocol": "ether"}}, "right": "@"+daddr_object}})
+            expr.append({"match":{"op":"in","left":{"payload":{"protocol": "ether", "field":"daddr" }}, "right": "@"+daddr_object}})
     if sport_object:
-        expr.append({"match":{"op":"in","left":{"payload":{"field":"sport", "protocol":"tcp"}}, "right": "@"+sport_object}})
+        expr.append({"match":{"op":"in","left":{"payload":{ "protocol":"tcp", "field":"sport"}}, "right": "@"+sport_object}})
     if dport_object:
-        expr.append({"match":{"op":"in","left":{"payload":{"field":"dport", "protocol":"tcp"}}, "right": "@"+sport_object}})
+        expr.append({"match":{"op":"in","left":{"payload":{ "protocol":"tcp", "field":"dport"}}, "right": "@"+sport_object}})
     if accept:
         expr.append({"accept": None})
     if drop:
         expr.append({"drop": None})
     if reject:
-        expr.append({"reject": None})
+        expr.append({"reject": {'type': 'icmp', 'expr': 'port-unreachable'}})
     if return_:
         expr.append({"return": None})
     if jump:
@@ -284,9 +284,9 @@ def create_rule_request(rule_id, chain_name, chain_table, family, statement, sta
     }
     response = requests.post('http://localhost:8000/rules/create_rule', json=json_data)
     if response.json()["status"] == "success":
-        return "Success"
+        return expr, "Success"
     else:
-        return "Error creating rule."
+        return [], "Error creating rule."
     
 def delete_rule_request(rule_id):
     rule= service.get_rule(rule_id)
