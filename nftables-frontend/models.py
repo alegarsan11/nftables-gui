@@ -25,6 +25,7 @@ class Table(db.Model):
     family = db.Column(db.String(80), nullable=False)
     description = db.Column(db.String(120), nullable=True)
     chains = db.relationship('Chain', backref='table', lazy=True, cascade="all, delete-orphan")
+    username = db.Column(db.String(80), db.ForeignKey('user.username'), nullable=True)
     
     def save(self):
         db.session.add(self)

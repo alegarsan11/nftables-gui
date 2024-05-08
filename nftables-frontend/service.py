@@ -78,9 +78,9 @@ def delete_user(user_id):
     db.session.commit()
 
 
-def insert_in_table(name, family, description=None):
+def insert_in_table(name, family, description=None, username=None):
     try:
-        Table(name=name, family=family, description=description).save()
+        Table(name=name, family=family, description=description, username=username).save()
     except Exception as e:
         db.session.rollback()
         return str(e)
@@ -141,7 +141,7 @@ def check_existing_rule(chain_id, handle=None, family=None, expr=None):
         if rule:
             return True
     for rule in rules:
-        if ratio(str(rule.expr), str(expr)) > 0.95:  # Ajusta el umbral según tus necesidades
+        if ratio(str(rule.expr), str(expr)) > 0.98:  # Ajusta el umbral según tus necesidades
             return True
     return False
 def get_chain_id(chain_id, family, table):

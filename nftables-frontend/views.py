@@ -185,7 +185,7 @@ def add_table_get():
 def add_table_post():
     form = TableForm()
     if form.validate_on_submit():
-        result = service.insert_in_table(form.name.data, form.family.data, form.description.data)
+        result = service.insert_in_table(form.name.data, form.family.data, form.description.data, current_user.username)
         if result == "Success":
             response = api.create_table_request(form.name.data, form.family.data)
             if(response == "Success"):
@@ -298,10 +298,13 @@ def get_rule(rule_id):
             continue
         else:
             rule_ = service.get_rule_by_chain_and_handle(rule.chain.id,rule.family ,rule_aux["rule"]["handle"])
+            print(rule)
             if(rule_ == None):
-                rule.handle = rule_aux["rule"]["handle"]
-                db.session.commit()
+                rule_new = service.insert_rule(rule.chain_id, rule.family, str(rule_aux["rule"]["expr"]), rule_aux["rule"]["handle"], None)
+
+            print(rule.handle)
             if str(rule.handle) == str(rule_aux["rule"]["handle"]):    
+                print(rule_aux["rule"])
                 service.iteration_on_chains(rule=rule_aux, chain_id=rule.chain.name, family=rule.family, handle=rule_aux["rule"]["handle"], rule_id=rule_id)
 
     statements = service.get_statements_from_rule(rule_id)
