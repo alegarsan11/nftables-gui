@@ -108,15 +108,7 @@ def create_chain():
 @visualization_bp.route('/chain/<chain_id>/<family>/<table>')
 def get_chain(chain_id, family, table):
     chain = service.get_chain(chain_id, family, table)
-    rules = api.list_chain_request(chain.name, chain.family, chain.table.name)
-    rules = rules["rules"]["nftables"]
-    statements = []
-    for i, rule in enumerate(rules):
-        if i == 0 or i == 1:
-            continue
-        else:                    
-            service.iteration_on_chains(rule, chain_id, family, handle=rule["rule"]["handle"])
-            statements = service.get_statements_from_chain(chain_id=chain.name, family=family)
+    statements = service.get_statements_from_chain(chain_id=chain.name, family=family)
     return render_template('chains/chain.html', chain=chain, statements=statements)
 
 @creation_bp.route('/create_base_chain/', methods=['POST'])
@@ -298,13 +290,10 @@ def get_rule(rule_id):
             continue
         else:
             rule_ = service.get_rule_by_chain_and_handle(rule.chain.id,rule.family ,rule_aux["rule"]["handle"])
-            print(rule)
+            
             if(rule_ == None):
-                rule_new = service.insert_rule(rule.chain_id, rule.family, str(rule_aux["rule"]["expr"]), rule_aux["rule"]["handle"], None)
-
-            print(rule.handle)
+                service.insert_rule(rule.chain_id, rule.family, str(rule_aux["rule"]["expr"]), rule_aux["rule"]["handle"], None)
             if str(rule.handle) == str(rule_aux["rule"]["handle"]):    
-                print(rule_aux["rule"])
                 service.iteration_on_chains(rule=rule_aux, chain_id=rule.chain.name, family=rule.family, handle=rule_aux["rule"]["handle"], rule_id=rule_id)
 
     statements = service.get_statements_from_rule(rule_id)
@@ -572,8 +561,6 @@ def save_changes():
 @creation_bp.route('/save-changes', methods=['POST'])
 def save_changes_post():
     type_ = request.form.get('save')
-    print("TYPE")
-    print(type_)
     if type_ != "" or type_ != None:
         if type_ == 'config':
             service.save_changes_permanent()
@@ -604,14 +591,11 @@ def add_list_post():
     form.table.data = form.table.data.split("&&")[0]
     if form.validate_on_submit():
         service.create_list(form.name.data, form.family.data, form.table.data, form.type.data, lista)
-        print("biuen")
         api.create_set_request(set_name=form.name.data, set_family=form.family.data, set_table=form.table.data, set_type=form.type.data)
-        print("mejor")
         for item in lista:
             api.add_element_to_set_request(set_family=form.family.data, element=item, set_name=form.name.data, set_table=form.table.data)
         flash('List added successfully.')
     else:
-        print("mal")
         flash('Error adding list.')
         tables = service.get_tables()
         return render_template('sets/add-list.html', form=form, tables=tables)

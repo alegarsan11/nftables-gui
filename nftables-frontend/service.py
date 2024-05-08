@@ -137,7 +137,7 @@ def get_chain_by_id(chain_id):
 def check_existing_rule(chain_id, handle=None, family=None, expr=None):
     rules = Rule.query.filter_by(chain_id=chain_id, family=family).all()
     if handle:
-        rule = Rule.query.filter_by(handle=handle, chain_id=chain_id, family=family).first()
+        rule = Rule.query.filter_by(handle=handle, chain_id=chain_id, family=family, expr=str(expr)).first()
         if rule:
             return True
     for rule in rules:
@@ -344,10 +344,10 @@ def iteration_on_chains(rule, chain_id, family, handle=None, rule_id=None):
         rule_ = Rule.query.filter_by(id=rule_id).first()
         rule_.expr = str(rule["rule"]["expr"])
         db.session.commit()
-    elif check_existing_rule(handle=handle, chain_id=chain_id, family=family, expr=rule["rule"]["expr"]) == False :   
+    elif check_existing_rule(handle=str(rule["rule"]["handle"]), chain_id=chain_id, family=family, expr=rule["rule"]["expr"]) == False :   
         rule_id = insert_rule(handle=str(rule["rule"]["handle"]), chain_id=rule["rule"]["chain"], family=rule["rule"]["family"], expr=str(rule["rule"]["expr"]))
-    elif check_existing_rule(handle=handle, chain_id=chain_id, family=family, expr=rule["rule"]["expr"]) == True: 
-        rule_ = Rule.query.filter_by(handle=str(rule["rule"]["handle"]), chain_id=chain_id, family=family).first()
+    elif check_existing_rule(handle=str(rule["rule"]["handle"]), chain_id=chain_id, family=family, expr=str(rule["rule"]["expr"])) == True: 
+        rule_ = Rule.query.filter_by(handle=str(rule["rule"]["handle"]), chain_id=chain_id, family=family, expr=str(rule["rule"]["expr"])).first()
         rule_id = rule_.id
         rule_.expr = str(rule["rule"]["expr"])
         db.session.commit()
@@ -795,7 +795,6 @@ def save_changes_on_file():
     files = glob.glob("./temp_config/nftables_temp*.conf")
     numbers = [int(f.replace("./temp_config/nftables_temp", "").replace(".conf", "")) for f in files]
     highest_number = max(numbers) if numbers else 0
-    print(highest_number)
     os.system(f"sudo nft list ruleset > ./temp_config/nftables_temp{highest_number + 1}.conf")
     
 def delete_all_data_except_users():
