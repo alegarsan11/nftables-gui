@@ -14,7 +14,7 @@
             <label for="table">Table</label>
             <select class="form-control" id="table" name="table" required>
                 {% for table in tables %}
-                <option value="{{ table.name }}&&{{ table.family }}">{{ table.name }} - {{ table.family}}</option>
+                <option value="{{ table.id }}&&{{ table.family }}">{{ table.name }} - {{ table.family}}</option>
                 {% endfor %}
             </select>
         </div>

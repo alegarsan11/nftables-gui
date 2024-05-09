@@ -38,8 +38,7 @@ class Chain(db.Model):
     __tablename__ = 'chain'
     id= db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(80), nullable=False)
-    table_id = db.Column(db.Integer, db.ForeignKey('table.name'), nullable=False)
-    family = db.Column(db.String(120), nullable=True)
+    table_id = db.Column(db.Integer, db.ForeignKey('table.id'), nullable=False)
     policy = db.Column(db.String(120), nullable=True)
     rules = db.relationship('Rule', backref='chain', lazy=True, cascade="all, delete-orphan")
     description = db.Column(db.String(120), nullable=True)
@@ -68,7 +67,6 @@ class BaseChain(Chain):
 class Rule(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     chain_id = db.Column(db.Integer, db.ForeignKey('chain.id'), nullable=False)
-    family = db.Column(db.String(120), nullable=False)
     expr = db.Column(db.String(120), nullable=False)
     handle = db.Column(db.String(120), nullable=True)
     description = db.Column(db.String(120), nullable=True)
@@ -81,8 +79,8 @@ class Rule(db.Model):
         return Statement.query.filter_by(rule_id=self.id).all()
     
     def table(self):
-        chain = Chain.query.filter_by(id=self.chain_id, family=self.family).first()
-        base_chain = BaseChain.query.filter_by(id=self.chain_id, family=self.family).first()
+        chain = Chain.query.filter_by(id=self.chain_id).first()
+        base_chain = BaseChain.query.filter_by(id=self.chain_id).first()
         if base_chain:
             return base_chain.table
         else:
@@ -139,20 +137,18 @@ class NotTerminalStatement(Statement):
 class Set(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(120), nullable=False)
-    family = db.Column(db.String(120), nullable=False)
     type = db.Column(db.String(120), nullable=False)
     elements = db.Column(db.String(120), nullable=True)
     description = db.Column(db.String(120), nullable=True)
-    table_id = db.Column(db.Integer, db.ForeignKey('table.name'), nullable=False)
+    table_id = db.Column(db.Integer, db.ForeignKey('table.id'), nullable=False)
     
     def __repr__(self):
         return '<Set %r>' % self.name
     
 class Map(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    table_id = db.Column(db.Integer, db.ForeignKey('table.name'), nullable=False)
+    table_id = db.Column(db.Integer, db.ForeignKey('table.id'), nullable=False)
     name = db.Column(db.String(120), nullable=False)
-    family = db.Column(db.String(120), nullable=False)
     description = db.Column(db.String(120), nullable=True)
     type = db.Column(db.String(120), nullable=True)
     map = db.Column(db.String(120), nullable=True)

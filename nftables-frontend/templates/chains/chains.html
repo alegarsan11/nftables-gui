@@ -26,7 +26,7 @@
         <td>
           <a href="/table/{{ chain.table.name}}/{{ chain.table.family }}"> {{ chain.table.name }}</a></td>
         <td>{{ chain.family }}</td>
-        <td> <a href="/chain/{{ chain.name}}/{{ chain.family }}/{{ chain.table.name }}"> {{ chain.name }}</a></td>
+        <td> <a href="/chain/{{ chain.name}}/{{ chain.table.family }}/{{ chain.table.id }}"> {{ chain.name }}</a></td>
 
           {% if chain.policy == None %}
           <td>Non existing policy for this chain</td>
@@ -34,7 +34,7 @@
           <td>{{ chain.policy }}</td>
           {% endif %}
         <td>
-          <a href="/chains/{{ chain.name }}/{{ chain.family }}/{{chain.table.name}}/delete" class="btn btn-danger">Delete</a>
+          <a href="/chains/{{ chain.name }}/{{ chain.family }}/{{chain.table.id}}/delete" class="btn btn-danger">Delete</a>
         </td>
       </tr>
       {% endfor %}

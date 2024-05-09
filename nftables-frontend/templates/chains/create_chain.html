@@ -19,7 +19,7 @@
             {{ form.table.label }}
             <select id="table" name="table" class="form-control" onchange="updateHiddenInput()">
                 {% for table in tables %}
-                <option value="{{ table.name }} - {{ table.family }}">{{ table.name }} - {{ table.family }}</option>
+                <option value="{{ table.id }}&&{{ table.family }}">{{ table.name }} - {{ table.family }}</option>
                 {% endfor %}
             </select>
             {% if form.table.errors %}

@@ -83,6 +83,7 @@ def create_base_chain_request(name, family, table, type, priority, policy, hook_
 def list_chain_request(chain_name, chain_family, chain_table):
     json_data = {"json_data": {"nftables": [{"list": {"chain":{"name": chain_name, "family": chain_family, "table": chain_table}}}]}}
     response = requests.get('http://localhost:8000/chains/list_rule_chain', json=json_data)
+    print(response.json())
     return response.json()
         
     
@@ -241,7 +242,7 @@ def create_rule_request(rule_id, chain_name, chain_table, family, statement, sta
     if queue:
         expr.append({"queue": {"num": queue}})
     if log: 
-        expr.append({"log": {"prefix": "Rule" + str(rule.id)+ " " + str(rule.table().name), "level": "info"}})
+        expr.append({"log": {"prefix": "Rule" + str(rule_id)+ " " , "level": "info"}})
     if limit:
         expr.append({"limit": {"rate": limit, "burst": 50, "per": limit_per}})
     if masquerade:
@@ -286,7 +287,7 @@ def create_rule_request(rule_id, chain_name, chain_table, family, statement, sta
     if response.json()["status"] == "success":
         return expr, "Success"
     else:
-        return [], "Error creating rule."
+        return [], response.json()
     
 def delete_rule_request(rule_id):
     rule= service.get_rule(rule_id)

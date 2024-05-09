@@ -109,8 +109,8 @@ def create_chain():
 
 @visualization_bp.route('/chain/<chain_id>/<family>/<table>')
 def get_chain(chain_id, family, table):
-    chain = service.get_chain(chain_id, family, table)
-    statements = service.get_statements_from_chain(chain_id=chain.name, family=family)
+    chain = service.get_chain(chain_id, table)
+    statements = service.get_statements_from_chain(chain_id=chain.name, table_id=table, family=family)
     return render_template('chains/chain.html', chain=chain, statements=statements)
 
 @creation_bp.route('/create_base_chain/', methods=['POST'])
@@ -118,11 +118,12 @@ def create_base_chain_post():
     form = BaseChainForm()
     form.family.data = form.table.data.split("&&")[0]
     form.table.data = form.table.data.split("&&")[1]
+    table_name = Table.query.get(form.table.data).name
     if form.priority.data == None:
         form.priority.data = 0
     table = service.get_table(form.table.data, form.family.data)
     if form.validate_on_submit():
-        response = api.create_base_chain_request(form.name.data, form.family.data, form.table.data, priority=form.priority.data, hook_type=form.hook_type.data, policy=form.policy.data, type=form.type.data)
+        response = api.create_base_chain_request(form.name.data, form.family.data, table_name, priority=form.priority.data, hook_type=form.hook_type.data, policy=form.policy.data, type=form.type.data)
         if(response == "Success"):
             flash('Base chain created successfully.')
         else:
@@ -138,8 +139,9 @@ def create_chain_post():
     form = ChainForm()
     form.family.data = form.table.data.split("&&")[1]
     form.table.data = form.table.data.split("&&")[0]
+    table_name = Table.query.get(form.table.data).name
     if form.validate_on_submit():
-        response = api.create_chain_request(form.name.data, form.family.data, form.table.data, policy=form.policy.data)
+        response = api.create_chain_request(form.name.data, form.family.data, table_name, policy=form.policy.data)
     else:
         return render_template('chains/create_chain.html', form=form, tables=Table.query.all())
     if response == "Success":
@@ -261,18 +263,18 @@ def get_chains():
     chains = service.get_chains()
     return render_template('chains/chains.html', chains=chains)
 
-@creation_bp.route('/chains/<chain_id>/<family>/<table>/delete')
-def delete_chain(chain_id, family, table):
-    chain = service.get_chain(chain_id,family, table)
-    response = api.delete_chain_request(chain.name, chain.family, chain.get_table().name)
-    service.delete_chain(chain_id, family, table)
+@creation_bp.route('/chains/<chain_id>/<table>/delete')
+def delete_chain(chain_id, table):
+    chain = Chain.query.get(chain_id)
+    response = api.delete_chain_request(chain.name, chain.table.family, chain.table.name)
+    service.delete_chain(chain_id)
     return redirect('/chains')
 
-@creation_bp.route('/chains/<chain_id>/<family>/<table>/flush')
-def flush_chain(chain_id, family,table):
-    chain = service.get_chain(chain_id,family,table)
-    response = api.flush_chain_request(chain.name, chain.family, chain.table.name)
-    service.delete_rules_form_chain(chain_id, family, table)
+@creation_bp.route('/chains/<chain_id>/<table>/flush')
+def flush_chain(chain_id,table):
+    chain = Chain.query.get(chain_id)
+    response = api.flush_chain_request(chain.name, chain.table.family, chain.table.name)
+    service.delete_rules_form_chain(chain_id)
     return redirect('/chains')
 
 @visualization_bp.route('/rules')
@@ -285,7 +287,7 @@ def get_rules():
 @visualization_bp.route('/rules/<rule_id>')
 def get_rule(rule_id):
     rule = service.get_rule(rule_id)
-    rule_result = api.list_chain_request(rule.chain.name, rule.family, rule.chain.table.name)
+    rule_result = api.list_chain_request(rule.chain.name, rule.chain.table.family, rule.chain.table.name)
     service.delete_statements_from_rule(rule_id)
     for i, rule_aux in enumerate(rule_result["rules"]["nftables"]):
         if i == 0 or i == 1:
@@ -295,7 +297,7 @@ def get_rule(rule_id):
                 service.get_rule(rule_id).handle = rule_aux["rule"]["handle"]
                 
             if str(rule.handle) == str(rule_aux["rule"]["handle"]):    
-                service.iteration_on_chains(rule=rule_aux, chain_id=rule.chain.name, family=rule.family, handle=rule_aux["rule"]["handle"], rule_id=rule_id)
+                service.iteration_on_chains(rule=rule_aux, chain_id=rule.chain.name, family=rule.chain.table.family, handle=rule_aux["rule"]["handle"], rule_id=rule_id)
 
     statements = service.get_statements_from_rule(rule_id)
     statements = [s for s in statements if s and not s.is_empty()]
@@ -324,7 +326,6 @@ def create_rule_post():
     family = form.chain.data.split("&&")[1]
     chain_name = form.chain.data.split("&&")[3]
     form.chain.data = chaind_id
-    form.family.data = str(family)
     chains = service.get_chains()
     if form.validate_on_submit():
         if (not (form.statements.limit.data or form.statements.log.data or form.statements.counter.data or form.statements.masquerade.data or form.statements.redirect.data or form.statements.src_nat.data or form.statements.dst_nat.data or form.statements.limit_per.data or form.statements_term.accept.data or form.statements_term.reject.data or form.statements_term.drop.data or form.statements_term.queue.data or form.statements_term.jump.data or form.statements_term.go_to.data or form.statements_term.return_.data) 
@@ -333,12 +334,12 @@ def create_rule_post():
             objects = service.get_objects()
             return render_template('rules/create_rule.html', form=form, chains=chains, objects=objects)
         if form.statements_term.jump.data != "--Selects--":
-            if service.get_chain(chain_id=form.statements_term.jump.data ,table=table_name, family=family) == None:
+            if service.get_chain(chain_id=form.statements_term.jump.data ,table=table_name) == None:
                 flash('Error creating rule.')
                 objects = service.get_objects()
                 return render_template('rules/create_rule.html', form=form, chains=chains, objects=objects)
         if  form.statements_term.go_to.data != "--Selects--":
-            if service.get_chain(chain_id=form.statements_term.go_to.data ,table=table_name, family=family) == None:
+            if service.get_chain(chain_id=form.statements_term.go_to.data ,table=table_name) == None:
                 flash('Error creating rule.')
                 objects = service.get_objects()
                 return render_template('rules/create_rule.html', form=form, chains=chains, objects=objects)
@@ -346,8 +347,10 @@ def create_rule_post():
             id_ = service.get_rules()[-1].id + 1
         else:
             id_ = 1
+        print(family)
         result = api.create_rule_request(rule_id=id_, chain_name=chain_name, family=family, chain_table=table_name, statement=form.statements.data, statement_term=form.statements_term.data, statement_type=form.statement_select.data)
-        service.insert_rule_with_table(chain_id=form.chain.data, expr=str(result[0]), family=form.family.data, description=form.description.data, table_id=table_name)    
+        chain = Chain.query.get(chaind_id)
+        service.insert_rule_with_table(chain_id=form.chain.data, expr=str(result[0]), description=form.description.data, table_id=chain.table.id)    
 
         if(result[1] == "Success"):
             flash('Rule created successfully.')
@@ -355,7 +358,7 @@ def create_rule_post():
             flash('Error creating rule.')
             
             objects = service.get_objects()
-            return render_template('rules/create_rule.html', form=form, chains=chains, objects=objects)
+            return render_template('rules/create_rule.html', form=form, chains=chains, objects=objects, msg=result[1])
         return redirect('/rules/' + str(id_))
     else:
         flash('Error creating rule.')
@@ -370,11 +373,16 @@ def get_sets():
 @visualization_bp.route('/sets/<set_id>')
 def get_set(set_id):
     set_ = service.get_set(set_id)
-    result = api.list_elements_in_set(set_.name, set_.family, set_.table_id)
+    table = Table.query.get(set_.table_id)
+    result = api.list_elements_in_set(set_.name, table.family, table.name)
     elements = ""
+    print(result)
     for i, item in enumerate(result[1]["nftables"]):
-        if("set" in item) and item["set"]["name"] == set_.name and item["set"]["family"] == set_.family and item["set"]["table"] == set_.table_id:
+        table = Table.query.get(set_.table_id)
+        print(table.family)
+        if("set" in item) and item["set"]["name"] == set_.name and item["set"]["family"] == table.family and item["set"]["table"] == table.name:
             if item.get("set").get("elem", None) != None:
+                print(item["set"]["elem"])
                 elements = str(item["set"]["elem"])
     service.insert_elements_in_set(set_id, elements)
     return render_template('sets/set.html', set=set_)
@@ -389,11 +397,13 @@ def add_element_post(set_id):
     form = AddElementSetForm()
     set_ = service.get_set(set_id)
     if service.validate_element(form.element.data, set_id) and (form.element.data != None or form.element.data != ""):
-        response = api.add_element_to_set_request(set_family=set_.family, element=form.element.data, set_name=set_.name, set_table=set_.table_id)
+        table = Table.query.get(set_.table_id)
+        response = api.add_element_to_set_request(set_family=table.family, element=str(form.element.data), set_name=set_.name, set_table=table.name)
         if response == "Success":
             flash('Element added successfully.')
         else:
             flash('Error adding element.')
+            return render_template('sets/add_element.html', form=form)
         return redirect('/sets/' + set_id)
     else:
         flash('Error adding element.')
@@ -411,7 +421,8 @@ def add_set_post():
     form.family.data = form.table.data.split("&&")[1]
     form.table.data = form.table.data.split("&&")[0]
     if form.validate_on_submit():
-        service.insert_set_form(form.name.data, form.family.data, form.table.data, form.type.data, form.description.data)
+        print("hfas llegado")
+        service.insert_set_form(form.name.data, form.table.data, form.type.data, form.description.data)
         response = api.create_set_request(set_name=form.name.data, set_family=form.family.data, set_table=form.table.data, set_type=form.type.data)
         if response == "Success":
             flash('Set created successfully.')
@@ -425,7 +436,8 @@ def add_set_post():
 @visualization_bp.route('/sets/<set_id>/delete')
 def delete_set(set_id):
     set_ = service.get_set(set_id)
-    response = api.delete_set_request(set_name=set_.name, set_family=set_.family, set_table=set_.table_id)
+    table = Table.query.get(set_.table_id)
+    response = api.delete_set_request(set_name=set_.name, set_family=table.family , set_table=table.name)
     service.delete_set(set_id)
     return redirect('/sets')
 
@@ -441,7 +453,8 @@ def delete_element_set_post(set_id):
     form = DeleteElementSet()
     set_ = service.get_set(set_id)
     if form.element.data != None or form.element.data != "":
-        response = api.delete_element_from_set_request(set_family=set_.family, element=form.element.data, set_name=set_.name, set_table=set_.table_id)
+        table = Table.query.get(set_.table_id)
+        response = api.delete_element_from_set_request(set_family=table.family, element=form.element.data, set_name=set_.name, set_table=table.name)
         if response == "Success":
             flash('Element deleted successfully.')
         else:
@@ -462,10 +475,12 @@ def get_maps():
 @visualization_bp.route('/maps/<map_id>')
 def get_map(map_id):
     map_ = service.get_map(map_id)
-    result = api.list_elements_in_map(map_.name, map_.family, map_.table_id)
+    table = Table.query.get(map_.table_id)
+    result = api.list_elements_in_map(map_.name, table.family, table.name)
     elements = ""
+    print(result)
     for i, item in enumerate(result[1]["nftables"]):
-        if("map" in item) and item["map"]["name"] == map_.name and item["map"]["family"] == map_.family and item["map"]["table"] == map_.table_id:
+        if("map" in item) and item["map"]["name"] == map_.name and item["map"]["family"] == table.family and item["map"]["table"] == table.name:
             if item.get("map").get("elem", None) != None:
                 elements = str(item["map"]["elem"])
     service.insert_elements_in_map(map_id, elements)
@@ -482,9 +497,10 @@ def add_map_post():
     form = MapForm()
     form.family.data = form.table.data.split("&&")[1]
     form.table.data = form.table.data.split("&&")[0]
+    table = Table.query.get(form.table.data)
     if form.validate_on_submit():
-        service.insert_map_form(form.name.data, form.family.data, form.table.data, form.type.data, form.map_type.data, form.description.data)
-        response = api.create_map_request(map_name=form.name.data, map_family=form.family.data, map_table=form.table.data, map_type=form.map_type.data, type=form.type.data)
+        service.insert_map_form(form.name.data, form.table.data, form.type.data, form.map_type.data, form.description.data)
+        response = api.create_map_request(map_name=form.name.data, map_family=form.family.data, map_table=table.name, map_type=form.map_type.data, type=form.type.data)
         if response == "Success":
             flash('Map created successfully.')
         else:
@@ -497,7 +513,8 @@ def add_map_post():
 @visualization_bp.route('/maps/<map_id>/delete')
 def delete_map(map_id):
     map_ = service.get_map(map_id)
-    response = api.delete_map_request(map_name=map_.name, map_family=map_.family, map_table=map_.table_id)
+    table = Table.query.get(map_.table_id)
+    response = api.delete_map_request(map_name=map_.name, map_family=table.family, map_table=table.name)
     service.delete_map(map_id)
     return redirect('/maps')
 
@@ -512,7 +529,8 @@ def add_element_map_post(map_id):
     form = AddElementMap()
     map_ = service.get_map(map_id)
     if service.validate_element_map(form.key.data, form.value.data, map_id) and (form.key.data != None or form.key.data != "") and (form.value.data != None or form.value.data != ""):
-        response = api.add_element_to_map_request(map_family=map_.family, key=form.key.data, value=form.value.data, map_name=map_.name, map_table=map_.table_id)
+        table = Table.query.get(map_.table_id)
+        response = api.add_element_to_map_request(map_family=table.family, key=form.key.data, value=form.value.data, map_name=map_.name, map_table=table.name)
         if response == "Success":
             flash('Element added successfully.')
         else:
@@ -539,8 +557,9 @@ def delete_element_map_post(map_id):
     form = DeleteElementMap()
     map_ = service.get_map(map_id)
     if form.key.data != None or form.key.data != "":
+        table = Table.query.get(map_.table_id)
         valor = service.get_element_from_map(element=form.key.data, map_id=map_id)
-        response = api.delete_element_from_map_request(map_family=map_.family, key=form.key.data , value=valor, map_name=map_.name, map_table=map_.table_id)
+        response = api.delete_element_from_map_request(map_family=table.family, key=form.key.data , value=valor, map_name=map_.name, map_table=table.name)
         if response == "Success":
             service.delete_element_from_map(element=form.key.data, map_id=map_id)
             flash('Element deleted successfully.')
@@ -590,9 +609,11 @@ def add_list_post():
         return render_template('sets/add-list.html', form=form, tables=tables, mssg="The file must be a txt file.")
     form.family.data = form.table.data.split("&&")[1]
     form.table.data = form.table.data.split("&&")[0]
+    table_name = Table.query.get(form.table.data).name
+
     if form.validate_on_submit():
         service.create_list(form.name.data, form.family.data, form.table.data, form.type.data, lista)
-        api.create_set_request(set_name=form.name.data, set_family=form.family.data, set_table=form.table.data, set_type=form.type.data)
+        api.create_set_request(set_name=form.name.data, set_family=form.family.data, set_table=table_name, set_type=form.type.data)
         for item in lista:
             api.add_element_to_set_request(set_family=form.family.data, element=item, set_name=form.name.data, set_table=form.table.data)
         flash('List added successfully.')

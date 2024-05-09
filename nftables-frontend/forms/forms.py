@@ -82,7 +82,7 @@ class ChainForm(FlaskForm):
             raise ValidationError('Chain name invalid. (Must not contain special characters or spaces.)')
 
     def validate_table(self, table):
-        table = Table.query.filter_by(name=table.data).first()
+        table = Table.query.filter_by(id=table.data).first()
         if not table:
             raise ValidationError('Table does not exist.')
  
@@ -241,7 +241,6 @@ class NotTerminalStatementForm(StatementForm):
 
 class RuleForm(FlaskForm):
     chain = StringField('Chain', validators=[DataRequired()])
-    family = StringField('Family', validators=[DataRequired()])
     handle = StringField('Handle', validators=[Optional()])
     statements = FormField(NotTerminalStatementForm)
     statements_term = FormField(TerminalStatementForm)
@@ -338,6 +337,6 @@ class AddListForm(FlaskForm):
         if type.data not in ['ipv4_addr']:
             raise ValidationError('Type must be one of: ipv4_addr.')
     def validate_table(self, table):
-        table = Table.query.filter_by(name=table.data).first()
+        table = Table.query.filter_by(id=table.data).first()
         if not table:
             raise ValidationError('Table does not exist.')

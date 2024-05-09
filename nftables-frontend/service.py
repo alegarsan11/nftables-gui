@@ -100,17 +100,20 @@ def insert_chains(table_id, chains):
     table.chains = chains
     db.session.commit()
     
-def insert_chain(chain_name, family, policy, table_id, type,  hook_type=None, priority=None):
-    if(hook_type != None and priority != None):
-        chain = BaseChain(name=chain_name, family=family, type=type, policy=policy, table_id=table_id, hook_type=hook_type, priority=priority)
-    else:
-        chain = Chain(name=chain_name, family=family, table_id=table_id, policy=policy)
-    db.session.add(chain)
-    db.session.commit()
-    
+def insert_chain(chain_name, family, policy, table_id, type, hook_type=None, priority=None):
+    table = Table.query.filter_by(name=table_id, family=family).first()
+    if table is not None:
+        if hook_type is not None and priority is not None:
+            chain = BaseChain(name=chain_name, type=type, policy=policy, table_id=table.id, hook_type=hook_type, priority=priority)
+        else:
+            chain = Chain(name=chain_name, table_id=table.id, policy=policy)
+        db.session.add(chain)
+        db.session.commit()
+
 def check_existing_chain(chain_name, table_id, family):
-    chain = Chain.query.filter_by(name=chain_name, table_id=table_id, family=family).first()
-    if chain:
+    table = Table.query.filter_by(name=table_id, family=family).first()
+    chain = Chain.query.filter_by(name=chain_name, table_id=table.id).first()
+    if chain in table.chains:
         return False
     return True
 
@@ -122,9 +125,9 @@ def get_chains():
     return Chain.query.all()
 
 
-def get_chain(chain_id, family, table):
-    chain = Chain.query.filter_by(name=chain_id, family=family, table_id=table).first()
-    base_chain = BaseChain.query.filter_by(name=chain_id, family=family, table_id=table).first()
+def get_chain(chain_id, table):
+    chain = Chain.query.filter_by(name=chain_id, table_id=table).first()
+    base_chain = BaseChain.query.filter_by(name=chain_id, table_id=table).first()
     if base_chain:
         return base_chain
     return chain
@@ -135,33 +138,34 @@ def get_chain_by_id(chain_id):
 
 
 def check_existing_rule(chain_id, handle=None, family=None, expr=None):
-    rules = Rule.query.filter_by(chain_id=chain_id, family=family).all()
+    rules = Rule.query.filter_by(chain_id=chain_id).all()
+    chain = Chain.query.filter_by(id=chain_id).first()
     if handle:
-        rule = Rule.query.filter_by(handle=handle, chain_id=chain_id, family=family, expr=str(expr)).first()
-        if rule:
+        rule = Rule.query.filter_by(handle=handle, chain_id=chain_id, expr=str(expr)).first()
+        if rule in chain.rules:
             return True
     for rule in rules:
-        if ratio(str(rule.expr), str(expr)) > 0.98:  # Ajusta el umbral según tus necesidades
+        if rule in chain.rules and ratio(str(rule.expr), str(expr)) > 0.98:  # Ajusta el umbral según tus necesidades
             return True
     return False
-def get_chain_id(chain_id, family, table):
-    chain = Chain.query.filter_by(id=chain_id, family=family, table_id=table).first()
-    base_chain = BaseChain.query.filter_by(id=chain_id, family=family, table_id=table).first()
+def get_chain_id(chain_id, table):
+    chain = Chain.query.filter_by(id=chain_id, table_id=table).first()
+    base_chain = BaseChain.query.filter_by(id=chain_id, table_id=table).first()
     if base_chain:
         return base_chain
     return chain
 
-def insert_rule_with_table(chain_id, family, expr, table_id, description=None):
-    chain = get_chain_id(chain_id, family, table_id)
+def insert_rule_with_table(chain_id, expr, table_id, description=None):
+    chain = get_chain_id(chain_id, table_id)
     if description == "":
         description = None
-    rule = Rule(chain_id=chain.id, family=family, expr=expr, description=description)
+    rule = Rule(chain_id=chain.id, expr=expr, description=description)
     db.session.add(rule)
     db.session.commit()
     return rule.id
 
-def insert_rule(chain_id, family, expr, handle, description=None):
-    rule = Rule(chain_id=chain_id, family=family, expr=expr, handle=handle, description=description)
+def insert_rule(chain_id, expr, handle, description=None):
+    rule = Rule(chain_id=chain_id, expr=expr, handle=handle, description=description)
     db.session.add(rule)
     db.session.commit()
     return rule.id
@@ -272,8 +276,8 @@ def from_form_to_statement(statement, statement_term, rule_id, statement_select)
             redirect = None
         insert_statement(rule_id=rule_id, sport=sport, dport=dport, saddr=saddr, daddr=daddr, protocol=protocol, accept=accept, drop=drop, reject=reject, log=log, limit=limit, counter=counter, return_=return_, jump=jump, go_to=go_to, queue=queue, masquerade=masquerade, snat=snat, dnat=dnat, redirect=redirect, input_interface=input_interface, output_interface=output_interface)
     
-def delete_chain(chain_id, family, table):
-    chain = get_chain(chain_id, family, table)
+def delete_chain(chain_id):
+    chain = Chain.query.get(chain_id)
     db.session.delete(chain)
     db.session.commit()
     
@@ -282,8 +286,8 @@ def delete_rule(rule_id):
     db.session.delete(rule)
     db.session.commit()
     
-def delete_rules_form_chain(chain_id, family, table):
-    chain = get_chain(chain_id, family=family, table=table)
+def delete_rules_form_chain(chain_id):
+    chain = Chain.query.get(chain_id)
     rules = chain.rules
     for rule in rules:
         db.session.delete(rule)
@@ -433,14 +437,16 @@ def iteration_on_chains(rule, chain_id, family, handle=None, rule_id=None):
 
                 
                 
-def get_statements_from_chain(chain_id, family):
-    chain = Chain.query.filter_by(name=chain_id, family=family).first()
+def get_statements_from_chain(chain_id, family,  table_id):
+    table = Table.query.filter_by(id=table_id, family=family).first()
+    chain = Chain.query.filter_by(name=chain_id, table_id=table_id).first()
     rules = chain.rules
-    statements = []
-    for rule in rules:
-        for statement in rule.statement:
-            statements.append(statement)
-            
+    if chain in table.chains:    
+        statements = []
+        for rule in rules:
+            for statement in rule.statement:
+                statements.append(statement)
+                
     return statements
 
 def get_statements():
@@ -493,18 +499,19 @@ def load_data(condicion):
                 if("type" in item["chain"]):
                     type = item["chain"]["type"]
                 
-                insert_chain(item["chain"]["name"], item["chain"]["family"], item["chain"]["policy"], item["chain"]["table"],type=type,  priority=prio, hook_type=hook)
+                insert_chain(item["chain"]["name"], item["chain"]["family"] ,item["chain"]["policy"], item["chain"]["table"],type=type,  priority=prio, hook_type=hook)
     chains = get_chains()
     for chain in chains:
-        result_rules = api.list_chain_request(chain.name, chain.family, chain.table.name)
+        print(chain.name, chain.table.name, chain.table.family)
+        result_rules = api.list_chain_request(chain.name, chain.table.family, chain.table.name)
         if(result_rules["rules"] != ""):
             result_rules = result_rules["rules"]["nftables"]
             for i, rule in enumerate(result_rules):
                 if i ==0 or i ==1:
                     continue
                 else:
-                    if check_existing_rule(handle=str(rule["rule"]["handle"]), expr=rule["rule"]["expr"], chain_id=chain.id, family=chain.family) == False:
-                        insert_rule(handle=str(rule["rule"]["handle"]), chain_id=chain.id, family=rule["rule"]["family"], expr=str(rule["rule"]["expr"]))
+                    if check_existing_rule(handle=str(rule["rule"]["handle"]), expr=rule["rule"]["expr"], chain_id=chain.id, family=chain.table.family) == False:
+                        insert_rule(handle=str(rule["rule"]["handle"]), chain_id=chain.id, expr=str(rule["rule"]["expr"]))
 
     return  [Rule.query.count(), Chain.query.count(), Table.query.count()]
     
@@ -534,19 +541,19 @@ def insert_sets():
     for i, item in enumerate(result):
         if("set" in item):
             table = get_table(item["set"]["table"], item["set"]["family"])
-            if(check_existing_set(item["set"]["name"], table.name, item["set"]["family"]) == True):
+            if(check_existing_set(item["set"]["name"], table.id) == True):
                 
-                insert_set(item["set"]["name"], item["set"]["family"], item["set"]["table"], item["set"]["type"])
+                insert_set(item["set"]["name"],table.id, item["set"]["type"])
     return "Success"
 
-def check_existing_set(name, table, family):
-    _set = Set.query.filter_by(name=name, table_id=table, family=family).first()
+def check_existing_set(name, table):
+    _set = Set.query.filter_by(name=name, table_id=table).first()
     if _set:
         return False
     return True
 
-def insert_set(name, family, table_id, type):
-    _set = Set(name=name, family=family, table_id=table_id, type=type)
+def insert_set(name, table_id, type):
+    _set = Set(name=name, table_id=table_id, type=type)
     db.session.add(_set)
     db.session.commit()
     
@@ -603,12 +610,12 @@ def validate_element(element, set_id):
 def validate_mac_address(mac):
     return bool(re.match("^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$", mac))
 
-def insert_set_form(set_name, family, table, type, description=None):
+def insert_set_form(set_name, table, type, description=None):
     if description == "":
         description = None
-    if check_existing_set(set_name, table, family) == False:
+    if check_existing_set(set_name, table) == False:
         return "Set already exists"
-    _set = Set(name=set_name, family=family, table_id=table, type=type, description=description)
+    _set = Set(name=set_name, table_id=table, type=type, description=description)
     db.session.add(_set)
     db.session.commit()
 
@@ -628,18 +635,18 @@ def insert_maps():
     for i, item in enumerate(result):
         if("map" in item):
             table = get_table(item["map"]["table"], item["map"]["family"])
-            if(check_existing_map(item["map"]["name"], table.name, item["map"]["family"]) == True):
-                insert_map(name=item["map"]["name"], family=item["map"]["family"], table_id=item["map"]["table"], type=item["map"]["type"], map=item["map"]["map"])
+            if(check_existing_map(item["map"]["name"], table.id) == True):
+                insert_map(name=item["map"]["name"], table_id=table.id, type=item["map"]["type"], map=item["map"]["map"])
     return "Success"
 
-def check_existing_map(name, table, family):
-    _map = Map.query.filter_by(name=name, table_id=table, family=family).first()
+def check_existing_map(name, table):
+    _map = Map.query.filter_by(name=name, table_id=table).first()
     if _map:
         return False
     return True
 
-def insert_map(name, family, table_id, type, map):
-    _map = Map(name=name, family=family, table_id=table_id, type=type, map=map)
+def insert_map(name, table_id, type, map):
+    _map = Map(name=name, table_id=table_id, type=type, map=map)
     db.session.add(_map)
     db.session.commit()
     
@@ -658,12 +665,12 @@ def get_map(map_id):
     _map = Map.query.get(map_id)
     return _map
 
-def insert_map_form(map_name, family, table, type, map_type, description=None):
+def insert_map_form(map_name, table, type, map_type, description=None):
     if description == "":
         description = None
-    if check_existing_map(map_name, table, family) == False:
+    if check_existing_map(map_name, table) == False:
         return "Map already exists"
-    _map = Map(name=map_name, family=family, table_id=table, type=type, description=description, map=map_type)
+    _map = Map(name=map_name, table_id=table, type=type, description=description, map=map_type)
     db.session.add(_map)
     db.session.commit()
 
@@ -805,9 +812,9 @@ def delete_all_data_except_users():
     db.session.commit()
     
 def create_list(name, family, table_name, type, elements):
-    if check_existing_set(name, table_name, family) == False:
+    if check_existing_set(name, table_name) == False:
         return "Set already exists"
-    _set = Set(name=name, family=family, table_id=table_name, type=type)
+    _set = Set(name=name, table_id=table_name, type=type)
     if elements != "" or elements != None:
         elements = str(elements)
         _set.elements = elements
