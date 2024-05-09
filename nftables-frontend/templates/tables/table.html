@@ -26,7 +26,7 @@
             {% for chain in table.chains %}
                 <tr>
                     <td><a href="/chain/{{ chain.name }}/{{chain.family}}/{{ table.name }}"> {{ chain.name }}</a></td>
-                    <td>{{ chain.family }}</td>
+                    <td>{{ table.family }}</td>
                     <td>
                         {% if chain.description %}
                             {{ chain.description }}

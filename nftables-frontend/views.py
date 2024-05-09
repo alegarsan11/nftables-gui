@@ -423,7 +423,8 @@ def add_set_post():
     if form.validate_on_submit():
         print("hfas llegado")
         service.insert_set_form(form.name.data, form.table.data, form.type.data, form.description.data)
-        response = api.create_set_request(set_name=form.name.data, set_family=form.family.data, set_table=form.table.data, set_type=form.type.data)
+        table = Table.query.get(form.table.data)
+        response = api.create_set_request(set_name=form.name.data, set_family=form.family.data, set_table=table.name, set_type=form.type.data)
         if response == "Success":
             flash('Set created successfully.')
         else:
