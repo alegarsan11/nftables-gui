@@ -9,10 +9,12 @@
             <h1>nftables-gui</h1>
             <p>Welcome to the first GUI of nftables</p>
             <p> Hostname: {{ hostname }}</p>
-            <p> IP address: {{ ip_address }}</p>           
+            <p> IP address: {{ ip_address }}</p>  
+            <br></br>
+            <button type="button" class="btn btn-primary" onclick="window.location.href='/reload'">Reload nftables</button>         
         </div>
         <div class="col-md-5">
-            <h1 style="">General informatin dashboard</h1>
+            <h1>General dashboard</h1>
             <img src="{{ nftables_info_image }}" alt="Gráfico de elementos nftables">
         </div>
 

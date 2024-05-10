@@ -623,3 +623,8 @@ def add_list_post():
         tables = service.get_tables()
         return render_template('sets/add-list.html', form=form, tables=tables)
     return redirect('/sets')
+
+@visualization_bp.route('/reload')
+def reload():
+    service.reload_service()
+    return redirect('/')

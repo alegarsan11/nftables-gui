@@ -46,10 +46,6 @@ def check_existing_table(name, family):
 def load_user(user_id):
     return User.query.get(int(user_id))
 
-@login_manager.user_loader
-def load_user(user_id):
-    return User.query.get(int(user_id))
-
 def edit_user(user_id, username, role):
     user = User.query.filter_by(id=user_id).first()
     user.username = username
@@ -821,3 +817,7 @@ def create_list(name, family, table_name, type, elements):
     db.session.add(_set)
     db.session.commit()
     return "Success"
+
+def reload_service():
+    delete_all_data_except_users
+    os.system("sudo systemctl restart nftables")

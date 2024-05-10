@@ -8,3 +8,6 @@ hug
 email_validator
 matplotlib
 python-Levenshtein
+pytest
+pytest-sugar
+pytest-cov

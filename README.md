@@ -12,3 +12,10 @@ To run the project:
 `sudo chmod +x run.sh`
 - Execute the file:
 `sudo ./run.sh`
+
+
+- Execute the test files:
+`python -m pytest` (On the nftables-frontend folder)
+- Execute coverage:
+`python -m pytest --cov`
+
