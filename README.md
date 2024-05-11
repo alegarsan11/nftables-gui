@@ -13,7 +13,6 @@ To run the project:
 - Execute the file:
 `sudo ./run.sh`
 
-
 - Execute the test files:
 `python -m pytest` (On the nftables-frontend folder)
 - Execute coverage:

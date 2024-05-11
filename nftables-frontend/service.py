@@ -508,7 +508,6 @@ def load_data(condicion):
                 else:
                     if check_existing_rule(handle=str(rule["rule"]["handle"]), expr=rule["rule"]["expr"], chain_id=chain.id, family=chain.table.family) == False:
                         insert_rule(handle=str(rule["rule"]["handle"]), chain_id=chain.id, expr=str(rule["rule"]["expr"]))
-
     return  [Rule.query.count(), Chain.query.count(), Table.query.count()]
     
 def get_rule(rule_id):
