@@ -84,6 +84,11 @@ class Rule(db.Model):
             return base_chain.table
         else:
             return chain.table
+        
+    def to_string(self):
+        statements = ', '.join([str(statement) for statement in self.statements()])
+        table = self.table()
+        return f"Rule ID: {self.id}, Chain ID: {self.chain_id}, Expression: {self.expr}, Handle: {self.handle}, Description: {self.description}, Statements: {statements}, Table: {table}"
     
 class Statement(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -132,6 +137,8 @@ class NotTerminalStatement(Statement):
 
     def is_empty(self):
         return not any([self.limit, self.log, self.counter, self.masquerade, self.snat, self.dnat, self.redirect])
+   
+
     
 class Set(db.Model):
     id = db.Column(db.Integer, primary_key=True)

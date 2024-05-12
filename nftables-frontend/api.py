@@ -283,7 +283,10 @@ def create_rule_request(rule_id, chain_name, chain_table, family, statement, sta
             }]
         }
     }
-    response = requests.post('http://localhost:8000/rules/create_rule', json=json_data)
+    if expr != []:
+        response = requests.post('http://localhost:8000/rules/create_rule', json=json_data)
+    else:
+        return [], "Error creating rule."
     if response.json()["status"] == "success":
         return expr, "Success"
     else:

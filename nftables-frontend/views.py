@@ -2,7 +2,7 @@ import ast
 from flask import Blueprint, render_template, flash, redirect, url_for, request
 from flask_login import login_user, logout_user, login_required, current_user
 from models import BaseChain, Chain, Rule, Statement, Table, User, db
-from forms.forms import AddElementMap, AddElementSetForm, AddListForm, BaseChainForm, ChainForm, DeleteElementMap, DeleteElementSet, LoginForm, CreateUserForm, MapForm, RuleForm, SetForm, TableForm, UpdateUserForm
+from forms.forms import AddElementMap, AddElementSetForm, AddListForm, BaseChainForm, ChainForm, DeleteElementMap, DeleteElementSet, LoginForm, CreateUserForm, MapForm, NotTerminalStatementForm, RuleForm, SetForm, TableForm, UpdateUserForm
 import service, api, os, matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
@@ -280,8 +280,12 @@ def flush_chain(chain_id,table):
 @visualization_bp.route('/rules')
 @login_required
 def get_rules():
-    service.load_data(True)
     rules = service.get_rules()
+    for rule in rules:
+        if rule.handle == None:
+            service.delete_rule(rule.id)
+        
+    service.load_data(True)
     return render_template('rules/rules.html', rules=rules)
 
 @visualization_bp.route('/rules/<rule_id>')
@@ -293,6 +297,7 @@ def get_rule(rule_id):
         if i == 0 or i == 1:
             continue
         else:
+            print(ratio(str(rule_aux["rule"]["expr"]), rule.expr))
             if service.get_rule(rule_id).handle == None and ratio(str(rule_aux["rule"]["expr"]), rule.expr) > 0.9:
                 service.get_rule(rule_id).handle = rule_aux["rule"]["handle"]
                 
@@ -319,15 +324,16 @@ def delete_rule(rule_id):
 
 @creation_bp.route('/rules/create_rule', methods=['POST'])
 def create_rule_post():
-    form = RuleForm()
+    form = RuleForm(data=request.form)
     # El handle ha de asignarse con la peticion de la api y el resultado que se obtenga de esta rule
     chaind_id = form.chain.data.split("&&")[0]
+    print(form.chain.data)
     table_name = form.chain.data.split("&&")[2]
     family = form.chain.data.split("&&")[1]
     chain_name = form.chain.data.split("&&")[3]
     form.chain.data = chaind_id
     chains = service.get_chains()
-    if form.validate_on_submit():
+    if form.validate():
         if (not (form.statements.limit.data or form.statements.log.data or form.statements.counter.data or form.statements.masquerade.data or form.statements.redirect.data or form.statements.src_nat.data or form.statements.dst_nat.data or form.statements.limit_per.data or form.statements_term.accept.data or form.statements_term.reject.data or form.statements_term.drop.data or form.statements_term.queue.data or form.statements_term.jump.data or form.statements_term.go_to.data or form.statements_term.return_.data) 
             or (form.statements.data == None and form.statements_term.data == None)):
             flash('Error creating rule.')
@@ -347,7 +353,6 @@ def create_rule_post():
             id_ = service.get_rules()[-1].id + 1
         else:
             id_ = 1
-        print(family)
         result = api.create_rule_request(rule_id=id_, chain_name=chain_name, family=family, chain_table=table_name, statement=form.statements.data, statement_term=form.statements_term.data, statement_type=form.statement_select.data)
         chain = Chain.query.get(chaind_id)
         service.insert_rule_with_table(chain_id=form.chain.data, expr=str(result[0]), description=form.description.data, table_id=chain.table.id)    
@@ -359,7 +364,7 @@ def create_rule_post():
             
             objects = service.get_objects()
             return render_template('rules/create_rule.html', form=form, chains=chains, objects=objects, msg=result[1])
-        return redirect('/rules/' + str(id_))
+        return redirect('/rules')
     else:
         flash('Error creating rule.')
 

@@ -141,9 +141,10 @@ def check_existing_rule(chain_id, handle=None, family=None, expr=None):
         if rule in chain.rules:
             return True
     for rule in rules:
-        if rule in chain.rules and ratio(str(rule.expr), str(expr)) > 0.98:  # Ajusta el umbral según tus necesidades
+        if rule in chain.rules and ratio(str(rule.expr), str(expr)) > 0.98 or rule in chain.rules and str(rule.handle) == handle:  # Ajusta el umbral según tus necesidades
             return True
     return False
+
 def get_chain_id(chain_id, table):
     chain = Chain.query.filter_by(id=chain_id, table_id=table).first()
     base_chain = BaseChain.query.filter_by(id=chain_id, table_id=table).first()
@@ -506,6 +507,7 @@ def load_data(condicion):
                 if i ==0 or i ==1:
                     continue
                 else:
+                    print(rule)
                     if check_existing_rule(handle=str(rule["rule"]["handle"]), expr=rule["rule"]["expr"], chain_id=chain.id, family=chain.table.family) == False:
                         insert_rule(handle=str(rule["rule"]["handle"]), chain_id=chain.id, expr=str(rule["rule"]["expr"]))
     return  [Rule.query.count(), Chain.query.count(), Table.query.count()]

@@ -1,11 +1,6 @@
 
-{"json_data": {"nftables":[ {"add": { "rule":{"family": "ip", "table": "nat", "chain": "prueba2",  "expr": [
+{"json_data": {"nftables":[ {"add": { "rule":{"family": "inet", "table": "filter", "chain": "input",  "expr": [
     {
-      "jump": {
-        "table": "nat",
-        "family": "ip",
-        "target": "prueba",
-        "comment": "Para hacer jump la cadena destino debe estar en la misma tabla"
-      }
+      "counter": null
     }
   ] }}}]}}
