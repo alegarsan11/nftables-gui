@@ -41,7 +41,6 @@ class Chain(db.Model):
     table_id = db.Column(db.Integer, db.ForeignKey('table.id'), nullable=False)
     policy = db.Column(db.String(120), nullable=True)
     rules = db.relationship('Rule', backref='chain', lazy=True, cascade="all, delete-orphan")
-    description = db.Column(db.String(120), nullable=True)
 
     def get_table(self):
         return Table.query.filter_by(name=self.table_id, family=self.family).first()

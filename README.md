@@ -17,4 +17,5 @@ To run the project:
 `python -m pytest` (On the nftables-frontend folder)
 - Execute coverage:
 `python -m pytest --cov`
-
+- Generate report of coverage
+`python -m pytest --cov --cov-report=html`

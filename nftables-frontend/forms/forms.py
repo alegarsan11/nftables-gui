@@ -74,7 +74,6 @@ class ChainForm(FlaskForm):
         ('accept', 'accept'),
         ('drop', 'drop'),
         ('reject', 'reject')    ], validators=[DataRequired()])    
-    description = StringField('Description')
     submit = SubmitField('Create Chain')
     
     def validate_name(self, name):

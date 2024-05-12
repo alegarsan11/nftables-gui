@@ -250,7 +250,7 @@ def get_chains():
             if(service.check_existing_chain(item["chain"]["name"], item["chain"]["table"], item["chain"]["family"]) == True):
                 prio = None
                 hook = None
-                type = None
+                type_ = None
                 if("prio" in item["chain"]):
                     prio = item["chain"]["prio"]
                 if("hook" in item["chain"]):
@@ -258,8 +258,8 @@ def get_chains():
                 if("policy" not in item["chain"]):
                     item["chain"]["policy"] = None
                 if("type" in item["chain"]):
-                    type = item["chain"]["type"]
-                service.insert_chain(item["chain"]["name"], item["chain"]["family"], item["chain"]["policy"], item["chain"]["table"],type=type,  priority=prio, hook_type=hook)
+                    type_ = item["chain"]["type"]
+                service.insert_chain(item["chain"]["name"], item["chain"]["family"], item["chain"]["policy"], item["chain"]["table"],type=type_,  priority=prio, hook_type=hook)
     chains = service.get_chains()
     return render_template('chains/chains.html', chains=chains)
 
