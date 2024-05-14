@@ -10,4 +10,5 @@ matplotlib
 python-Levenshtein
 pytest
 pytest-sugar
+pytest-order
 pytest-cov

@@ -148,6 +148,7 @@ def create_chain_post():
         flash('Chain created successfully.')
     else:
         flash('Error creating chain.')
+        return render_template('chains/create_chain.html', form=form, tables=Table.query.all())
     return redirect('/chains')
 
 @visualization_bp.route('/login')
@@ -280,12 +281,12 @@ def flush_chain(chain_id,table):
 @visualization_bp.route('/rules')
 @login_required
 def get_rules():
+        
+    service.load_data(True)
     rules = service.get_rules()
     for rule in rules:
         if rule.handle == None:
             service.delete_rule(rule.id)
-        
-    service.load_data(True)
     return render_template('rules/rules.html', rules=rules)
 
 @visualization_bp.route('/rules/<rule_id>')
@@ -426,7 +427,6 @@ def add_set_post():
     form.family.data = form.table.data.split("&&")[1]
     form.table.data = form.table.data.split("&&")[0]
     if form.validate_on_submit():
-        print("hfas llegado")
         service.insert_set_form(form.name.data, form.table.data, form.type.data, form.description.data)
         table = Table.query.get(form.table.data)
         response = api.create_set_request(set_name=form.name.data, set_family=form.family.data, set_table=table.name, set_type=form.type.data)
@@ -451,7 +451,8 @@ def delete_set(set_id):
 def delete_element_set(set_id):
     form = DeleteElementSet()
     elements = service.get_elements_from_set(set_id)
-    elements = ast.literal_eval(elements)
+    if elements != "":
+        elements = ast.literal_eval(elements)
     return render_template('sets/delete_element.html', form=form, aux=elements)
 
 @creation_bp.route('/sets/<set_id>/delete_element', methods=['POST'])

@@ -61,11 +61,25 @@ def test_create_chain(mock_create_chain_request, mock_create_table_request ,logg
     response = logged_in_client.post('/create_chain/', data=data)
     mock_create_chain_request.assert_called_once()
     assert response.status_code == 302
+    assert response.location == '/chains'
     
 def test_create_chain_view(logged_in_client):
     response = logged_in_client.get('/create_chain')
     assert response.status_code == 200
     
+def test_create_base_chain_view(logged_in_client):
+    response = logged_in_client.get('/create_base_chain')
+    assert response.status_code == 200
+    
+@patch('api.create_base_chain_request')
+def test_create_base_chain(mock_create_base_chain_request, created_table):
+    mock_create_base_chain_request.return_value = "Success"
+    data = {"table": "inet&&1", "name": "chain1", "family": "inet", "type": "filter", "hook_type": "input", "prio": 0, "policy": "accept"}
+    response = created_table.post('/create_base_chain/', data=data)
+    assert response.status_code == 302
+    assert response.location == '/chains'
+    mock_create_base_chain_request.assert_called_once()
+
     
 @patch('api.create_chain_request')
 @patch('api.list_chains_request')   
