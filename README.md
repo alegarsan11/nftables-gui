@@ -12,6 +12,8 @@ To run the project:
 `sudo chmod +x run.sh`
 - Execute the file:
 `sudo ./run.sh`
+- to kill all process
+`sudo killall python`
 
 - Execute the test files:
 `python -m pytest` (On the nftables-frontend folder)
