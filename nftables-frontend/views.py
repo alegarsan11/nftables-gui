@@ -434,6 +434,7 @@ def add_set_post():
             flash('Set created successfully.')
         else:
             flash('Error creating set.')
+            return render_template('sets/create_set.html', form=form)
         return redirect('/sets')
     else:
         flash('Error creating set.')
@@ -512,6 +513,7 @@ def add_map_post():
             flash('Map created successfully.')
         else:
             flash('Error creating map.')
+            return render_template('maps/create_map.html', form=form)
         return redirect('/maps')
     else:
         flash('Error creating map.')
@@ -542,6 +544,7 @@ def add_element_map_post(map_id):
             flash('Element added successfully.')
         else:
             flash('Error adding element.')
+            return render_template('maps/add_element.html', form=form)
         return redirect('/maps/' + map_id)
     else:
         flash('Error adding element.')
@@ -551,11 +554,11 @@ def add_element_map_post(map_id):
 def delete_element_map(map_id):
     form = DeleteElementMap()
     elements_str = service.get_elements_from_map(map_id)
-    # Convierte la cadena de texto en un diccionario
-    elements_dict = ast.literal_eval(elements_str)
-    # Obtiene las claves del diccionario
-    keys = elements_dict.keys()
-    aux = list(keys)
+    aux = ""
+    if elements_str != "" and elements_str != None:
+        elements_dict = ast.literal_eval(elements_str)
+        keys = elements_dict.keys()
+        aux = list(keys)
 
     return render_template('maps/delete_element.html', form=form, aux=aux)
 

@@ -102,11 +102,12 @@ def test_edit_set_view(mock_create_set_request,mock_create_table_request,logged_
     response = logged_in_client.get('/sets/1/add_element')
     assert response.status_code == 200
     
+    
 @patch('api.create_table_request')
-@patch('api.list_sets_request')
-@patch('api.list_elements_in_set')
 @patch('api.create_set_request')
-def test_delete_element_set_view(mock_create_set_request,mock_list_elements_in_set, mock_list_sets_request ,mock_create_table_request,logged_in_client):
+@patch('api.list_elements_in_set')
+@patch('api.add_element_to_set_request')
+def test_add_element(mock_add_element_to_set_request,mock_list_elements_in_set, mock_create_set_request,mock_create_table_request,logged_in_client):
     mock_create_table_request.return_value = "Success"
     data = {"name": "filter", "family": "inet", "description": "filter table"}
     logged_in_client.post('/add_table', data=data)
@@ -117,10 +118,53 @@ def test_delete_element_set_view(mock_create_set_request,mock_list_elements_in_s
     }
     mock_create_set_request.return_value = "Success"
     logged_in_client.post('/sets/new', data=data)
-    sets = [0, {"nftables": [{"metainfo": {"version": "1.0.2", "release_name": "Lester Gooch", "json_schema_version": 1}}, {"set": {"family": "inet", "name": "my_map", "table": "filter", "type": "ipv4_addr", "handle": 4}}]}, ""]
-    mock_list_sets_request.return_value = sets[1]["nftables"]
-    logged_in_client.get('/sets')
-    mock_list_elements_in_set.return_value = [0, {"nftables": [{"metainfo": {"version": "1.0.2", "release_name": "Lester Gooch", "json_schema_version": 1}}, {"set": {"family": "inet", "name": "my_map", "table": "filter", "type": "ipv4_addr", "handle": 4, "elements": "192.43.65.43"}}]}, ""]
+    mock_list_elements_in_set.return_value = [0, {"nftables": [{"metainfo": {"version": "1.0.2", "release_name": "Lester Gooch", "json_schema_version": 1}}, {"set": {"family": "inet", "name": "my_map", "table": "filter", "type": "ipv4_addr", "handle": 4, "elements": ""}}]}, ""]
     logged_in_client.get('/sets/1')
-    response = logged_in_client.get('/sets/1/delete_element')
+    mock_add_element_to_set_request.return_value = "Success"
+    data = {"element": "21.34.65.23"}
+    response = logged_in_client.post('/sets/1/add_element', data=data)
+    assert response.status_code == 302
+
+@patch('api.create_table_request')
+@patch('api.create_set_request')
+@patch('api.list_elements_in_set')
+def test_delete_element_view(mock_list_elements_in_set, mock_create_set_request, mock_create_table_request ,logged_in_client):
+    mock_create_table_request.return_value = "Success"
+    data = {"name": "filter", "family": "inet", "description": "filter table"}
+    logged_in_client.post('/add_table', data=data)
+    data = {
+        "name": "test_set",
+        "type": "ipv4_addr",
+        "table": "1&&inet"
+    }
+    mock_create_set_request.return_value = "Success"
+    logged_in_client.post('/sets/new', data=data)
+    mock_list_elements_in_set.return_value = [0, {"nftables": [{"metainfo": {"version": "1.0.2", "release_name": "Lester Gooch", "json_schema_version": 1}}, {"set": {"family": "inet", "name": "my_map", "table": "filter", "type": "ipv4_addr", "handle": 4, "elements": ""}}]}, ""]
+    logged_in_client.get('/sets/1')
+    response = logged_in_client.get('/sets/1/add_element')
     assert response.status_code == 200
+    
+@patch('api.create_table_request')
+@patch('api.create_set_request')
+@patch('api.list_elements_in_set')
+@patch('api.add_element_to_set_request')
+@patch('api.delete_element_from_set_request')
+def test_delete_element(mock_delete_element_from_set_request, mock_add_element_to_set_request,mock_list_elements_in_set, mock_create_set_request,mock_create_table_request,logged_in_client):
+    mock_create_table_request.return_value = "Success"
+    data = {"name": "filter", "family": "inet", "description": "filter table"}
+    logged_in_client.post('/add_table', data=data)
+    data = {
+        "name": "test_set",
+        "type": "ipv4_addr",
+        "table": "1&&inet"
+    }
+    mock_create_set_request.return_value = "Success"
+    logged_in_client.post('/sets/new', data=data)
+    mock_list_elements_in_set.return_value = [0, {"nftables": [{"metainfo": {"version": "1.0.2", "release_name": "Lester Gooch", "json_schema_version": 1}}, {"set": {"family": "inet", "name": "my_map", "table": "filter", "type": "ipv4_addr", "handle": 4, "elements": ""}}]}, ""]
+    logged_in_client.get('/sets/1')
+    mock_add_element_to_set_request.return_value = "Success"
+    data = {"element": "21.34.65.23"}
+    logged_in_client.post('/sets/1/add_element', data=data)
+    response = logged_in_client.post('/sets/1/delete_element', data=data)
+    assert response.status_code == 302
+    assert response.headers['Location'] == '/sets/1'

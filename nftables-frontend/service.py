@@ -46,12 +46,6 @@ def check_existing_table(name, family):
 def load_user(user_id):
     return User.query.get(int(user_id))
 
-def edit_user(user_id, username, role):
-    user = User.query.filter_by(id=user_id).first()
-    user.username = username
-    user.role = role
-    db.session.commit()
-    
 def get_table(table_id):
     table = Table.query.filter_by(name=table_id).first()
     return table
@@ -206,15 +200,6 @@ def insert_statement(rule_id, saddr, daddr, sport, dport, protocol, reject=None,
         db.session.add(statement_2)
     db.session.commit()
 
-def check_existing_statement( saddr, daddr, sport, dport, protocol, accept, drop, reject, log, limit, counter, return_, jump, go_to, queue, masquerade):
-    if limit != None or log != None or counter != None:
-        statement = NotTerminalStatement( src_ip=saddr, dst_ip=daddr, src_port=sport, dst_port=dport, protocol=protocol, limit=limit, log=log, counter=counter)
-    if reject != None or drop != None or accept != None or queue != None or return_ != None or jump != None or go_to != None != masquerade != None:
-        statement = TerminalStatement( src_ip=saddr, dst_ip=daddr, src_port=sport, dst_port=dport, protocol=protocol, reject=reject, drop=drop, accept=accept, queue=queue, return_=return_, jump=jump, go_to=go_to)
-    else:
-        statement = Statement( src_ip=saddr, dst_ip=daddr, src_port=sport, dst_port=dport, protocol=protocol)
-    return statement.rule_id
-
 def check_terminal_or_not_terminal(statement):
     if statement.reject != None or statement.drop != None or statement.accept != None or statement.queue != None or statement.return_ != None or statement.jump != None or statement.go_to != None:
         return "terminal"
@@ -345,21 +330,6 @@ def get_statements_from_chain(chain_id, family,  table_id):
             for statement in rule.statement:
                 statements.append(statement)
                 
-    return statements
-
-def get_statements():
-    statements = []
-    rules = Rule.query.all()
-    statements_all_nt = NotTerminalStatement.query.all()
-    statements_all_t = TerminalStatement.query.all()
-    for rule in rules:
-        for statement in statements_all_nt:
-            if statement.rule_id == rule.id:
-                statements.append(statement)
-        for statement in statements_all_t:
-            if statement.rule_id == rule.id:
-                statements.append(statement)
-
     return statements
 
 def get_rules_from_api():
@@ -652,15 +622,19 @@ def get_elements_from_map(map_id):
 def  delete_element_from_map(map_id, element):
     _map = get_map(map_id)
     elements = _map.elements
-    elements = ast.literal_eval(elements)
-    elements.pop(element)
-    _map.elements = str(elements)
-    db.session.commit()
+    if elements != "" and elements != None:
+        elements = ast.literal_eval(elements)
+        elements.pop(element)
+        _map.elements = str(elements)
+        db.session.commit()
     
 def get_element_from_map(map_id, element):
     _map = get_map(map_id)
     elements = _map.elements
-    elements = ast.literal_eval(elements)
+    if elements != "" and elements != None:
+        elements = ast.literal_eval(elements)
+    else:
+        return "" 
     return elements[element]
 
 def delete_all_data():
