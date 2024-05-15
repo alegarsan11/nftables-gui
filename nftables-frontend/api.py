@@ -83,7 +83,6 @@ def create_base_chain_request(name, family, table, type, priority, policy, hook_
 def list_chain_request(chain_name, chain_family, chain_table):
     json_data = {"json_data": {"nftables": [{"list": {"chain":{"name": chain_name, "family": chain_family, "table": chain_table}}}]}}
     response = requests.get('http://localhost:8000/chains/list_rule_chain', json=json_data)
-    print(response.json())
     return response.json()
         
     
@@ -107,7 +106,6 @@ import requests
 
 def create_rule_request(rule_id, chain_name, chain_table, family, statement, statement_term, statement_type):
     expr = []
-    rule = service.get_rule(rule_id)
     saddr = None
     daddr = None
     saddr_object = None

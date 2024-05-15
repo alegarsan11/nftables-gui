@@ -298,7 +298,6 @@ def get_rule(rule_id):
         if i == 0 or i == 1:
             continue
         else:
-            print(ratio(str(rule_aux["rule"]["expr"]), rule.expr))
             if service.get_rule(rule_id).handle == None and ratio(str(rule_aux["rule"]["expr"]), rule.expr) > 0.9:
                 service.get_rule(rule_id).handle = rule_aux["rule"]["handle"]
                 
@@ -326,9 +325,7 @@ def delete_rule(rule_id):
 @creation_bp.route('/rules/create_rule', methods=['POST'])
 def create_rule_post():
     form = RuleForm(data=request.form)
-    # El handle ha de asignarse con la peticion de la api y el resultado que se obtenga de esta rule
     chaind_id = form.chain.data.split("&&")[0]
-    print(form.chain.data)
     table_name = form.chain.data.split("&&")[2]
     family = form.chain.data.split("&&")[1]
     chain_name = form.chain.data.split("&&")[3]
@@ -382,13 +379,10 @@ def get_set(set_id):
     table = Table.query.get(set_.table_id)
     result = api.list_elements_in_set(set_.name, table.family, table.name)
     elements = ""
-    print(result)
     for i, item in enumerate(result[1]["nftables"]):
         table = Table.query.get(set_.table_id)
-        print(table.family)
         if("set" in item) and item["set"]["name"] == set_.name and item["set"]["family"] == table.family and item["set"]["table"] == table.name:
             if item.get("set").get("elem", None) != None:
-                print(item["set"]["elem"])
                 elements = str(item["set"]["elem"])
     service.insert_elements_in_set(set_id, elements)
     return render_template('sets/set.html', set=set_)
@@ -486,7 +480,6 @@ def get_map(map_id):
     table = Table.query.get(map_.table_id)
     result = api.list_elements_in_map(map_.name, table.family, table.name)
     elements = ""
-    print(result)
     for i, item in enumerate(result[1]["nftables"]):
         if("map" in item) and item["map"]["name"] == map_.name and item["map"]["family"] == table.family and item["map"]["table"] == table.name:
             if item.get("map").get("elem", None) != None:

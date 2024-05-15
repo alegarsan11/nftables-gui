@@ -18,14 +18,12 @@ def list_elements_in_set(json_data: hug.types.json):
 def add_element_to_set(json_data: hug.types.json):
     nft = Nftables()
     result = nft.json_cmd(json_data)
-    print(result)
     return result
 
 @hug.post('/create_set')
 def create_set(json_data: hug.types.json):
     nft = Nftables()
     result = nft.json_cmd(json_data)
-    print(result)
     return result
 
 @hug.post('/delete_set')

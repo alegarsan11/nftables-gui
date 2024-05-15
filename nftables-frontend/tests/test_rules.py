@@ -94,7 +94,6 @@ def test_create_rule_error(mock_create_rule_request, mock_list_chain_request,moc
             mock_create_rule_request.return_value = "Success", [{'counter': True}] 
 
             response = views.create_rule_post()
-            print(response)
             assert "<h1>Create Rule</h1>" in response
            
 @patch('api.list_tables_request')

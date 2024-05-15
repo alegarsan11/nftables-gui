@@ -370,7 +370,6 @@ def load_data(condicion):
                 insert_chain(item["chain"]["name"], item["chain"]["family"] ,item["chain"]["policy"], item["chain"]["table"],type=type,  priority=prio, hook_type=hook)
     chains = get_chains()
     for chain in chains:
-        print(chain.name, chain.table.name, chain.table.family)
         result_rules = api.list_chain_request(chain.name, chain.table.family, chain.table.name)
         if(result_rules["rules"] != ""):
             result_rules = result_rules["rules"]["nftables"]
@@ -378,7 +377,6 @@ def load_data(condicion):
                 if i ==0 or i ==1:
                     continue
                 else:
-                    print(rule)
                     if check_existing_rule(handle=str(rule["rule"]["handle"]), expr=rule["rule"]["expr"], chain_id=chain.id, family=chain.table.family) == False:
                         insert_rule(handle=str(rule["rule"]["handle"]), chain_id=chain.id, expr=str(rule["rule"]["expr"]))
     return  [Rule.query.count(), Chain.query.count(), Table.query.count()]
