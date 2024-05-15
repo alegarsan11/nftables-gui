@@ -48,7 +48,7 @@ function updateHiddenInput() {
             {{ form.chain.label }}
             <select id="chain" name="chain" class="form-control" onchange="updateHiddenInput()">
                 {% for chain in chains %}
-                <option value="{{ chain.id }}&&{{chain.family}}&&{{chain.table.name}}&&{{chain.name}}">Name: {{ chain.name }} - Family: {{ chain.family }} - Table: {{ chain.table.name }}</option>
+                <option value="{{ chain.id }}&&{{chain.table.family}}&&{{chain.table.name}}&&{{chain.name}}">Name: {{ chain.name }} - Family: {{ chain.family }} - Table: {{ chain.table.name }}</option>
                 {% endfor %}
             </select>
             {% if form.chain.errors %}
@@ -330,6 +330,7 @@ function updateHiddenInput() {
         <div class="form-group">
             {{ form.submit (class="btn btn-primary") }}
         </div>
+        {{ msg }}
     </form>
 </div>
 {% endblock %}

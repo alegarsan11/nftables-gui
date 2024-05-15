@@ -44,16 +44,12 @@ class CreateUserForm(FlaskForm):
 class UpdateUserForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired()])
     role = StringField('Role', validators=[DataRequired()])
-    is_active = SelectField('Active', choices=[('True', 'True'), ('False', 'False')], validators=[DataRequired()])
     submit = SubmitField('Update User')
     
     def validate_role(self, role):
         if role.data not in ['administrator', 'user', 'guest']:
             raise ValidationError('Role must be one of: administrator, user, guest.')
         
-    def validate_is_active(self, is_active):
-        if is_active.data not in ['True', 'False']:
-            raise ValidationError('Active must be one of: True, False.')
         
 class TableForm(FlaskForm):
     name = StringField('Name', validators=[DataRequired()])
@@ -78,7 +74,6 @@ class ChainForm(FlaskForm):
         ('accept', 'accept'),
         ('drop', 'drop'),
         ('reject', 'reject')    ], validators=[DataRequired()])    
-    description = StringField('Description')
     submit = SubmitField('Create Chain')
     
     def validate_name(self, name):
@@ -86,7 +81,7 @@ class ChainForm(FlaskForm):
             raise ValidationError('Chain name invalid. (Must not contain special characters or spaces.)')
 
     def validate_table(self, table):
-        table = Table.query.filter_by(name=table.data).first()
+        table = Table.query.filter_by(id=table.data).first()
         if not table:
             raise ValidationError('Table does not exist.')
  
@@ -141,19 +136,19 @@ class StatementForm(FlaskForm):
             raise ValidationError('Destination IP must be a valid IP address with a network mask.')
                 
     def validate_src_ip_objects(self, src_ip_objects):
-        if src_ip_objects.data and self.src_ip.data:
+        if src_ip_objects.data != "--Selects--" and self.src_ip.data:
             raise ValidationError('Source IP and Source IP Sets or Maps cannot be used together.')
                 
     def validate_dst_ip_objects(self, dst_ip_objects):
-        if dst_ip_objects.data and self.dst_ip.data:
+        if dst_ip_objects.data != "--Selects--" and self.dst_ip.data:
             raise ValidationError('Destination IP and Destination IP Sets or Maps cannot be used together.')
     
     def validate_src_port_objects(self, src_port_objects):
-        if src_port_objects.data and self.src_port.data:
+        if src_port_objects.data != "--Selects--" and self.src_port.data:
             raise ValidationError('Source Port and Source Port Sets or Maps cannot be used together.')
         
     def validate_dst_port_objects(self, dst_port_objects):
-        if dst_port_objects.data and self.dst_port.data:
+        if dst_port_objects.data != "--Selects--" and self.dst_port.data:
             raise ValidationError('Destination Port and Destination Port Sets or Maps cannot be used together.')
         
     def validate_src_port(self, src_port):
@@ -241,11 +236,10 @@ class NotTerminalStatementForm(StatementForm):
             elif not isinstance(int(redirect.data), int) or not 0 <= int(redirect.data) <= 65535:
                 raise ValidationError('Redirect must be a port number between 0 and 65535.')
         except ValueError:
-            raise ValidationError('Redirect must be a valid IP address')
+            raise ValidationError('Condition on dst or src port must be especified to create redirect and must be a valid port number between 0 and 65535.')
 
 class RuleForm(FlaskForm):
     chain = StringField('Chain', validators=[DataRequired()])
-    family = StringField('Family', validators=[DataRequired()])
     handle = StringField('Handle', validators=[Optional()])
     statements = FormField(NotTerminalStatementForm)
     statements_term = FormField(TerminalStatementForm)
@@ -324,3 +318,24 @@ class AddElementMap(FlaskForm):
 class DeleteElementMap(FlaskForm):
     key = StringField('Key', validators=[DataRequired()])
     
+class AddListForm(FlaskForm):
+    name = StringField('Name', validators=[DataRequired()])
+    family = StringField('Family', validators=[DataRequired()])
+    element = StringField('Element', validators=[DataRequired()])
+    table = StringField('Table Name', validators=[DataRequired()])
+    type = SelectField('Type', choices=[('ipv4_addr', 'ipv4_addr')], validators=[DataRequired()])
+    description = StringField('Description', validators=[Optional()])
+
+    def validate_family(self, family):
+        if family.data not in ['ip', 'inet', 'arp', 'bridge', 'netdev']:
+            raise ValidationError('Family must be one of: ip, inet, arp, bridge, netdev.')
+    def validate_name(self, name):
+        if " " in name.data or "-" in name.data or "/" in name.data or "." in name.data or "," in name.data or ";" in name.data or ":" in name.data or "@" in name.data or "#" in name.data or "$" in name.data or "%" in name.data or "^" in name.data or "&" in name.data or "*" in name.data or "(" in name.data or ")" in name.data or "+" in name.data or "=" in name.data or "[" in name.data or "]" in name.data or "{" in name.data or "}" in name.data or "|" in name.data or "<" in name.data or ">" in name.data or "?" in name.data or "!" in name.data or "'" in name.data or '"' in name.data or "\\" in name.data or "`" in name.data or "~" in name.data:
+            raise ValidationError('Set name invalid. (Must not contain special characters or spaces.)')
+    def validate_type(self, type):
+        if type.data not in ['ipv4_addr']:
+            raise ValidationError('Type must be one of: ipv4_addr.')
+    def validate_table(self, table):
+        table = Table.query.filter_by(id=table.data).first()
+        if not table:
+            raise ValidationError('Table does not exist.')

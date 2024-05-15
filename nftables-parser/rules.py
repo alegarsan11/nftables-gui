@@ -9,7 +9,7 @@ def create_rule(json_data: hug.types.json):
     if(result[0] == 0):
         return {"status": "success"}
     else:
-        return {"status": "error"}    
+        return {"status": "error", "result": result}  
     
 @hug.post('/delete_rule')
 def delete_rule(json_data: hug.types.json):

@@ -11,4 +11,13 @@ To run the project:
 - Grant permissions:
 `sudo chmod +x run.sh`
 - Execute the file:
-`./run.sh`
+`sudo ./run.sh`
+- to kill all process
+`sudo killall python`
+
+- Execute the test files:
+`python -m pytest` (On the nftables-frontend folder)
+- Execute coverage:
+`python -m pytest --cov`
+- Generate report of coverage
+`python -m pytest --cov --cov-report=html`

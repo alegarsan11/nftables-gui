@@ -6,13 +6,13 @@
 <div class="container">
   <h1>Sets</h1>
   <a href="/sets/new" class="btn btn-primary">New set</a>
+  <button class="btn btn-success" onclick="location.href='/add-list'">Insert black/white list</button>
     <br><br>
   <table class="table personal-table">
     <thead>
       <tr>
         <th>Name</th>
         <th>Type</th>
-        <th>Family</th>
         <th>Actions</th>
       </tr>
     </thead>
@@ -21,7 +21,6 @@
       <tr>
         <td>{{ set.name }}</td>
         <td>{{ set.type }}</td>
-        <td>{{ set.family }}</td>
         <td>
           <a href="/sets/{{ set.id }}" class="btn btn-primary">View</a>
           <a href="/sets/{{ set.id }}/delete" class="btn btn-danger">Delete</a>

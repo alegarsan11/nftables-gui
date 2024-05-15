@@ -20,10 +20,6 @@
         <td>{{ set.type }}</td>
       </tr>
       <tr>
-        <th>Family</th>
-        <td>{{ set.family }}</td>
-      </tr>
-      <tr>
         <th>Elements</th>
         <td>
           <ul>
@@ -37,5 +33,6 @@
       </tr>
     </tbody>
   </table>
+  <a href="/sets/{{ set.id }}/delete" class="btn btn-danger">Delete</a>
 </div>
 {% endblock %}

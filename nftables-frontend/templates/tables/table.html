@@ -18,16 +18,15 @@
             </tr>
         </thead>
         <tbody>
-            {% if chains == [] %}
+            {% if table.chains == [] %}
                 <tr>
                     <td colspan="3">No chains</td>
                 </tr>
             {% else %}
-            {% for chain in chains %}
-            {% if chain.family == table.family %}
+            {% for chain in table.chains %}
                 <tr>
                     <td><a href="/chain/{{ chain.name }}/{{chain.family}}/{{ table.name }}"> {{ chain.name }}</a></td>
-                    <td>{{ chain.family }}</td>
+                    <td>{{ table.family }}</td>
                     <td>
                         {% if chain.description %}
                             {{ chain.description }}
@@ -39,7 +38,6 @@
                         <button class="btn btn-danger" onclick="location.href='/chains/{{ chain.name }}/{{ chain.family }}/{{ table.name }}/delete'">Delete</button>
                     </td>
                 </tr>
-            {% endif %}
             {% endfor %}
             {% endif %}
         </tbody>
