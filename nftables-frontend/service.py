@@ -135,7 +135,7 @@ def check_existing_rule(chain_id, handle=None, family=None, expr=None):
         if rule in chain.rules:
             return True
     for rule in rules:
-        if rule in chain.rules and ratio(str(rule.expr), str(expr)) > 0.98 or rule in chain.rules and str(rule.handle) == handle:  # Ajusta el umbral según tus necesidades
+        if rule in chain.rules and ratio(str(rule.expr), str(expr)) > 0.5 or rule in chain.rules and str(rule.handle) == handle:  # Ajusta el umbral según tus necesidades
             return True
     return False
 
