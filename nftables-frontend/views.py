@@ -5,6 +5,7 @@ from models import BaseChain, Chain, Rule, Statement, Table, User, db
 from forms.forms import AddElementMap, AddElementSetForm, AddListForm, BaseChainForm, ChainForm, DeleteElementMap, DeleteElementSet, LoginForm, CreateUserForm, MapForm, NotTerminalStatementForm, RuleForm, SetForm, TableForm, UpdateUserForm
 import service, api, os, matplotlib
 matplotlib.use('Agg')
+from sqlalchemy.orm import joinedload
 import matplotlib.pyplot as plt
 from Levenshtein import ratio
 
@@ -283,10 +284,7 @@ def flush_chain(chain_id,table):
 def get_rules():
         
     service.load_data(True)
-    rules = service.get_rules()
-    for rule in rules:
-        if rule.handle == None:
-            service.delete_rule(rule.id)
+    rules = Rule.query.options(joinedload('*')).all()
     return render_template('rules/rules.html', rules=rules)
 
 @visualization_bp.route('/rules/<rule_id>')

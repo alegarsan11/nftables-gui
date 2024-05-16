@@ -24,7 +24,7 @@ class Table(db.Model):
     name = db.Column(db.String(80), nullable=False)
     family = db.Column(db.String(80), nullable=False)
     description = db.Column(db.String(120), nullable=True)
-    chains = db.relationship('Chain', backref='table', lazy=True, cascade="all, delete-orphan")
+    chains = db.relationship('Chain', backref='table', lazy=False, cascade="all, delete-orphan")
     username = db.Column(db.String(80), db.ForeignKey('user.username'), nullable=True)
     
     def save(self):
@@ -40,7 +40,7 @@ class Chain(db.Model):
     name = db.Column(db.String(80), nullable=False)
     table_id = db.Column(db.Integer, db.ForeignKey('table.id'), nullable=False)
     policy = db.Column(db.String(120), nullable=True)
-    rules = db.relationship('Rule', backref='chain', lazy=True, cascade="all, delete-orphan")
+    rules = db.relationship('Rule', backref='chain', lazy=False, cascade="all, delete-orphan")
 
     def get_table(self):
         return Table.query.filter_by(name=self.table_id, family=self.family).first()

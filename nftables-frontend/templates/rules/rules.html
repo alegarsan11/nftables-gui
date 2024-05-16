@@ -29,7 +29,7 @@
           {% else %}
           {{ rule.description }}
           {% endif %}</td>
-        <td><a href="/table/{{ rule.table().name}}/{{ rule.chain.table.family }}">   {{ rule.table().name }}</a></td>
+        <td><a href="/table/{{ rule.chain.table.name}}/{{ rule.chain.table.family }}">   {{ rule.chain.table.name }}</a></td>
         <td>{{ rule.chain.table.family }}</td>
         <td><a href="/chain/{{ rule.chain.name }}/{{ rule.chain.table.family }}/{{ rule.chain.table.id }}"> {{ rule.chain.name }}</a></td>
 
