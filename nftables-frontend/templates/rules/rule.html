@@ -12,16 +12,13 @@
         <h3>Handle: {{ rule.handle }}</h3>
         </li>
         <li>
-        <h3>Family: {{ rule.family }}</h3>
+        <h3>Family: {{ rule.table().family }}</h3>
         </li>
         <li>
         <h3>Table: {{ rule.table().name }}</h3>
         </li>
         <li>
         <h3>Chain: {{ rule.chain.name }}</h3>
-        </li>
-        <li>
-        <h3>Description: {{ rule.description }}</h3>
         </li>
       </ul>
     </div>
