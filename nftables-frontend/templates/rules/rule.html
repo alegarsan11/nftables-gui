@@ -21,7 +21,7 @@
         <h3>Chain: {{ rule.chain.name }}</h3>
         </li>
         <li>
-          <h3>Description: {{ rule.description }}</h3>
+          <h3>Description: {{ rule.description or "" }} </h3><button onclick="window.location.href='/rules/{{ rule.id }}/edit_description'">Edit Description</button>
         </li>
       </ul>
     </div>

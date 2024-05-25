@@ -112,6 +112,8 @@ def create_chain():
 def get_chain(chain_id, family, table):
     chain = service.get_chain(chain_id, table)
     statements = service.get_statements_from_chain(chain_id=chain.name, table_id=table, family=family)
+    for rule_ in chain.rules:
+        rule_.expr = ast.literal_eval(rule_.expr)
     return render_template('chains/chain.html', chain=chain, statements=statements)
 
 @creation_bp.route('/create_base_chain/', methods=['POST'])
@@ -628,3 +630,14 @@ def add_list_post():
 def reload():
     service.reload_service()
     return redirect('/')
+
+@visualization_bp.route('/rules/<rule_id>/edit_description')
+def edit_description(rule_id):
+    rule = service.get_rule(rule_id)
+    return render_template('rules/edit_description.html', rule=rule)
+
+@creation_bp.route('/rules/<rule_id>/edit_description', methods=['POST'])
+def edit_description_post(rule_id):
+    description = request.form.get('description')
+    service.edit_description(rule_id, description)
+    return redirect('/rules/' + rule_id)

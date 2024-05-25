@@ -31,7 +31,7 @@
       {% if chain.priority != None %}
         <p><strong>Priority:</strong> {{ chain.priority }}</p>
       {% endif %}
-      <p><strong>Family:</strong> {{ chain.family }}</p>
+      <p><strong>Family:</strong> {{ chain.table.family }}</p>
     </div>
     <div class="col-md-6">
       <h2>Rules:</h2>
@@ -49,7 +49,17 @@
 
           <tr>
             <td>{{ rule.handle }}</td>
-            <td>{{ rule.expr }}</td>
+            <td>{% for statement in rule.expr %}
+              {% if statement.get("match", None) != None %}
+              {{ statement.get("match", None)["left"] }} {{ statement.get("match", None)["op"]  }} {{ statement.get("match", None)["right"] }}
+              <br></br>
+              {% else %}
+              {% set first_key = statement.keys()|list|first %}
+              {{ first_key }}
+              <br></br>
+              {% endif %}
+              {% endfor %}
+            </td>
             <td>
               {% if rule.description == None %}
                 No description

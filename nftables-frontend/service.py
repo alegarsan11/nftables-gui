@@ -141,6 +141,8 @@ def check_existing_rule(chain_id, handle=None, family=None, expr=None):
             return True
         if rule in chain.rules and str(rule.handle) == handle:  # Ajusta el umbral según tus necesidades
             return True
+        if (rule in chain.rules and ratio(str(rule.expr), str(expr)) > 0.98):
+            return True
         
     return False
 
@@ -700,3 +702,8 @@ def create_list(name, family, table_name, type, elements):
 def reload_service():
     delete_all_data_except_users
     os.system("sudo systemctl restart nftables")
+    
+def edit_description(rule_id, descripcion):
+    rule = Rule.query.filter_by(id=rule_id).first()
+    rule.description = descripcion
+    db.session.commit()
