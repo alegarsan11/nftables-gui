@@ -29,4 +29,4 @@ jobs:
     - name: Test with pytest
       run: |
         pip install pytest
-        pytest nftables-frontend/tests/
+        python -m pytest nftables-frontend/tests/
