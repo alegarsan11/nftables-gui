@@ -19,6 +19,9 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
+        
+    - name: Create database directory
+      run: mkdir -p nftables-frontend/instance
 
     - name: Set PYTHONPATH
       run: echo "PYTHONPATH=$(pwd)/nftables-frontend" >> $GITHUB_ENV
