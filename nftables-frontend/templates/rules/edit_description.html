@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block head %}
+{{ super() }}
+{% endblock %}
+{% block content %}
+<div class="container">
+<h3>Edit Description</h3>
+<h2>Rule: {{ rule.handle }}</h2>
+<h1>Rule Description: {{ rule.description }}</h1>
+<form method="POST">
+  <div class="form-group">
+    <label for="description">Description:</label>
+    <input type="text" class="form-control" id="description" name="description" value="{{ rule.description }}">
+  </div>
+  <button type="submit" class="btn btn-primary">Submit</button>
+</form>
+</div>
+    {% endblock %}
