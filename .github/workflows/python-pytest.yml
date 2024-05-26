@@ -19,25 +19,32 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
+      working-directory: nftables-frontend
 
     - name: Set PYTHONPATH
-      run: |
-        echo "PYTHONPATH=$(pwd)/nftables-frontend" >> $GITHUB_ENV
-        ls -R
+      run: echo "PYTHONPATH=$(pwd)/nftables-frontend" >> $GITHUB_ENV
+
+    - name: List directory contents for debugging
+      run: ls -R
+      working-directory: nftables-frontend
 
     - name: Create necessary directories
-      run: mkdir -p nftables-frontend/static/img
+      run: mkdir -p static/img
+      working-directory: nftables-frontend
 
     - name: Create database directory
-      run: mkdir -p nftables-frontend/instance
+      run: mkdir -p instance
+      working-directory: nftables-frontend
 
     - name: Lint with flake8
       run: |
         pip install flake8
-        flake8 nftables-frontend/ --count --select=E9,F63,F7,F82 --show-source --statistics
-        flake8 nftables-frontend/ --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+        flake8 --count --select=E9,F63,F7,F82 --show-source --statistics
+        flake8 --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+      working-directory: nftables-frontend
 
     - name: Test with pytest
       run: |
         pip install pytest
-        pytest nftables-frontend/tests/
+        pytest
+      working-directory: nftables-frontend
