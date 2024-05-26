@@ -26,9 +26,6 @@ jobs:
     - name: Create database directory
       run: mkdir -p nftables-frontend/instance
 
-    - name: Set PYTHONPATH
-      run: echo "PYTHONPATH=$(pwd)/nftables-frontend" >> $GITHUB_ENV
-
     - name: Lint with flake8
       run: |
         pip install flake8
