@@ -19,7 +19,10 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
-        
+
+    - name: Create necessary directories
+      run: mkdir -p nftables-frontend/static/img
+
     - name: Create database directory
       run: mkdir -p nftables-frontend/instance
 
