@@ -4,7 +4,6 @@
 
 This repository is used to develop a web interface that enables the configuration of nftables through a graphical user interface.
 
-
 ## Requirements
 To use this project, you need to install `python3-nftables` and `python3-hug`. For proper functioning, it's necessary to run the parsing file as an administrator.
 
