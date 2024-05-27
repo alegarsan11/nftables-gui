@@ -36,7 +36,11 @@ def main_view():
         categories = ['Rules', 'Chains', 'Tables']
         # Get the number of rules, chains and tables
         values = service.load_data(False)
-        image_path = 'static/img/nftables_info.png'
+        # Obtén la ruta del directorio actual
+        dir_path = os.path.dirname(os.path.realpath(__file__))
+
+        # Construye la ruta absoluta al archivo
+        image_path = os.path.join(dir_path, 'static/img/nftables_info.png')
         plt.figure(figsize=(8, 6))
         plt.bar(categories, values, color=['blue', 'green', 'orange'])
         plt.xlabel('nftables elements')
@@ -605,7 +609,7 @@ def add_list_post():
     form = AddListForm()
     lista = request.files['list'].read().decode('utf-8').split("\n")
     form.element.data = lista
-    if 'txt' not in request.files['list'].filename:
+    if '.txt' not in request.files['list'].filename:
 
         flash('Error adding list.')
         tables = service.get_tables()
