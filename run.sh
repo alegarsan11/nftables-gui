@@ -6,7 +6,7 @@ sudo apt install nftables python3-pip python3-hug python3-nftables
 
 cd nftables-frontend
 
-python app.py &
+python3 app.py &
 
 cd ../nftables-parser
 
