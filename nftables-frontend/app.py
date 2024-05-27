@@ -6,6 +6,8 @@ from flask_migrate import Migrate
 import os
 from service import create_default_user, login_manager
 
+ERROR = 'error.html'
+
 app = Flask(__name__)
 app.register_blueprint(visualization_bp)
 app.register_blueprint(creation_bp)
@@ -26,11 +28,11 @@ Bootstrap(app)
 
 @app.errorhandler(404)
 def page_not_found(e):
-    return render_template('error.html', message='Page not found'), 404
+    return render_template(ERROR, message='Page not found'), 404
 
 @app.errorhandler(500)
 def internal_error(e):
-    return render_template('error.html', message="Internal server error"), 500
+    return render_template(ERROR, message="Internal server error"), 500
 
 @app.route('/favicon.ico')
 def favicon():
@@ -57,11 +59,11 @@ def create_app():
     
     @app.errorhandler(404)
     def page_not_found(e):
-        return render_template('error.html', message='Page not found'), 404
+        return render_template(ERROR, message='Page not found'), 404
     
     @app.errorhandler(500)
     def internal_error(e):
-        return render_template('error.html', message="Internal server error"), 500
+        return render_template(ERROR, message="Internal server error"), 500
 
     @app.route('/favicon.ico')
     def favicon():
