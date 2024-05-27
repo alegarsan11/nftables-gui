@@ -2,7 +2,6 @@
 __pycache__/
 *.py[cod]
 *$py.class
-*nftables_info.png
 report.html
 report
 assets
@@ -64,7 +63,6 @@ db.sqlite3
 db.sqlite3-journal
 
 # Flask stuff:
-instance/
 .webassets-cache
 
 # Scrapy stuff:
