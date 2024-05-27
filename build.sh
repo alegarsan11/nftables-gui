@@ -34,4 +34,4 @@ sudo systemctl restart apache2
 
 # Iniciar el parser de nftables
 cd nftables-parser
-sudo hug -f main.py
+sudo hug -f main.py 
