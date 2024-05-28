@@ -320,7 +320,6 @@ def get_rule(rule_id):
     return render_template('rules/rule.html', rule=rule, statements=statements)
 
 @visualization_bp.route('/rules/create_rule')
-@login_required
 def create_rule():
     form = RuleForm()
     chains = service.get_chains()
@@ -335,7 +334,6 @@ def delete_rule(rule_id):
     return redirect('/rules')
 
 @creation_bp.route('/rules/create_rule', methods=['POST'])
-@login_required
 def create_rule_post():
     form = RuleForm(data=request.form)
     chaind_id = form.chain.data.split("&&")[0]
@@ -447,7 +445,8 @@ def add_set_post():
             flash('Set created successfully.')
         else:
             flash('Error creating set.')
-            return render_template('sets/create_set.html', form=form)
+            tables = service.get_tables()
+            return render_template('sets/create_set.html', form=form, tables=tables)
         return redirect('/sets')
     else:
         flash('Error creating set.')
@@ -532,7 +531,8 @@ def add_map_post():
             flash('Map created successfully.')
         else:
             flash('Error creating map.')
-            return render_template('maps/create_map.html', form=form)
+            tables = service.get_tables()
+            return render_template('maps/create_map.html', form=form, tables=tables)
         return redirect('/maps')
     else:
         flash('Error creating map.')
