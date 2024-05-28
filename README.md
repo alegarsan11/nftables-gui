@@ -4,7 +4,6 @@
 
 This repository is used to develop a web interface that enables the configuration of nftables through a graphical user interface.
 
-
 ## Requirements
 To use this project, you need to install `python3-nftables` and `python3-hug`. For proper functioning, it's necessary to run the parsing file as an administrator.
 
@@ -37,6 +36,8 @@ To deploy an Apache server, use the build.sh file:
 2. Execute the build.sh file:
 
     `sudo ./build.sh`
+
+(Apache server will be available on port 8080)
 
 ### Testing and Coverage
 To run the tests and generate coverage reports, use the following commands:
