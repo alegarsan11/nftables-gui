@@ -217,7 +217,7 @@ def login():
     if form.validate_on_submit():
         user = User.query.filter_by(username=form.username.data).first()
         if user is not None and user.check_password(form.password.data):
-            login_user(user)
+            login_user(user, remember=True)
             flash('Logged in successfully.')
             return redirect('/')
         else:
