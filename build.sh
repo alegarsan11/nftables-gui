@@ -50,6 +50,20 @@ else
     echo "El fichero $FICHERO no existe."
 fi
 
+ARCHIVO="/etc/apache2/ports.conf"
+
+# Línea a añadir
+LINEA="Listen 8080"
+
+# Comprobar si la línea ya existe en el archivo
+if ! grep -qF "$LINEA" "$ARCHIVO"; then
+    # Añadir la línea al final del archivo
+    echo "$LINEA" | sudo tee -a "$ARCHIVO" > /dev/null
+    echo "Línea añadida: $LINEA"
+else
+    echo "La línea ya existe en el archivo: $LINEA"
+fi
+
 # Reiniciar Apache
 sudo systemctl restart apache2
 

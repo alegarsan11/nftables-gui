@@ -37,6 +37,8 @@ To deploy an Apache server, use the build.sh file:
 
     `sudo ./build.sh`
 
+(Apache server will be available on port 8080)
+
 ### Testing and Coverage
 To run the tests and generate coverage reports, use the following commands:
 - Execute the test files (in the nftables-frontend folder):
