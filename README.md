@@ -39,6 +39,20 @@ To deploy an Apache server, use the build.sh file:
 
 (Apache server will be available on port 8080)
 
+### Deploying with gunicorn
+1. Install dependencies
+
+    `sudo apt install gunicorn gevent`
+
+2.  In nftables-frontend folder execute:
+
+    `sudo gunicorn -w 4 -b 0.0.0.0:4000 --worker-class gevent app:app`
+
+3.  In nftables-parser execute:
+
+    `sudo hug -f main.py` 
+
+
 ### Testing and Coverage
 To run the tests and generate coverage reports, use the following commands:
 - Execute the test files (in the nftables-frontend folder):
