@@ -22,6 +22,7 @@ sudo a2enmod wsgi
 # Configuración del sitio de Apache
 sudo cp nftables-frontend/nftables-config.conf /etc/apache2/sites-available/nftables-config.conf
 sudo a2ensite nftables-config.conf
+sudo a2dissite 000-default.conf
 
 # Ajuste de permisos
 sudo touch /usr/share/nftables-frontend/instance/nftables.db
