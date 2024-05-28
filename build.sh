@@ -7,13 +7,14 @@ sudo chown www-data:www-data $MPLCONFIGDIR
 sudo chmod 777 $MPLCONFIGDIR
 
 # Instalación de dependencias
-sudo apt-get install -y libfreetype6-dev libxft-dev
-
+sudo apt-get install -y libfreetype6-dev libxft-dev apache2
+sleep 5
 # Copiar la aplicación
 sudo cp -r nftables-frontend /usr/share
 
 # Instalación y configuración de Apache con WSGI
 sudo apt-get install -y libapache2-mod-wsgi-py3
+sleep 5
 sudo a2enmod wsgi
 
 # Configuración del sitio de Apache
