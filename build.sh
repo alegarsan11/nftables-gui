@@ -7,7 +7,9 @@ sudo chown www-data:www-data $MPLCONFIGDIR
 sudo chmod 777 $MPLCONFIGDIR
 sudo pip install -r requirements.txt
 # Instalación de dependencias
-sudo apt-get install -y libfreetype6-dev libxft-dev apache2
+sudo apt-get install libfreetype6-dev 
+sudo apt-get install libxft-dev apache2
+
 sleep 5
 # Copiar la aplicación
 sudo cp -r nftables-frontend /usr/share
@@ -29,6 +31,14 @@ sudo chmod -R 775 /usr/share/nftables-frontend
 sudo chmod -R 775 /usr/share/nftables-frontend/instance
 sudo chmod -R 775 /usr/share/nftables-frontend/static
 sudo chown -R www-data:www-data /usr/share/nftables-frontend/static
+FICHERO="/etc/apache2/sites-available/000-default.conf"
+
+if [ -f "$FICHERO" ]; then
+    rm "$FICHERO"
+    echo "El fichero $FICHERO ha sido eliminado."
+else
+    echo "El fichero $FICHERO no existe."
+fi
 
 # Reiniciar Apache
 sudo systemctl restart apache2
