@@ -40,6 +40,14 @@ if [ -f "$FICHERO" ]; then
 else
     echo "El fichero $FICHERO no existe."
 fi
+FICHERO="/etc/apache2/sites-enabled/000-default.conf"
+
+if [ -f "$FICHERO" ]; then
+    rm "$FICHERO"
+    echo "El fichero $FICHERO ha sido eliminado."
+else
+    echo "El fichero $FICHERO no existe."
+fi
 
 # Reiniciar Apache
 sudo systemctl restart apache2
