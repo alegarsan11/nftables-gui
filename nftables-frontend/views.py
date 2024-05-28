@@ -618,10 +618,10 @@ def save_changes_post():
     type_ = request.form.get('save')
     if type_ != "" or type_ != None:
         if type_ == 'config':
-            service.save_changes_permanent()
+            api.save_service()
             flash('Changes saved successfully.')
         elif type_ == 'file':
-            service.save_changes_on_file()
+            api.save_service_temp()
             flash('Changes discarded successfully.')
         
     return redirect('/')
@@ -663,7 +663,8 @@ def add_list_post():
 @visualization_bp.route('/reload')
 @login_required
 def reload():
-    service.reload_service()
+    service.delete_all_data_except_users()
+    api.reload_service()
     return redirect('/')
 
 @visualization_bp.route('/rules/<rule_id>/edit_description')

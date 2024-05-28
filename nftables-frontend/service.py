@@ -667,13 +667,6 @@ def check_set_or_map(name):
     if _map:
         return _map.type
     return None
-
-def save_changes_permanent():
-    os.system("sudo su")
-    os.system("sudo rm -f /etc/nftables.conf")
-    os.system("sudo nft list ruleset > /etc/nftables.conf")
-    os.system("sudo systemctl restart nftables")
-    delete_all_data_except_users()
     
 def save_changes_on_file():
     files = glob.glob("./temp_config/nftables_temp*.conf")

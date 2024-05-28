@@ -1,3 +1,4 @@
+import os
 import requests
 import service
 
@@ -382,3 +383,24 @@ def delete_element_from_map_request(map_name, map_family, map_table, key, value)
         return "Success"
     else:
         return "Error deleting element from map."
+    
+def reload_service():
+    response = requests.get('http://localhost:8000/service/reload_service')
+    if(response.json()["status"] == "success"):
+        return "Success"
+    else:
+        return "Error reloading service."
+    
+def save_service():
+    response = requests.get('http://localhost:8000/service/save_service')
+    if(response.json()["status"] == "success"):
+        return "Success"
+    else:
+        return "Error saving service."
+    
+def save_service_temp():
+    response = requests.get('http://localhost:8000/service/save_service_temp')
+    if(response.json()["status"] == "success"):
+        return "Success"
+    else:
+        return "Error saving service temp."
