@@ -5,7 +5,7 @@ export MPLCONFIGDIR=/tmp/matplotlib
 sudo mkdir -p $MPLCONFIGDIR
 sudo chown www-data:www-data $MPLCONFIGDIR
 sudo chmod 777 $MPLCONFIGDIR
-
+sudo pip install -r requirements.txt
 # Instalación de dependencias
 sudo apt-get install -y libfreetype6-dev libxft-dev apache2
 sleep 5
