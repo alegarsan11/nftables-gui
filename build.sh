@@ -24,6 +24,7 @@ sudo cp nftables-frontend/nftables-config.conf /etc/apache2/sites-available/nfta
 sudo a2ensite nftables-config.conf
 
 # Ajuste de permisos
+sudo touch /usr/share/nftables-frontend/instance/nftables.db
 sudo chmod 664 /usr/share/nftables-frontend/instance/nftables.db
 sudo chown www-data:www-data /usr/share/nftables-frontend/instance/nftables.db
 sudo chown -R www-data:www-data /usr/share/nftables-frontend
