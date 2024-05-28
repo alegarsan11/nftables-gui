@@ -21,6 +21,8 @@ class LoginForm(FlaskForm):
         if user and not user.check_password(password.data):
             raise ValidationError('Invalid password.')
         
+    class Meta:
+        csrf = False
 class CreateUserForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired()])
     password = PasswordField('Password', validators=[DataRequired(), EqualTo('confirm_password', message='Passwords must match.')])
@@ -40,7 +42,8 @@ class CreateUserForm(FlaskForm):
     def validate_password(self, password):
         if len(password.data) < 8:
             raise ValidationError('Password must be at least 8 characters long.')
-        
+    class Meta:
+        csrf = False        
 class UpdateUserForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired()])
     role = StringField('Role', validators=[DataRequired()])
@@ -49,7 +52,8 @@ class UpdateUserForm(FlaskForm):
     def validate_role(self, role):
         if role.data not in ['administrator', 'user', 'guest']:
             raise ValidationError('Role must be one of: administrator, user, guest.')
-        
+    class Meta:
+        csrf = False        
         
 class TableForm(FlaskForm):
     name = StringField('Name', validators=[DataRequired()])
@@ -65,7 +69,8 @@ class TableForm(FlaskForm):
         table = Table.query.filter_by(name=name.data).first()
         if table or " " in name.data or "-" in name.data or "/" in name.data or "." in name.data or "," in name.data or ";" in name.data or ":" in name.data or "@" in name.data or "#" in name.data or "$" in name.data or "%" in name.data or "^" in name.data or "&" in name.data or "*" in name.data or "(" in name.data or ")" in name.data or "+" in name.data or "=" in name.data or "[" in name.data or "]" in name.data or "{" in name.data or "}" in name.data or "|" in name.data or "<" in name.data or ">" in name.data or "?" in name.data or "!" in name.data or "'" in name.data or '"' in name.data or "\\" in name.data or "`" in name.data or "~" in name.data:
             raise ValidationError('Table name invalid. (Must not contain special characters or spaces.)')
-
+    class Meta:
+        csrf = False
 class ChainForm(FlaskForm):
     name = StringField('Name', validators=[DataRequired()])
     table = StringField('Table', validators=[DataRequired()])
@@ -97,7 +102,8 @@ class ChainForm(FlaskForm):
         if type.data not in ['filter', 'nat', 'route', 'mangle', 'raw']:
             raise ValidationError('Type must be one of: filter, nat, route, mangle, raw.')
 
-        
+    class Meta:
+        csrf = False        
         
 class BaseChainForm(ChainForm):
     hook_type = SelectField('Hook Type', choices=[('prerouting', 'prerouting'), ('input', 'input'), ('forward', 'forward'), ('output', 'output'), ('postrouting', 'postrouting')], validators=[DataRequired()])
@@ -111,7 +117,8 @@ class BaseChainForm(ChainForm):
     def validate_priority(self, priority):
         if priority.data > 300 or priority.data < -400 :
             raise ValidationError('Priority must be between -400 and 300.')
-
+    class Meta:
+        csrf = False
 class StatementForm(FlaskForm):
     src_ip = StringField('Source IP', validators=[Optional()])
     dst_ip = StringField('Destination IP', validators=[Optional()])
@@ -158,7 +165,8 @@ class StatementForm(FlaskForm):
     def validate_dst_port(self, dst_port):
         if dst_port.data and (not dst_port.data.isdigit() or not 0 <= int(dst_port.data) <= 65535):
             raise ValidationError('Destination Port must be a valid port number between 0 and 65535.')        
-
+    class Meta:
+        csrf = False
 class TerminalStatementForm(StatementForm):
     reject = BooleanField('Reject',validators=[Optional()])
     drop = BooleanField('Drop',  validators=[Optional()])
@@ -184,7 +192,8 @@ class TerminalStatementForm(StatementForm):
     def validate_go_to(self, go_to):
         if go_to.data and not go_to.data.replace(":", "").replace("-", "").replace("_", "").replace(".", "").replace("/", "").replace(" ", "").isalnum():
             raise ValidationError('Go To must be a valid chain name.')
-        
+    class Meta:
+        csrf = False        
 class NotTerminalStatementForm(StatementForm):
     limit = IntegerField('Limit', validators=[Optional()] )
     log = BooleanField('Log', validators=[Optional()])
@@ -237,7 +246,8 @@ class NotTerminalStatementForm(StatementForm):
                 raise ValidationError('Redirect must be a port number between 0 and 65535.')
         except ValueError:
             raise ValidationError('Condition on dst or src port must be especified to create redirect and must be a valid port number between 0 and 65535.')
-
+    class Meta:
+        csrf = False
 class RuleForm(FlaskForm):
     chain = StringField('Chain', validators=[DataRequired()])
     handle = StringField('Handle', validators=[Optional()])
@@ -258,10 +268,12 @@ class RuleForm(FlaskForm):
     def validate_handle(self, handle):
         if handle.data and not handle.data.replace(":", "").replace("-", "").replace("_", "").replace(".", "").replace("/", "").replace(" ", "").isalnum():
             raise ValidationError('Handle must be a valid handle.')
-        
+    class Meta:
+        csrf = False        
 class AddElementSetForm(FlaskForm):
     element = StringField('Element', validators=[DataRequired()])
-    
+    class Meta:
+        csrf = False    
 class SetForm(FlaskForm):
     VALID_TYPES = [('ipv4_addr', 'ipv4_addr'), ('ipv6_addr', 'ipv6_addr'), ('ether_addr', 'ether_addr'), ('inet_service', 'inet_service'), ('inet_proto', 'inet_proto'), ('mark', 'mark')]
 
@@ -283,10 +295,12 @@ class SetForm(FlaskForm):
     def validate_type(self, type):
         if type.data not in [choice[0] for choice in self.VALID_TYPES]:
             raise ValidationError('Type must be one of: ' + ', '.join([choice[0] for choice in self.VALID_TYPES]))    
-        
+    class Meta:
+        csrf = False        
 class DeleteElementSet(FlaskForm):
     element = StringField('Element', validators=[DataRequired()])
-    
+    class Meta:
+        csrf = False    
 class MapForm(FlaskForm):
     VALID_TYPES = [('ipv4_addr', 'ipv4_addr'), ('ipv6_addr', 'ipv6_addr'), ('ether_addr', 'ether_addr'), ('inet_service', 'inet_service'), ('inet_proto', 'inet_proto'), ('mark', 'mark')]
     name = StringField('Name', validators=[DataRequired()])
@@ -310,14 +324,17 @@ class MapForm(FlaskForm):
     def validate_map_type(self, map_type):
         if map_type.data not in [choice[0] for choice in self.VALID_TYPES]:
             raise ValidationError('Map Type must be one of: ' + ', '.join([choice[0] for choice in self.VALID_TYPES]))
-        
+    class Meta:
+        csrf = False        
 class AddElementMap(FlaskForm):
     key = StringField('Key', validators=[DataRequired()])
     value = StringField('Value', validators=[DataRequired()])
-    
+    class Meta:
+        csrf = False    
 class DeleteElementMap(FlaskForm):
     key = StringField('Key', validators=[DataRequired()])
-    
+    class Meta:
+        csrf = False    
 class AddListForm(FlaskForm):
     name = StringField('Name', validators=[DataRequired()])
     family = StringField('Family', validators=[DataRequired()])
@@ -339,3 +356,5 @@ class AddListForm(FlaskForm):
         table = Table.query.filter_by(id=table.data).first()
         if not table:
             raise ValidationError('Table does not exist.')
+    class Meta:
+        csrf = False

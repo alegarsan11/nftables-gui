@@ -217,7 +217,7 @@ def login():
     if form.validate_on_submit():
         user = User.query.filter_by(username=form.username.data).first()
         if user is not None and user.check_password(form.password.data):
-            login_user(user)
+            login_user(user, remember=True)
             flash('Logged in successfully.')
             return redirect('/')
         else:
@@ -228,11 +228,13 @@ def login():
     return render_template('login.html', form=form)
 
 @visualization_bp.route('/create_user')
+@login_required
 def create_user():
     
     return render_template('users/create_user.html', form=CreateUserForm())
 
 @creation_bp.route('/create_user', methods=['POST'])
+@login_required
 def create_user_post():
     form = CreateUserForm()
     if form.validate_on_submit():
@@ -244,6 +246,7 @@ def create_user_post():
         return render_template('users/create_user.html', form=form)
 
 @creation_bp.route("/logout")
+@login_required
 def logout():
     '''Cerrar sesión'''
     logout_user()
@@ -272,6 +275,7 @@ def get_chains():
     return render_template('chains/chains.html', chains=chains)
 
 @creation_bp.route('/chains/<chain_id>/<table>/delete')
+@login_required
 def delete_chain(chain_id, table):
     chain = Chain.query.get(chain_id)
     response = api.delete_chain_request(chain.name, chain.table.family, chain.table.name)
@@ -279,6 +283,7 @@ def delete_chain(chain_id, table):
     return redirect('/chains')
 
 @creation_bp.route('/chains/<chain_id>/<table>/flush')
+@login_required
 def flush_chain(chain_id,table):
     chain = Chain.query.get(chain_id)
     response = api.flush_chain_request(chain.name, chain.table.family, chain.table.name)
@@ -294,6 +299,7 @@ def get_rules():
     return render_template('rules/rules.html', rules=rules)
 
 @visualization_bp.route('/rules/<rule_id>')
+@login_required
 def get_rule(rule_id):
     rule = service.get_rule(rule_id)
     rule_result = api.list_chain_request(rule.chain.name, rule.chain.table.family, rule.chain.table.name)
@@ -314,6 +320,7 @@ def get_rule(rule_id):
     return render_template('rules/rule.html', rule=rule, statements=statements)
 
 @visualization_bp.route('/rules/create_rule')
+@login_required
 def create_rule():
     form = RuleForm()
     chains = service.get_chains()
@@ -321,12 +328,14 @@ def create_rule():
     return render_template('rules/create_rule.html', form=form, chains=chains, objects=objects)
 
 @visualization_bp.route('/rules/<rule_id>/delete')
+@login_required
 def delete_rule(rule_id):
     response = api.delete_rule_request(rule_id)
     service.delete_rule(rule_id)
     return redirect('/rules')
 
 @creation_bp.route('/rules/create_rule', methods=['POST'])
+@login_required
 def create_rule_post():
     form = RuleForm(data=request.form)
     chaind_id = form.chain.data.split("&&")[0]
@@ -373,11 +382,13 @@ def create_rule_post():
     return render_template('rules/create_rule.html', form=form, chains=chains)
 
 @visualization_bp.route('/sets')
+@login_required
 def get_sets():
     service.insert_sets()
     return render_template('sets/sets.html', sets=service.get_sets())
 
 @visualization_bp.route('/sets/<set_id>')
+@login_required
 def get_set(set_id):
     set_ = service.get_set(set_id)
     table = Table.query.get(set_.table_id)
@@ -392,11 +403,13 @@ def get_set(set_id):
     return render_template('sets/set.html', set=set_)
 
 @visualization_bp.route('/sets/<set_id>/add_element')
+@login_required
 def add_element(set_id):
     form = AddElementSetForm()
     return render_template('sets/add_element.html', form=form)
 
 @creation_bp.route('/sets/<set_id>/add_element', methods=['POST'])
+@login_required
 def add_element_post(set_id):
     form = AddElementSetForm()
     set_ = service.get_set(set_id)
@@ -414,12 +427,14 @@ def add_element_post(set_id):
         return render_template('sets/add_element.html', form=form)
     
 @visualization_bp.route('/sets/new')
+@login_required
 def add_set():
     form = SetForm()
     tables = service.get_tables()
     return render_template('sets/create_set.html', form=form, tables=tables)
 
 @creation_bp.route('/sets/new', methods=['POST'])
+@login_required
 def add_set_post():
     form = SetForm()
     form.family.data = form.table.data.split("&&")[1]
@@ -439,6 +454,7 @@ def add_set_post():
         return render_template('sets/create_set.html', form=form)
     
 @visualization_bp.route('/sets/<set_id>/delete')
+@login_required
 def delete_set(set_id):
     set_ = service.get_set(set_id)
     table = Table.query.get(set_.table_id)
@@ -447,6 +463,7 @@ def delete_set(set_id):
     return redirect('/sets')
 
 @visualization_bp.route('/sets/<set_id>/delete_element')
+@login_required
 def delete_element_set(set_id):
     form = DeleteElementSet()
     elements = service.get_elements_from_set(set_id)
@@ -455,6 +472,7 @@ def delete_element_set(set_id):
     return render_template('sets/delete_element.html', form=form, aux=elements)
 
 @creation_bp.route('/sets/<set_id>/delete_element', methods=['POST'])
+@login_required
 def delete_element_set_post(set_id):
     form = DeleteElementSet()
     set_ = service.get_set(set_id)
@@ -473,12 +491,14 @@ def delete_element_set_post(set_id):
         return render_template('sets/delete_element.html', form=form,aux=elements)
     
 @visualization_bp.route('/maps')
+@login_required
 def get_maps():
     service.insert_maps()
     maps = service.get_maps()
     return render_template('maps/maps.html', maps=maps)
 
 @visualization_bp.route('/maps/<map_id>')
+@login_required
 def get_map(map_id):
     map_ = service.get_map(map_id)
     table = Table.query.get(map_.table_id)
@@ -492,12 +512,14 @@ def get_map(map_id):
     return render_template('maps/map.html', map=map_)
 
 @visualization_bp.route('/maps/new')
+@login_required
 def add_map():
     form = MapForm()
     tables = service.get_tables()
     return render_template('maps/create_map.html', form=form, tables=tables)
 
 @creation_bp.route('/maps/new', methods=['POST'])
+@login_required
 def add_map_post():
     form = MapForm()
     form.family.data = form.table.data.split("&&")[1]
@@ -517,6 +539,7 @@ def add_map_post():
         return render_template('maps/create_map.html', form=form)
     
 @visualization_bp.route('/maps/<map_id>/delete')
+@login_required
 def delete_map(map_id):
     map_ = service.get_map(map_id)
     table = Table.query.get(map_.table_id)
@@ -531,6 +554,7 @@ def add_element_map(map_id):
     return render_template('maps/add_element.html', form=form, map=map_)
 
 @creation_bp.route('/maps/<map_id>/add_element', methods=['POST'])
+@login_required
 def add_element_map_post(map_id):
     form = AddElementMap()
     map_ = service.get_map(map_id)
@@ -548,6 +572,7 @@ def add_element_map_post(map_id):
         return render_template('maps/add_element.html', form=form)
     
 @visualization_bp.route('/maps/<map_id>/delete_element')
+@login_required
 def delete_element_map(map_id):
     form = DeleteElementMap()
     elements_str = service.get_elements_from_map(map_id)
@@ -560,6 +585,7 @@ def delete_element_map(map_id):
     return render_template('maps/delete_element.html', form=form, aux=aux)
 
 @creation_bp.route('/maps/<map_id>/delete_element', methods=['POST'])
+@login_required
 def delete_element_map_post(map_id):
     form = DeleteElementMap()
     map_ = service.get_map(map_id)
@@ -582,10 +608,12 @@ def delete_element_map_post(map_id):
         return render_template('maps/delete_element.html', form=form, aux=aux)
     
 @visualization_bp.route('/save-changes')
+@login_required
 def save_changes():
     return render_template('save-changes.html')
 
 @creation_bp.route('/save-changes', methods=['POST'])
+@login_required
 def save_changes_post():
     type_ = request.form.get('save')
     if type_ != "" or type_ != None:
@@ -599,12 +627,14 @@ def save_changes_post():
     return redirect('/')
 
 @visualization_bp.route('/add-list')
+@login_required
 def add_list():
     form = AddListForm()
     tables = service.get_tables()
     return render_template('sets/add-list.html', form=form, tables=tables)
 
 @creation_bp.route('/add-list', methods=['POST'])
+@login_required
 def add_list_post():
     form = AddListForm()
     lista = request.files['list'].read().decode('utf-8').split("\n")
@@ -631,16 +661,19 @@ def add_list_post():
     return redirect('/sets')
 
 @visualization_bp.route('/reload')
+@login_required
 def reload():
     service.reload_service()
     return redirect('/')
 
 @visualization_bp.route('/rules/<rule_id>/edit_description')
+@login_required
 def edit_description(rule_id):
     rule = service.get_rule(rule_id)
     return render_template('rules/edit_description.html', rule=rule)
 
 @creation_bp.route('/rules/<rule_id>/edit_description', methods=['POST'])
+@login_required
 def edit_description_post(rule_id):
     description = request.form.get('description')
     service.edit_description(rule_id, description)
