@@ -1,8 +1,8 @@
 #!/bin/bash
 
-pip install -r requirements.txt
-
 sudo apt install nftables python3-pip python3-hug python3-nftables
+
+pip install -r requirements.txt
 
 cd nftables-frontend
 
