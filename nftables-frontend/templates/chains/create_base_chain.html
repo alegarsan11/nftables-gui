@@ -13,7 +13,6 @@
 {% block content %}
 <div class="container">
   <h1>Create chain:</h1>
-    <h2 class="warning">Keep in mind that base chains can only be added to predefined tables.</h2>
     <form id="myForm" action="/create_base_chain" method="POST">
         {{ form.csrf_token }}
         <div class="form-group">
