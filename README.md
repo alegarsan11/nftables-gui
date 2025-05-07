@@ -5,7 +5,7 @@
 This repository is used to develop a web interface that enables the configuration of nftables through a graphical user interface.
 
 ## Requirements
-To use this project, you need to install `python3-nftables` and `python3-hug`. For proper functioning, it's necessary to run the parsing file as an administrator.
+To use this project, you need to install `python3-nftables` and `python3-hug`. For proper functioning, it's necessary to run the parsing file as an administrator. Also you need to create a virtual environment with `python3 -m venv venv` and use it as a source to install dependencies with `source venv/bin/activate`.
 
 ## Default User Credentials
 The default user credentials are as follows:
