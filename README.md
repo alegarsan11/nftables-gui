@@ -8,11 +8,17 @@
   <b>Web-based graphical interface to manage nftables firewall rules easily 🔥</b>
 </p>
 
+
+
+
 <p align="center">
+
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=alegarsan11_nftables-gui&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=alegarsan11_nftables-gui)
   <img src="https://img.shields.io/badge/status-active-brightgreen" />
   <img src="https://img.shields.io/badge/python-3.x-blue" />
-  <img src="https://img.shields.io/badge/license-MIT-lightgrey" />
+
 </p>
+
 
 ---
 
