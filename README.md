@@ -101,6 +101,14 @@ sudo ./run.sh
 
 ---
 
+
+## Default User Credentials
+The default user credentials are as follows:
+- Username: default
+- Password: defaultpassword
+
+---
+
 # 🌐 Alternative deployments
 
 ## Apache
